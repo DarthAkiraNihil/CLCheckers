@@ -7,7 +7,7 @@
 
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
-const int WINDOW_SIZE_LENGTH = 80;
+const int WINDOW_SIZE_LENGTH = 79;
 const int WINDOW_SIZE_HEIGTH = 20;
 
 void renderBoard(Board* board, short drawX, short drawY) {
@@ -69,7 +69,7 @@ int main() {
     textcolor(15);
     //printf("AAA");
     //waitForKey(13);
-    //drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
+    drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
     const char* mainMenuPoints[36] = {
         "Начать новую игру",
         "Загрузить игру",
@@ -84,30 +84,36 @@ int main() {
         "Узнать статистику",
         "Уже уходите?"
     };
+    int choice;
     TextLineWidget tlw;
     tlw.length = 29;
     tlw.locX = 4; tlw.locY = 2;
     setInitialText(&tlw, "pidarok");
-    //strcpy(tlw.text, "pidarok");
-    drawTextLineWidget(tlw);
-    //int k = drawMenu(1, mainMenuPoints, 4, )
-    int k = drawMenu(1, mainMenuPoints, 5, mainMenuPointsDescriptions, 5, 4, 4, 15, 3, 12);
-    if (k == -1) {printf("mpdcount != pointscount");}
-    Board gameBoard = initiateGameBoard(true);
-    renderBoard(&gameBoard, 4, 4);
-    //test1.length = 30; test1.locX = 3; test1.locY = 4;
-    //strcpy(test1.text, "EEEEEEEEEEEE");
-    //char sysSWS[64];
-    //sprintf(sysSWS, "mode con cols=%d lines=%d", 10, 10);
-    //gotoxy(1, 2);
-    //puts(sysSWS);
-    //puts(sysSWS);
-    //char* menu[] = {" Aga", "Bebe"};
-    //drawTextLineWidget(test1);
-    //drawMenu(1, menu, 2, 5, 5, 4, 4, 12);
-
-    //drawFrame(5, 6, 5, 6);
-    waitForKey(13);
-    //setTextLineText(test1, "EEEAAAAA");
+    //drawTextLineWidget(tlw);
+    do {
+        choice = drawMenu(1, mainMenuPoints, 5, mainMenuPointsDescriptions, 5, 16, 4, 15, 3, 12);
+        switch (choice) {
+            case 1: {
+                drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
+                waitForKey(13);
+                break;
+            }
+            case 2: {
+                break;
+            }
+            case 3: {
+                break;
+            }
+            case 4: {
+                break;
+            }
+            case -1: {
+                printf("mpdcount != pointscount");
+                break;
+            }
+        }
+        //Board gameBoard = initiateGameBoard(true);
+        //renderBoard(&gameBoard, 4, 4);
+    } while (choice != 5);
     return 0;
 }

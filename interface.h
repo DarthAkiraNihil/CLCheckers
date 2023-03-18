@@ -98,7 +98,7 @@ int drawMenu(
     gotoxy(drawX, drawY);
     int maxLen = -1;
     if (pointsCount != MPDCount) return -1;
-    //todo draw frame in this function instead of this bullshit
+    //todo add menu title
     for (int i = 0; i < pointsCount; i++) if ((int) strlen(menuPoints[i]) > maxLen) maxLen = max((int) strlen(menuPoints[i]), maxLen);//maxLen = max(maxLen, (int) strlen(menuPoints[i]));
     TextLineWidget menuPointDescription;
     menuPointDescription.length = maxLen + alignCenterH*2 + 2;
@@ -160,7 +160,7 @@ int drawMenu(
     textbackground(0);
     return activePos;
 }
-
+//todo menu without frame but with descs
 //void clearField(int x, int y, int length, int heigth) {
 
 //}
