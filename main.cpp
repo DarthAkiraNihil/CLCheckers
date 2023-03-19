@@ -3,15 +3,25 @@
 //#include "conio2.h"
 #include "interface.h"
 #include "checkerslib.h"
+#include "appconsts.h"
 #include <windows.h>
 
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
-const int WINDOW_SIZE_LENGTH = 79;
-const int WINDOW_SIZE_HEIGTH = 20;
+void getBoardCellType(Board* board, short x, short y); // todo
 
-void renderBoard(Board* board, short drawX, short drawY) {
+void renderBoard(Board* board, short drawX, short drawY, bool pasteCoordinates) {
     drawFrame(10, 10, drawX, drawY);
+    if (pasteCoordinates) {
+        gotoxy(drawX + 1, drawY - 1); printf("abcdefgh");
+        gotoxy(drawX + 1, drawY + 10); printf("abcdefgh");
+        for (int i = 0; i < 8; i++) {
+            gotoxy(drawX - 1, drawY + 1 + i);
+            printf("%d", i + 1);
+            gotoxy(drawX + 10, drawY + 1 + i);
+            printf("%d", i + 1);
+        }
+    }
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             short bStat = board->redreredBoardTemplate[j][i];
@@ -65,36 +75,41 @@ int main() {
     clrscr();
     hideCursor();
     enableCP1251;
+    Board test_board = initiateGameBoard(false);
+
     setWindowSize(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH);
     textcolor(15);
     //printf("AAA");
     //waitForKey(13);
     drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
-    const char* mainMenuPoints[36] = {
-        "Начать новую игру",
-        "Загрузить игру",
-        "Правила игры",
-        "Статистика",
-        "Выйти из игры"
-    };
-    const char* mainMenuPointsDescriptions[50] = {
-        "Играйте против реального игрока или компьютера",
-        "Продолжите сохранённую ранее игру, загрузив её",
-        "Почитать о правилах игры",
-        "Узнать статистику",
-        "Уже уходите?"
-    };
     int choice;
     TextLineWidget tlw;
     tlw.length = 29;
     tlw.locX = 4; tlw.locY = 2;
     setInitialText(&tlw, "pidarok");
     //drawTextLineWidget(tlw);
+    drawMenu(1, mainMenuPoints, 5, 2, 2, 12);
     do {
-        choice = drawMenu(1, mainMenuPoints, 5, mainMenuPointsDescriptions, 5, 16, 4, 15, 3, 12);
+        choice = drawMenu(APPLICATION_TITLE, 1, mainMenuPoints, 5, mainMenuPointsDescriptions, 5, 16, 4, 15, 3, 12);
         switch (choice) {
             case 1: {
                 drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
+                renderBoard(&test_board, 4, 4, true);
+                /*int key;
+                do {
+                    key = getch();
+                    if (key == 224) {
+                        key = getch();
+                        switch (key) {
+                            case 80: {
+
+                            }
+                            case 72: {
+
+                            }
+                        }
+                    }
+                } while (key != 13);*/
                 waitForKey(13);
                 break;
             }

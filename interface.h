@@ -1,23 +1,16 @@
 #include <windows.h>
 #include <cstdio>
-//#include <conio.h>
 #include "conio2.h"
-//#include <assert.h>
 
 #define max(x, y) ((x > y) ? x : y)
 
 #ifndef INTERFACE_H_INCLUDED
 #define INTERFACE_H_INCLUDED
 
-//#define max(x, y) ((x > y) ? x : y)
-//int max(int x, int y) {
-//    return (x > y) ? x : y;
-//}
 struct TextLineWidget {
     int locX, locY, length;
     char text[64];
 };
-
 
 
 void waitForKey(int code) {
@@ -37,8 +30,6 @@ void hideCursor() {
 void setInitialText(TextLineWidget* widget, const char* text) {
     strcpy(widget->text, text);
 }
-
-
 
 void setTextLineText(TextLineWidget widget, const char* text) {
     gotoxy(widget.locX + 1, widget.locY + 1);
@@ -83,6 +74,7 @@ void drawTextLineWidget(TextLineWidget widget) {
 }
 
 int drawMenu(
+        const char* title,
         int activePos,
         const char* menuPoints[],
         int pointsCount,
@@ -94,33 +86,18 @@ int drawMenu(
         int alignCenterV,
         short activePointColor
     ) {
-    int key;//
+    int key;
     gotoxy(drawX, drawY);
     int maxLen = -1;
     if (pointsCount != MPDCount) return -1;
-    //todo add menu title
-    for (int i = 0; i < pointsCount; i++) if ((int) strlen(menuPoints[i]) > maxLen) maxLen = max((int) strlen(menuPoints[i]), maxLen);//maxLen = max(maxLen, (int) strlen(menuPoints[i]));
+    for (int i = 0; i < pointsCount; i++) if ((int) strlen(menuPoints[i]) > maxLen) maxLen = max((int) strlen(menuPoints[i]), maxLen);
     TextLineWidget menuPointDescription;
     menuPointDescription.length = maxLen + alignCenterH*2 + 2;
     menuPointDescription.locX = drawX; menuPointDescription.locY = drawY + pointsCount + alignCenterV * 2;
 
     drawFrame(maxLen + alignCenterH*2 + 2, pointsCount + alignCenterV * 2 + 2, drawX, drawY);
-    /*char* topBorder = new char[maxLen + alignCenterH*2 + 3];
-    char* bottomBorder = new char[maxLen + alignCenterH*2 + 3];
-    char* rlBorder = new char[maxLen + alignCenterH*2 + 3];
-    topBorder[0] = '╔'; bottomBorder[0] = '='; rlBorder[0] = '|';
-    topBorder[maxLen + alignCenterH*2 + 1] = '║'; bottomBorder[maxLen + alignCenterH*2 + 1] = '#'; rlBorder[maxLen + alignCenterH*2 + 1] = '|';
-    topBorder[maxLen + alignCenterH*2 + 2] = 0; bottomBorder[maxLen + alignCenterH*2 + 2] = 0; rlBorder[maxLen + alignCenterH*2 + 2] = 0;
-    for (int i = 1; i < maxLen + alignCenterH*2 + 1; i++) {
-        topBorder[i] = '='; bottomBorder[i] = '='; rlBorder[i] = ' ';
-    }
-    printf(topBorder);
-    for (int i = 0; i < pointsCount + alignCenterV * 2; i++) {
-        gotoxy(drawX, drawY + i + 1);
-        printf(rlBorder);
-    }
-    gotoxy(drawX, drawY + pointsCount + alignCenterV * 2 + 1);
-    printf(bottomBorder);*/
+    gotoxy(drawX + alignCenterH + maxLen / 2 - (int) strlen(title) / 2 + 1,drawY);
+    printf(title);
     for (int i = 0; i < pointsCount; i++) {
         gotoxy(drawX + alignCenterH + 1, drawY + alignCenterV + 1 + i);
         printf(menuPoints[i]);
@@ -160,7 +137,55 @@ int drawMenu(
     textbackground(0);
     return activePos;
 }
-//todo menu without frame but with descs
+
+int drawMenu(
+        int activePos,
+        const char* menuPoints[],
+        int pointsCount,
+        //const char* menuPointsDescriptions[],
+        //int MPDCount,
+        int drawX,
+        int drawY,
+        short activePointColor
+) {
+    int key;
+    gotoxy(drawX, drawY);
+    for (int i = 0; i < pointsCount; i++) {
+        gotoxy(drawX, drawY + i);
+        printf(menuPoints[i]);
+    }
+    textbackground(activePointColor);
+    gotoxy(drawX, drawY + activePos - 1);
+    printf(menuPoints[activePos - 1]);
+    textbackground(0);
+    do {
+        key = getch();
+        if (key != 13) {
+            textbackground(0);
+            gotoxy(drawX, drawY + activePos - 1);
+            printf(menuPoints[activePos - 1]);
+            if (key == 224) {
+                key = getch();
+                if (key == 80) {
+                    if (activePos == pointsCount) activePos = 1;
+                    else activePos += 1;
+                }
+                else if (key == 72) {
+                    if (activePos == 1) activePos = pointsCount;
+                    else activePos -= 1;
+                }
+            }
+            textbackground(activePointColor);
+            gotoxy(drawX, drawY + activePos - 1);
+            printf(menuPoints[activePos - 1]);
+            textbackground(0);
+        }
+    } while (key != 13);
+    while (kbhit() != 0) getch();
+    textbackground(0);
+    return activePos;
+}
+
 //void clearField(int x, int y, int length, int heigth) {
 
 //}
