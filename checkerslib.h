@@ -128,8 +128,20 @@ int getCheckerNumber(Board* board, int figureX, int figureY, bool color) {
         }
     }
 }
-void getAvailableFields(Board board, int figureX, int figureY, bool playerSideIsWhite) {
-
+void getAvailableFields(Board* board, int figureX, int figureY, bool playerSideIsWhite) {
+    int checkerNumber = getCheckerNumber(board, figureX, figureY, playerSideIsWhite);
+    int ccx, ccy;
+    if (board->renderedBoardTemplate[figureY][figureX] == FIGURE_REGULAR_BLACK || board->renderedBoardTemplate[figureY][figureX] == FIGURE_KING_BLACK) {
+        ccx = board->blacks[checkerNumber].boardX;
+        ccy = board->blacks[checkerNumber].boardY;
+    }
+    else if (board->renderedBoardTemplate[figureY][figureX] == FIGURE_REGULAR_WHITE || board->renderedBoardTemplate[figureY][figureX] == FIGURE_KING_WHITE) {
+        ccx = board->whites[checkerNumber].boardX;
+        ccy = board->whites[checkerNumber].boardY;
+    }
+    if (playerSideIsWhite) {
+        if (board->whites[checkerNumber].boardX)
+    }
 }
 
 #endif // CHECKERSLIB_H_INCLUDED

@@ -24,7 +24,7 @@ void renderBoard(Board* board, short drawX, short drawY, bool pasteCoordinates) 
     }
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            short bStat = board->redreredBoardTemplate[j][i];
+            short bStat = board->renderedBoardTemplate[j][i];
             gotoxy(drawX + 1 + i, drawY + 8 - j);
             switch(bStat) {
                 case EMPTY_BLACK_CELL: {
