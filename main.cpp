@@ -2,15 +2,16 @@
 #include <cstring>
 //#include "conio2.h"
 #include "interface.h"
-#include "checkerslib.h"
+//#include "checkerslib.h"
+#include "clcheckers.h"
 #include "appconsts.h"
 #include <windows.h>
 
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
-void getBoardCellType(Board* board, short x, short y); // todo
 
-void renderBoard(Board* board, short drawX, short drawY, bool pasteCoordinates) {
+
+/*void renderBoard(Board* board, short drawX, short drawY, bool pasteCoordinates) {
     drawFrame(10, 10, drawX, drawY);
     if (pasteCoordinates) {
         gotoxy(drawX + 1, drawY - 1); printf("abcdefgh");
@@ -69,13 +70,80 @@ void renderBoard(Board* board, short drawX, short drawY, bool pasteCoordinates) 
     textbackground(0);
     textcolor(15);
 }
-//render
+//render*/
+
+void renderBoard(Board* board, Color playerSide, short drawX, short drawY, bool pasteCoordinates) {
+    drawFrame(10, 10, drawX, drawY);
+    if (pasteCoordinates) {
+        gotoxy(drawX + 1, drawY - 1); printf("abcdefgh");
+        gotoxy(drawX + 1, drawY + 10); printf("abcdefgh");
+        for (int i = 0; i < 8; i++) {
+            gotoxy(drawX - 1, drawY + 1 + i);
+            printf("%d", i + 1);
+            gotoxy(drawX + 10, drawY + 1 + i);
+            printf("%d", i + 1);
+        }
+    }
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            short bStat = board->boardRender[j][i];
+            if (playerSide == Black) {
+                gotoxy(drawX + 8 - i, drawY + 1 + j);
+            }
+            else if (playerSide == White) {
+                gotoxy(drawX + 1 + i, drawY + 8 - j);
+            }
+            switch(bStat) {
+                case EMPTY_BLACK: {
+                    textbackground(0);
+                    printf(" ");
+                    break;
+                }
+                case EMPTY_WHITE: {
+                    textbackground(15);
+                    printf(" ");
+                    break;
+                }
+                case REG_BLACK: {
+                    textcolor(12);
+                    printf("O");
+                    break;
+                }
+                case REG_WHITE: {
+                    textcolor(15);
+                    printf("O");
+                    break;
+                }
+                case KING_BLACK: {
+                    textcolor(12);
+                    printf("W");
+                    break;
+                }
+                case KING_WHITE: {
+                    textcolor(15);
+                    printf("W");
+                    break;
+                }
+                /*case AVALIABLE_MOVEMENT_CELL: {
+                    textbackground(2);
+                    printf(" ");
+                    break;
+                }*/
+            }
+            textbackground(0);
+        }
+    }
+    textbackground(0);
+    textcolor(15);
+}
+
 int main() {
 
     clrscr();
     hideCursor();
     enableCP1251;
-    Board test_board = initiateGameBoard(false);
+    //Board test_board = initiateGameBoard(false);
+
 
     setWindowSize(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH);
     textcolor(15);
@@ -83,6 +151,9 @@ int main() {
     //waitForKey(13);
     drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
     int choice;
+    Game test = createANewGame(White, White, RvsC);
+    //test.situation = makeNullGameSituation(White);
+    test.situation.board = createANewBoard();
     TextLineWidget tlw;
     tlw.length = 29;
     tlw.locX = 4; tlw.locY = 2;
@@ -94,7 +165,16 @@ int main() {
         switch (choice) {
             case 1: {
                 drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
-                renderBoard(&test_board, 4, 4, true);
+                renderBoard(&test.situation.board, White, 4, 4, true);
+                findAllRegularMoves(&test.situation, Black);
+                for (int i = 0; i < test.situation.rmCount; i++) {
+                    gotoxy(15, 2 + i);
+                    printf("[%d : %d] -> [%d : %d]",
+                        test.situation.regularMoves[i].source.x,
+                        test.situation.regularMoves[i].source.y,
+                        test.situation.regularMoves[i].destination.x,
+                        test.situation.regularMoves[i].destination.y);
+                }
                 /*int key;
                 do {
                     key = getch();
