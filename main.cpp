@@ -165,8 +165,11 @@ int main() {
         switch (choice) {
             case 1: {
                 drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
+                ascendChecker(&test.situation.board.whites[10]);
+                updateBoardRender(&test.situation.board);
                 renderBoard(&test.situation.board, White, 4, 4, true);
-                findAllRegularMoves(&test.situation, Black);
+                findAllRegularMoves(&test.situation, White);
+                findAllRegularKingMoves(&test.situation, White);
                 for (int i = 0; i < test.situation.rmCount; i++) {
                     gotoxy(15, 2 + i);
                     printf("[%d : %d] -> [%d : %d]",
@@ -174,6 +177,16 @@ int main() {
                         test.situation.regularMoves[i].source.y,
                         test.situation.regularMoves[i].destination.x,
                         test.situation.regularMoves[i].destination.y);
+                }
+                gotoxy(15, 16);
+                printf("%d", test.situation.krmCount);
+                for (int i = 0; i < test.situation.krmCount; i++) {
+                    gotoxy(40, 2 + i);
+                    printf("[%d : %d] -> [%d : %d]",
+                        test.situation.kingRegularMoves[i].source.x,
+                        test.situation.kingRegularMoves[i].source.y,
+                        test.situation.kingRegularMoves[i].destination.x,
+                        test.situation.kingRegularMoves[i].destination.y);
                 }
                 /*int key;
                 do {
