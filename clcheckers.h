@@ -30,6 +30,7 @@ struct Move {
 struct TakingMove {
     Coordinates source, destination, victim;
     Color takingSide;
+    bool isASpecialMove;
 };
 
 struct Board {
@@ -42,7 +43,7 @@ struct GameSituation {
     Board board;
     int rmCount, krmCount, kbmCount, rtmCount, ktmCount;
     Color playerSide;
-    Move regularMoves[32], kingRegularMoves[32], kingBecomingMoves[16];
+    Move regularMoves[32], kingRegularMoves[64], kingBecomingMoves[16];
     //Move regularMoves[128], kingBecomingMoves[16];
     TakingMove regularTakingMoves[64], kingTakingMoves[32];
 };
@@ -119,12 +120,7 @@ void findAllRegularMoves(GameSituation* situation, Color forWhichSide) {
             bool flag = forWhichSide == Black ? ey > 1 : ey < 6;
             if (flag) {
                 if (ex < 7) {
-                    if ((situation->board.boardRender[forWhichSide == Black ? ey - 1 : ey + 1][ex + 1] == EMPTY_BLACK)) {
-                        move.destination.y = ey + 1;
-                        move.destination.x = ex + 1;
-                        situation->regularMoves[situation->rmCount++] = move;
-                        //situation->rmCount++;
-                    }
+
                 }
                 if (ex > 0) {
                     if ((situation->board.boardRender[forWhichSide == Black ? ey - 1 : ey + 1][ex - 1] == EMPTY_BLACK)) {
@@ -139,6 +135,10 @@ void findAllRegularMoves(GameSituation* situation, Color forWhichSide) {
     }
 }
 
+bool isAThreat(GameSituation* situation, Color forWhichSide, int tx, int ty) {
+    if (forWhichSide){} // todo
+}
+
 void findAllKingBecomingMoves(GameSituation* situation, Color forWhichSide) {
     for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
         if (situation->board.checkers[forWhichSide][i].type != King) {
@@ -147,7 +147,7 @@ void findAllKingBecomingMoves(GameSituation* situation, Color forWhichSide) {
             int ex = situation->board.checkers[forWhichSide][i].coordinates.x;
             int ey = situation->board.checkers[forWhichSide][i].coordinates.y;
             move.source.x = ex; move.source.y = ey;
-            if (ey == 1) {
+            if (forWhichSide == Black ? ey == 1 : ey == 6) {
                 if (ex < 7) {
                     if ((situation->board.boardRender[ey-1][ex+1] == EMPTY_BLACK)) {
                         move.destination.y = ey - 1; move.destination.x = ex + 1;
@@ -223,7 +223,39 @@ void findAllRegularKingMoves(GameSituation* situation, Color forWhichSide) {
 }
 
 void findAllRegularTakingMoves(GameSituation* situation, Color forWhichSide) {
+    /*for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
+        if (situation->board.checkers[forWhichSide][i].type != King) {
+            TakingMove takingMove;
+            int ex = situation->board.checkers[forWhichSide][i].coordinates.x;
+            int ey = situation->board.checkers[forWhichSide][i].coordinates.y;
+            takingMove.source.x = ex;
+            takingMove.source.y = ey;
+            if (ey < 6) {
+                if (ex < 6) {
+                    //bool farIsFree = false;
+                    bool nearIsAThreat = false;
+                    if ((situation->board.boardRender[ey + 2][ex + 2] == EMPTY_BLACK) && (situation->board.boardRender[ey + 1][ex + 1] == EMPTY_BLACK)) {
+                        move.destination.y = ey + 1;
+                        move.destination.x = ex + 1;
+                        situation->regularMoves[situation->rmCount++] = move;
+                        //situation->rmCount++;
+                    }
+                }
+                if (ex > 1) {
 
+                }
+            }
+            if (ey > 1) {
+                if (ex < 6) {
+
+                }
+                if (ey > 1) {
+
+                }
+            }
+        }
+    }
+     */
 }
 
 void findAllKingTakingMoves(GameSituation* situation, Color forWhichSide) {
@@ -247,17 +279,11 @@ void clearMoveLists(GameSituation* situation) {
 }
 
 void removeChecker(Board* board, int index, Color color) {
-    if (color == Black && index < board->checkersCount[Black]) {
-        for (int i = index + 1; i < board->checkersCount[Black];i++) {
-            board->checkers[Black][i - 1] = board->checkers[Black][i];
+    if (index < board->checkersCount[color]) {
+        for (int i = index + 1; i < board->checkersCount[color];i++) {
+            board->checkers[color][i - 1] = board->checkers[color][i];
         }
-        board->checkersCount[Black]--;
-    }
-    else if (color == White && index < board->checkersCount[White]) {
-        for (int i = index + 1; i < board->checkersCount[White];i++) {
-            board->checkers[White][i - 1] = board->checkers[White][i];
-        }
-        board->checkersCount[White]--;
+        board->checkersCount[color]--;
     }
 }
 
@@ -265,9 +291,9 @@ void ascendChecker(Checker* checker) {
     checker->type = King;
 }
 
-void makeAMove(Move move);
+void makeAMove(GameSituation situation, Move move);
 
-void makeATakingMove(TakingMove move);
+void makeATakingMove(GameSituation situation, TakingMove move);
 
 
 #endif CHECKERS_CLCHECKERS_H
