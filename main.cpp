@@ -165,10 +165,10 @@ int main() {
         switch (choice) {
             case 1: {
                 drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
-                ascendChecker(&test.situation.board.whites[10]);
+                ascendChecker(&test.situation.board.checkers[White][10]);
                 updateBoardRender(&test.situation.board);
                 renderBoard(&test.situation.board, White, 4, 4, true);
-                findAllRegularMoves(&test.situation, White);
+                findAllRegularMoves(&test.situation, Black);
                 findAllRegularKingMoves(&test.situation, White);
                 for (int i = 0; i < test.situation.rmCount; i++) {
                     gotoxy(15, 2 + i);
@@ -203,6 +203,7 @@ int main() {
                         }
                     }
                 } while (key != 13);*/
+                clearMoveLists(&test.situation);
                 waitForKey(13);
                 break;
             }
