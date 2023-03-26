@@ -245,44 +245,44 @@ inline void findAllRegularKingMoves(GameSituation* situation, Color forWhichSide
             int ey = situation->board.checkers[forWhichSide][i].coordinates.y;
             move.source.x = ex; move.source.y = ey;
             bool flag = !(ey == 7 || ex == 7);
-            for (int i = 1; flag; i++) {
-                if (situation->board.boardRender[ey + i][ex + i] == EMPTY_BLACK) {
-                    move.destination.x = ex + i; move.destination.y = ey + i;
+            for (int j = 1; flag; j++) {
+                if (situation->board.boardRender[ey + j][ex + j] == EMPTY_BLACK) {
+                    move.destination.x = ex + j; move.destination.y = ey + j;
                     situation->regularMoves[situation->rmCount++] = move;
-                    if (ey + i == 7 || ex + i == 7) flag = false;
+                    if (ey + j == 7 || ex + j == 7) flag = false;
                 }
                 else {
                     flag = false;
                 }
             }
             flag = !(ey == 7 || ex == 0);
-            for (int i = 1; flag; i++) {
-                if (situation->board.boardRender[ey + i][ex - i] == EMPTY_BLACK) {
-                    move.destination.x = ex - i; move.destination.y = ey + i;
+            for (int j = 1; flag; j++) {
+                if (situation->board.boardRender[ey + j][ex - j] == EMPTY_BLACK) {
+                    move.destination.x = ex - j; move.destination.y = ey + j;
                     situation->regularMoves[situation->rmCount++] = move;
-                    if (ey + i == 7 || ex - i == 0) flag = false;
+                    if (ey + j == 7 || ex - j == 0) flag = false;
                 }
                 else {
                     flag = false;
                 }
             }
             flag = !(ey == 0 || ex == 7);
-            for (int i = 1; flag; i++) {
-                if (situation->board.boardRender[ey - i][ex + i] == EMPTY_BLACK) {
-                    move.destination.x = ex + i; move.destination.y = ey - i;
+            for (int j = 1; flag; j++) {
+                if (situation->board.boardRender[ey - j][ex + j] == EMPTY_BLACK) {
+                    move.destination.x = ex + j; move.destination.y = ey - j;
                     situation->regularMoves[situation->rmCount++] = move;
-                    if (ey - i == 0 || ex + i == 7) flag = false;
+                    if (ey - j == 0 || ex + j == 7) flag = false;
                 }
                 else {
                     flag = false;
                 }
             }
             flag = !(ey == 0 || ex == 0);
-            for (int i = 1; flag; i++) {
-                if (situation->board.boardRender[ey - i][ex - i] == EMPTY_BLACK) {
-                    move.destination.x = ex - i; move.destination.y = ey - i;
+            for (int j = 1; flag; j++) {
+                if (situation->board.boardRender[ey - j][ex - j] == EMPTY_BLACK) {
+                    move.destination.x = ex - j; move.destination.y = ey - j;
                     situation->regularMoves[situation->rmCount++] = move;
-                    if (ey - i == 7 || ex - i == 7) flag = false;
+                    if (ey - j == 7 || ex - j == 7) flag = false;
                 }
                 else {
                     flag = false;
@@ -365,7 +365,186 @@ inline void findAllRegularTakingMoves(GameSituation* situation, Color forWhichSi
 }
 
 inline void findAllKingTakingMoves(GameSituation* situation, Color forWhichSide) {
+    /*for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
+        if (situation->board.checkers[forWhichSide][i].type == King) {
+            TakingMove takingMove;
+            int ex = situation->board.checkers[forWhichSide][i].coordinates.x;
+            int ey = situation->board.checkers[forWhichSide][i].coordinates.y;
+            takingMove.source.x = ex;
+            takingMove.source.y = ey;
+            bool flag = !(ey > 5 || ex > 5);
+            //int shift = 1;
+            while (flag) {
 
+            }
+            for (int shift = 1; flag; shift++) {
+                if (isAVictim(situation, forWhichSide, ex + shift, ey + shift) && ((ex + shift) != 7) && ((ey + shift) != 7)) {
+                    takingMove.victim.x = ex + shift; takingMove.victim.y = ey + shift;
+
+                    move.destination.x = ex + i; move.destination.y = ey + i;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey + i == 7 || ex + i == 7) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+            flag = !(ey > 5 || ex < 2);
+            for (int i = 1; flag; i++) {
+                if (situation->board.boardRender[ey + i][ex - i] == EMPTY_BLACK) {
+                    move.destination.x = ex - i; move.destination.y = ey + i;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey + i == 7 || ex - i == 0) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+            flag = !(ey < 2> || ex > 5);
+            for (int i = 1; flag; i++) {
+                if (situation->board.boardRender[ey - i][ex + i] == EMPTY_BLACK) {
+                    move.destination.x = ex + i; move.destination.y = ey - i;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey - i == 0 || ex + i == 7) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+            flag = !(ey < 2 || ex < 2);
+            for (int i = 1; flag; i++) {
+                if (situation->board.boardRender[ey - i][ex - i] == EMPTY_BLACK) {
+                    move.destination.x = ex - i; move.destination.y = ey - i;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey - i == 7 || ex - i == 7) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+        }
+    }
+    /*for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
+        if (situation->board.checkers[forWhichSide][i].type == King) {
+            Move move;
+            move.isKingMove = false; move.isKingBecomingMove = false;
+            int ex = situation->board.checkers[forWhichSide][i].coordinates.x;
+            int ey = situation->board.checkers[forWhichSide][i].coordinates.y;
+            move.source.x = ex; move.source.y = ey;
+            bool flag = !(ey == 7 || ex == 7);
+            for (int i = 1; flag; i++) {
+                if (situation->board.boardRender[ey + i][ex + i] == EMPTY_BLACK) {
+                    move.destination.x = ex + i; move.destination.y = ey + i;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey + i == 7 || ex + i == 7) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+            flag = !(ey == 7 || ex == 0);
+            for (int i = 1; flag; i++) {
+                if (situation->board.boardRender[ey + i][ex - i] == EMPTY_BLACK) {
+                    move.destination.x = ex - i; move.destination.y = ey + i;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey + i == 7 || ex - i == 0) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+            flag = !(ey == 0 || ex == 7);
+            for (int i = 1; flag; i++) {
+                if (situation->board.boardRender[ey - i][ex + i] == EMPTY_BLACK) {
+                    move.destination.x = ex + i; move.destination.y = ey - i;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey - i == 0 || ex + i == 7) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+            flag = !(ey == 0 || ex == 0);
+            for (int i = 1; flag; i++) {
+                if (situation->board.boardRender[ey - i][ex - i] == EMPTY_BLACK) {
+                    move.destination.x = ex - i; move.destination.y = ey - i;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey - i == 7 || ex - i == 7) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+
+        }
+    }
+    for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
+        if (situation->board.checkers[forWhichSide][i].type != King) {
+            TakingMove takingMove;
+            int ex = situation->board.checkers[forWhichSide][i].coordinates.x;
+            int ey = situation->board.checkers[forWhichSide][i].coordinates.y;
+            takingMove.source.x = ex;
+            takingMove.source.y = ey;
+            if (ey < 6) {
+                if (ex < 6) {
+                    //bool farIsFree = false;
+
+                    if ((situation->board.boardRender[ey + 2][ex + 2] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex + 1, ey + 1)) {
+                        takingMove.destination.y = ey + 2;
+                        takingMove.destination.x = ex + 2;
+                        takingMove.victim.x = ex + 1;
+                        takingMove.victim.y = ey + 1;
+                        takingMove.takingSide = negateColor(forWhichSide);
+                        takingMove.victimType = getCheckerTypeOnBoard(situation, ex + 1, ey + 1);
+                        takingMove.isASpecialMove = (forWhichSide == White && ey == 5);
+                        situation->takingMoves[situation->tmCount++] = takingMove;
+                        //situation->rmCount++;
+                    }
+                }
+                if (ex > 1) {
+                    if ((situation->board.boardRender[ey + 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex - 1, ey + 1)) {
+                        takingMove.destination.y = ey + 2;
+                        takingMove.destination.x = ex - 2;
+                        takingMove.victim.x = ex + 1;
+                        takingMove.victim.y = ey - 1;
+                        takingMove.takingSide = negateColor(forWhichSide);
+                        takingMove.victimType = getCheckerTypeOnBoard(situation, ex - 1, ey + 1);
+                        takingMove.isASpecialMove = (forWhichSide == White && ey == 5);
+                        situation->takingMoves[situation->tmCount++] = takingMove;
+                        //situation->rmCount++;
+                    }
+                }
+            }
+            if (ey > 1) {
+                if (ex < 6) {
+                    if ((situation->board.boardRender[ey - 2][ex + 2] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex + 1, ey - 1)) {
+                        takingMove.destination.y = ey - 2;
+                        takingMove.destination.x = ex + 2;
+                        takingMove.victim.x = ex + 1;
+                        takingMove.victim.y = ey - 1;
+                        takingMove.takingSide = negateColor(forWhichSide);
+                        takingMove.victimType = getCheckerTypeOnBoard(situation, ex + 1, ey - 1);
+                        takingMove.isASpecialMove = (forWhichSide == Black && ey == 2);
+                        situation->takingMoves[situation->tmCount++] = takingMove;
+                        //situation->rmCount++;
+                    }
+                }
+                if (ey > 1) {
+                    if ((situation->board.boardRender[ey - 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex - 1, ey - 1)) {
+                        takingMove.destination.y = ey - 2;
+                        takingMove.destination.x = ex - 2;
+                        takingMove.victim.x = ex - 1;
+                        takingMove.victim.y = ey - 1;
+                        takingMove.takingSide = negateColor(forWhichSide);
+                        takingMove.victimType = getCheckerTypeOnBoard(situation, ex - 1, ey - 1);
+                        takingMove.isASpecialMove = (forWhichSide == Black && ey == 2);
+                        situation->takingMoves[situation->tmCount++] = takingMove;
+                        //situation->rmCount++;
+                    }
+                }
+            }
+        }
+    }*/
 }
 
 void findAllRegularMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex);
@@ -414,6 +593,8 @@ int makeAMove(GameSituation* situation, Move move) {
     situation->board.checkers[movedColor][movedIndex].coordinates.y = move.destination.y;
     if (move.isKingBecomingMove) ascendChecker(&(situation->board.checkers[movedColor][movedIndex]));
     //updateBoardRender(&(situation->board));
+    updateBoardRender(&(situation->board));
+    clearMoveLists(situation);
     if (move.isKingBecomingMove) return 1; else return 0;
     //situation->board.boardRender[move.destination.y][move.destination.x] = situation->board.boardRender[move.source.y][move.source.x];
     //situation->board.boardRender[move.source.y][move.source.x] = EMPTY_BLACK;

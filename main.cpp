@@ -216,7 +216,7 @@ int main() {
                         }
                     } while (key != 13);*/
                     clearMoveLists(&test.situation);
-                    waitForKey(13);
+                    //waitForKey(13);
                 }
                 break;
             }
