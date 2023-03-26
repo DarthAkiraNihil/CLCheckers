@@ -152,7 +152,22 @@ Color sideColor(GameSituation* situation, int cx, int cy) {
     }
 }
 
-void findAllRegularMoves(GameSituation* situation, Color forWhichSide) {
+Color negateColor(Color color) {
+    if (color == White) return Black;
+    else if (color == Black) return White;
+}
+
+CheckerType getCheckerTypeOnBoard(GameSituation* situation, int cx, int cy) {
+    BoardCellState tInfo = situation->board.boardRender[cy][cx];
+    if (tInfo == REG_WHITE || tInfo == REG_BLACK) {
+        return Regular;
+    }
+    else if (tInfo == KING_BLACK || tInfo == KING_WHITE) {
+        return King;
+    }
+}
+
+inline void findAllRegularMoves(GameSituation* situation, Color forWhichSide) {
     for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
         if (situation->board.checkers[forWhichSide][i].type != King) {
             Move move;
@@ -165,11 +180,16 @@ void findAllRegularMoves(GameSituation* situation, Color forWhichSide) {
             bool flag = forWhichSide == Black ? ey > 1 : ey < 6;
             if (flag) {
                 if (ex < 7) {
-
+                    if ((situation->board.boardRender[forWhichSide == Black ? ey - 1 : ey + 1][ex + 1] == EMPTY_BLACK)) {
+                        move.destination.y = forWhichSide == Black ? ey - 1 : ey + 1;
+                        move.destination.x = ex + 1;
+                        situation->regularMoves[situation->rmCount++] = move;
+                        //situation->rmCount++;
+                    }
                 }
                 if (ex > 0) {
                     if ((situation->board.boardRender[forWhichSide == Black ? ey - 1 : ey + 1][ex - 1] == EMPTY_BLACK)) {
-                        move.destination.y = ey + 1;
+                        move.destination.y = forWhichSide == Black ? ey - 1 : ey + 1;
                         move.destination.x = ex - 1;
                         situation->regularMoves[situation->rmCount++] = move;
                         //situation->rmCount++;
@@ -190,7 +210,7 @@ bool isAVictim(GameSituation* situation, Color forWhichSide, int tx, int ty) {
     }
 }
 
-void findAllKingBecomingMoves(GameSituation* situation, Color forWhichSide) {
+inline void findAllKingBecomingMoves(GameSituation* situation, Color forWhichSide) {
     for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
         if (situation->board.checkers[forWhichSide][i].type != King) {
             Move move;
@@ -216,7 +236,7 @@ void findAllKingBecomingMoves(GameSituation* situation, Color forWhichSide) {
     }
 }
 
-void findAllRegularKingMoves(GameSituation* situation, Color forWhichSide) {
+inline void findAllRegularKingMoves(GameSituation* situation, Color forWhichSide) {
     for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
         if (situation->board.checkers[forWhichSide][i].type == King) {
             Move move;
@@ -273,8 +293,8 @@ void findAllRegularKingMoves(GameSituation* situation, Color forWhichSide) {
     }
 }
 
-void findAllRegularTakingMoves(GameSituation* situation, Color forWhichSide) {
-    /*for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
+inline void findAllRegularTakingMoves(GameSituation* situation, Color forWhichSide) {
+    for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
         if (situation->board.checkers[forWhichSide][i].type != King) {
             TakingMove takingMove;
             int ex = situation->board.checkers[forWhichSide][i].coordinates.x;
@@ -284,32 +304,67 @@ void findAllRegularTakingMoves(GameSituation* situation, Color forWhichSide) {
             if (ey < 6) {
                 if (ex < 6) {
                     //bool farIsFree = false;
-                    bool nearIsAThreat = false;
-                    if ((situation->board.boardRender[ey + 2][ex + 2] == EMPTY_BLACK) && (situation->board.boardRender[ey + 1][ex + 1] == EMPTY_BLACK)) {
-                        move.destination.y = ey + 1;
-                        move.destination.x = ex + 1;
-                        situation->regularMoves[situation->rmCount++] = move;
+
+                    if ((situation->board.boardRender[ey + 2][ex + 2] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex + 1, ey + 1)) {
+                        takingMove.destination.y = ey + 2;
+                        takingMove.destination.x = ex + 2;
+                        takingMove.victim.x = ex + 1;
+                        takingMove.victim.y = ey + 1;
+                        takingMove.takingSide = negateColor(forWhichSide);
+                        takingMove.victimType = getCheckerTypeOnBoard(situation, ex + 1, ey + 1);
+                        takingMove.isASpecialMove = (forWhichSide == White && ey == 5);
+                        situation->takingMoves[situation->tmCount++] = takingMove;
                         //situation->rmCount++;
                     }
                 }
                 if (ex > 1) {
-
+                    if ((situation->board.boardRender[ey + 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex - 1, ey + 1)) {
+                        takingMove.destination.y = ey + 2;
+                        takingMove.destination.x = ex - 2;
+                        takingMove.victim.x = ex + 1;
+                        takingMove.victim.y = ey - 1;
+                        takingMove.takingSide = negateColor(forWhichSide);
+                        takingMove.victimType = getCheckerTypeOnBoard(situation, ex - 1, ey + 1);
+                        takingMove.isASpecialMove = (forWhichSide == White && ey == 5);
+                        situation->takingMoves[situation->tmCount++] = takingMove;
+                        //situation->rmCount++;
+                    }
                 }
             }
             if (ey > 1) {
                 if (ex < 6) {
-
+                    if ((situation->board.boardRender[ey - 2][ex + 2] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex + 1, ey - 1)) {
+                        takingMove.destination.y = ey - 2;
+                        takingMove.destination.x = ex + 2;
+                        takingMove.victim.x = ex + 1;
+                        takingMove.victim.y = ey - 1;
+                        takingMove.takingSide = negateColor(forWhichSide);
+                        takingMove.victimType = getCheckerTypeOnBoard(situation, ex + 1, ey - 1);
+                        takingMove.isASpecialMove = (forWhichSide == Black && ey == 2);
+                        situation->takingMoves[situation->tmCount++] = takingMove;
+                        //situation->rmCount++;
+                    }
                 }
                 if (ey > 1) {
-
+                    if ((situation->board.boardRender[ey - 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex - 1, ey - 1)) {
+                        takingMove.destination.y = ey - 2;
+                        takingMove.destination.x = ex - 2;
+                        takingMove.victim.x = ex - 1;
+                        takingMove.victim.y = ey - 1;
+                        takingMove.takingSide = negateColor(forWhichSide);
+                        takingMove.victimType = getCheckerTypeOnBoard(situation, ex - 1, ey - 1);
+                        takingMove.isASpecialMove = (forWhichSide == Black && ey == 2);
+                        situation->takingMoves[situation->tmCount++] = takingMove;
+                        //situation->rmCount++;
+                    }
                 }
             }
         }
     }
-     */
+
 }
 
-void findAllKingTakingMoves(GameSituation* situation, Color forWhichSide) {
+inline void findAllKingTakingMoves(GameSituation* situation, Color forWhichSide) {
 
 }
 
@@ -358,7 +413,7 @@ int makeAMove(GameSituation* situation, Move move) {
     situation->board.checkers[movedColor][movedIndex].coordinates.x = move.destination.x;
     situation->board.checkers[movedColor][movedIndex].coordinates.y = move.destination.y;
     if (move.isKingBecomingMove) ascendChecker(&(situation->board.checkers[movedColor][movedIndex]));
-    updateBoardRender(&(situation->board));
+    //updateBoardRender(&(situation->board));
     if (move.isKingBecomingMove) return 1; else return 0;
     //situation->board.boardRender[move.destination.y][move.destination.x] = situation->board.boardRender[move.source.y][move.source.x];
     //situation->board.boardRender[move.source.y][move.source.x] = EMPTY_BLACK;
