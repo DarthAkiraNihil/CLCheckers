@@ -377,7 +377,7 @@ void findAllMoves(GameSituation* situation, Color forWhichSide) {
     findAllKingBecomingMoves(situation, forWhichSide);
     findAllRegularKingMoves(situation, forWhichSide);
     findAllRegularMoves(situation, forWhichSide);
-    //findAllRegularTakingMoves(situation, forWhichSide);
+    findAllRegularTakingMoves(situation, forWhichSide);
     //findAllKingTakingMoves(situation, forWhichSide);
 }
 

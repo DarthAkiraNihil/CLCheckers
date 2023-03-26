@@ -167,39 +167,57 @@ int main() {
                 drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
                 //ascendChecker(&test.situation.board.checkers[White][10]);
                 updateBoardRender(&test.situation.board);
-                renderBoard(&test.situation.board, White, 4, 4, true);
-                findAllRegularMoves(&test.situation, White);
-                findAllRegularKingMoves(&test.situation, White);
-                for (int i = 0; i < test.situation.rmCount; i++) {
-                    gotoxy(15, 2 + i);
-                    printf("[%d : %d] -> [%d : %d]",
-                        test.situation.regularMoves[i].source.x,
-                        test.situation.regularMoves[i].source.y,
-                        test.situation.regularMoves[i].destination.x,
-                        test.situation.regularMoves[i].destination.y);
-                }
-                gotoxy(15, 16);
-                waitForKey(13);
-                makeAMove(&test.situation, test.situation.regularMoves[0]);
-                updateBoardRender(&test.situation.board);
-                renderBoard(&test.situation.board, White, 4, 4, true);
-                /*int key;
-                do {
-                    key = getch();
-                    if (key == 224) {
+                Color forWho = White;
+                while (true) {
+                    renderBoard(&test.situation.board, White, 4, 4, true);
+                    //findAllRegularMoves(&test.situation, White);
+                    //findAllRegularKingMoves(&test.situation, White);
+                    findAllMoves(&test.situation, forWho);
+
+                    for (int i = 0; i < test.situation.rmCount; i++) {
+                        gotoxy(15, 2 + i);
+                        printf("[%d : %d] -> [%d : %d]",
+                               test.situation.regularMoves[i].source.x,
+                               test.situation.regularMoves[i].source.y,
+                               test.situation.regularMoves[i].destination.x,
+                               test.situation.regularMoves[i].destination.y);
+                    }
+                    for (int i = 0; i < test.situation.tmCount; i++) {
+                        gotoxy(30, 2 + i);
+                        printf("[%d : %d] -> [%d : %d] -> [%d : %d]",
+                               test.situation.takingMoves[i].source.x,
+                               test.situation.takingMoves[i].source.y,
+                               test.situation.takingMoves[i].victim.x,
+                               test.situation.takingMoves[i].victim.y,
+                               test.situation.takingMoves[i].destination.x,
+                               test.situation.takingMoves[i].destination.y);
+                    }
+                    gotoxy(15, 16);
+                    //waitForKey(13);
+                    int move;
+                    scanf("%d", &move);
+                    makeAMove(&test.situation, test.situation.regularMoves[move]);
+                    updateBoardRender(&test.situation.board);
+                    forWho = negateColor(forWho);
+                    //renderBoard(&test.situation.board, White, 4, 4, true);
+                    /*int key;
+                    do {
                         key = getch();
-                        switch (key) {
-                            case 80: {
+                        if (key == 224) {
+                            key = getch();
+                            switch (key) {
+                                case 80: {
 
-                            }
-                            case 72: {
+                                }
+                                case 72: {
 
+                                }
                             }
                         }
-                    }
-                } while (key != 13);*/
-                clearMoveLists(&test.situation);
-                waitForKey(13);
+                    } while (key != 13);*/
+                    clearMoveLists(&test.situation);
+                    waitForKey(13);
+                }
                 break;
             }
             case 2: {
