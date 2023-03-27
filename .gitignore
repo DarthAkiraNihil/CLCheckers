@@ -2,3 +2,4 @@ cmake-build-debug/
 .idea/
 ./conio2.h
 /conio2.h
+/cmake-build-release/

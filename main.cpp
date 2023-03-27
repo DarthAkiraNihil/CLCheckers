@@ -164,11 +164,12 @@ int main() {
         choice = drawMenu(APPLICATION_TITLE, 1, mainMenuPoints, 5, mainMenuPointsDescriptions, 5, 16, 4, 15, 3, 12);
         switch (choice) {
             case 1: {
-                drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
-                //ascendChecker(&test.situation.board.checkers[White][10]);
+
+                ascendChecker(&test.situation.board.checkers[White][10]);
                 updateBoardRender(&test.situation.board);
                 Color forWho = White;
                 while (true) {
+                    drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
                     renderBoard(&test.situation.board, White, 4, 4, true);
                     //findAllRegularMoves(&test.situation, White);
                     //findAllRegularKingMoves(&test.situation, White);
@@ -183,7 +184,7 @@ int main() {
                                test.situation.regularMoves[i].destination.y);
                     }
                     for (int i = 0; i < test.situation.tmCount; i++) {
-                        gotoxy(30, 2 + i);
+                        gotoxy(38, 2 + i);
                         printf("[%d : %d] -> [%d : %d] -> [%d : %d]",
                                test.situation.takingMoves[i].source.x,
                                test.situation.takingMoves[i].source.y,
@@ -199,6 +200,7 @@ int main() {
                     makeAMove(&test.situation, test.situation.regularMoves[move]);
                     updateBoardRender(&test.situation.board);
                     forWho = negateColor(forWho);
+                    clrscr();
                     //renderBoard(&test.situation.board, White, 4, 4, true);
                     /*int key;
                     do {
