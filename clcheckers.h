@@ -209,6 +209,7 @@ bool isAVictim(GameSituation* situation, Color forWhichSide, int tx, int ty) {
     else if (forWhichSide == White) {
         return tInfo == REG_BLACK || tInfo == KING_BLACK;
     }
+    else return false;
 }
 
 bool isAFriend(GameSituation* situation, Color forWhichSide, int tx, int ty) {
@@ -386,96 +387,129 @@ inline void findAllKingTakingMoves(GameSituation* situation, Color forWhichSide)
             int ey = situation->board.checkers[forWhichSide][i].coordinates.y;
             takingMove.source.x = ex;
             takingMove.source.y = ey;
-            int add = 1;//, shift;
-            bool flag = !(ey > 5 || ex > 5), victimFound = false;
-            //for(shift = 1; flag; shift++)
-            for (int shift = 1; flag; shift += victimFound ? 0 : 1) {
-                if ((ex + shift + add) != 8 && (ey + shift + add) != 8) {
-                    if ((situation->board.boardRender[ey + shift + add][ex + shift + add] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex + shift, ey + shift)) {
-                        if (!victimFound) {
-                            takingMove.victim.x = ex + shift;
-                            takingMove.victim.y = ey + shift;
-                            takingMove.victimType = getCheckerTypeOnBoard(situation, ex + shift, ey + shift);
-                            victimFound = true;
-                        }
-                        takingMove.destination.x = ex + shift + add;
-                        takingMove.destination.y = ey + shift + add;
-                        situation->takingMoves[situation->tmCount++] = takingMove;
-                        add++;
-                    }
-                }
-                else {
+            int primalShift;
+            bool flag = true, victimFound = false;
+            for (primalShift = 1; flag; primalShift++) {
+                if (isAVictim(situation, forWhichSide, ex + primalShift, ey + primalShift)) {
+                    takingMove.victim.x = ex + primalShift;
+                    takingMove.victim.y = ey + primalShift;
+                    takingMove.victimType = getCheckerTypeOnBoard(situation, ex + primalShift, ey + primalShift);
+                    victimFound = true;
+                    flag = false;
+                } else if (situation->board.boardRender[ey + primalShift][ex + primalShift] == EMPTY_BLACK) {
+                    //if (ex + primalShift)
+                    continue;
+                } else if (isAFriend(situation, forWhichSide, ex + primalShift, ey + primalShift) ||
+                           (ex + primalShift == 7) || (ey + primalShift == 7)) {
                     flag = false;
                 }
             }
 
-            add = 1;//, shift;
-            flag = !(ey > 5 || ex < 2), victimFound = false;
-            //for(shift = 1; flag; shift++)
-            for (int shift = 1; flag; shift += victimFound ? 0 : 1) {
-                if ((ex - shift - add) != -1 && (ey + shift + add) != 8) {
-                    if ((situation->board.boardRender[ey + shift + add][ex - shift - add] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex - shift, ey + shift)) {
-                        if (!victimFound) {
-                            takingMove.victim.x = ex - shift;
-                            takingMove.victim.y = ey + shift;
-                            takingMove.victimType = getCheckerTypeOnBoard(situation, ex - shift, ey + shift);
-                            victimFound = true;
-                        }
-                        takingMove.destination.x = ex - shift - add;
-                        takingMove.destination.y = ey + shift + add;
+            if (victimFound && (ex + primalShift - 1 != 7) && (ey + primalShift - 1 != 7)) {
+                flag = true;
+                for (int j = primalShift; flag; j++) {
+                    if (ex + j == 8 || ey + j == 8) {
+                        flag = false;
+                    } else if (situation->board.boardRender[ey + j][ex + j] == EMPTY_BLACK) {
+                        takingMove.destination.x = ex + j;
+                        takingMove.destination.y = ey + j;
                         situation->takingMoves[situation->tmCount++] = takingMove;
-                        add++;
-                    }
+                    } else flag = false;
                 }
-                else {
+                // добавлять пустье поля пока не дойдём до непустой клетки
+            }
+
+            flag = true, victimFound = false;
+            for (primalShift = 1; flag; primalShift++) {
+                if (isAVictim(situation, forWhichSide, ex - primalShift, ey + primalShift)) {
+                    takingMove.victim.x = ex - primalShift;
+                    takingMove.victim.y = ey + primalShift;
+                    takingMove.victimType = getCheckerTypeOnBoard(situation, ex - primalShift, ey + primalShift);
+                    victimFound = true;
+                    flag = false;
+                } else if (situation->board.boardRender[ey + primalShift][ex - primalShift] == EMPTY_BLACK) {
+                    //if (ex + primalShift)
+                    continue;
+                } else if (isAFriend(situation, forWhichSide, ex - primalShift, ey + primalShift) ||
+                           (ex - primalShift == 0) || (ey + primalShift == 7)) {
                     flag = false;
                 }
             }
 
-            add = 1;//, shift;
-            flag = !(ey < 2 || ex > 5), victimFound = false;
-            //for(shift = 1; flag; shift++)
-            for (int shift = 1; flag; shift += victimFound ? 0 : 1) {
-                if ((ex + shift + add) != 8 && (ey - shift - add) != -1) {
-                    if ((situation->board.boardRender[ey - shift - add][ex + shift + add] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex + shift, ey - shift)) {
-                        if (!victimFound) {
-                            takingMove.victim.x = ex + shift;
-                            takingMove.victim.y = ey - shift;
-                            takingMove.victimType = getCheckerTypeOnBoard(situation, ex + shift, ey - shift);
-                            victimFound = true;
-                        }
-                        takingMove.destination.x = ex + shift + add;
-                        takingMove.destination.y = ey - shift - add;
+            if (victimFound && (ex - primalShift  + 1 != 0) && (ey + primalShift - 1 != 7)) {
+                flag = true;
+                for (int j = primalShift; flag; j++) {
+                    if (ex - j == -1 || ey + j == 8) {
+                        flag = false;
+                    } else if (situation->board.boardRender[ey + j][ex - j] == EMPTY_BLACK) {
+                        takingMove.destination.x = ex - j;
+                        takingMove.destination.y = ey + j;
                         situation->takingMoves[situation->tmCount++] = takingMove;
-                        add++;
-                    }
+                    } else flag = false;
                 }
-                else {
+                // добавлять пустье поля пока не дойдём до непустой клетки
+            }
+
+            flag = true, victimFound = false;
+            for (primalShift = 1; flag; primalShift++) {
+                if (isAVictim(situation, forWhichSide, ex + primalShift, ey - primalShift)) {
+                    takingMove.victim.x = ex + primalShift;
+                    takingMove.victim.y = ey - primalShift;
+                    takingMove.victimType = getCheckerTypeOnBoard(situation, ex + primalShift, ey - primalShift);
+                    victimFound = true;
+                    flag = false;
+                } else if (situation->board.boardRender[ey - primalShift][ex + primalShift] == EMPTY_BLACK) {
+                    //if (ex + primalShift)
+                    continue;
+                } else if (isAFriend(situation, forWhichSide, ex + primalShift, ey - primalShift) ||
+                           (ex + primalShift == 7) || (ey - primalShift == 0)) {
                     flag = false;
                 }
             }
 
-            add = 1;//, shift;
-            flag = !(ey < 2 || ex < 2), victimFound = false;
-            //for(shift = 1; flag; shift++)
-            for (int shift = 1; flag; shift += victimFound ? 0 : 1) {
-                if ((ex - shift - add) != - 1 && (ey - shift - add) != -1) {
-                    if ((situation->board.boardRender[ey - shift -add][ex - shift -add] == EMPTY_BLACK) && isAVictim(situation, forWhichSide, ex - shift, ey - shift)) {
-                        if (!victimFound) {
-                            takingMove.victim.x = ex - shift;
-                            takingMove.victim.y = ey - shift;
-                            takingMove.victimType = getCheckerTypeOnBoard(situation, ex- shift, ey - shift);
-                            victimFound = true;
-                        }
-                        takingMove.destination.x = ex - shift - add;
-                        takingMove.destination.y = ey- shift - add;
+            if (victimFound && (ex + primalShift - 1 != 7) && (ey - primalShift + 1!= 0)) {
+                flag = true;
+                for (int j = primalShift; flag; j++) {
+                    if (ex + j == 8 || ey - j == -1) {
+                        flag = false;
+                    } else if (situation->board.boardRender[ey - j][ex + j] == EMPTY_BLACK) {
+                        takingMove.destination.x = ex + j;
+                        takingMove.destination.y = ey - j;
                         situation->takingMoves[situation->tmCount++] = takingMove;
-                        add++;
-                    }
+                    } else flag = false;
                 }
-                else {
+                // добавлять пустье поля пока не дойдём до непустой клетки
+            }
+
+            flag = true, victimFound = false;
+            for (primalShift = 1; flag; primalShift++) {
+                if (isAVictim(situation, forWhichSide, ex - primalShift, ey - primalShift)) {
+                    takingMove.victim.x = ex - primalShift;
+                    takingMove.victim.y = ey - primalShift;
+                    takingMove.victimType = getCheckerTypeOnBoard(situation, ex - primalShift, ey - primalShift);
+                    victimFound = true;
+                    flag = false;
+                } else if (situation->board.boardRender[ey - primalShift][ex - primalShift] == EMPTY_BLACK) {
+                    //if (ex + primalShift)
+                    continue;
+                } else if (isAFriend(situation, forWhichSide, ex - primalShift, ey - primalShift) ||
+                           (ex - primalShift - 1== 0) || (ey - primalShift - 1== 0)) {
                     flag = false;
                 }
+            }
+
+            if (victimFound && (ex - primalShift + 1!= 0) && (ey - primalShift + 1!= 0)) {
+                flag = true;
+                for (int j = primalShift; flag; j++) {
+                    if (ex - j == -1 || ey - j == -1) {
+                        flag = false;
+                    } else if (situation->board.boardRender[ey - j][ex - j] == EMPTY_BLACK) {
+                        takingMove.destination.x = ex - j;
+                        takingMove.destination.y = ey - j;
+                        situation->takingMoves[situation->tmCount++] = takingMove;
+                    } else flag = false;
+                }
+                // добавлять пустье поля пока не дойдём до непустой клетки
             }
         }
     }

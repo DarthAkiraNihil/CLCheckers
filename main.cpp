@@ -9,7 +9,10 @@
 
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
-
+/*
+ * THIS FILE IS FOR TESTING OF THE GAME ENGINE UNTIL I RELEASE THE MAIN INTERFACE
+ *
+ */
 
 /*void renderBoard(Board* board, short drawX, short drawY, bool pasteCoordinates) {
     drawFrame(10, 10, drawX, drawY);
@@ -166,6 +169,11 @@ int main() {
             case 1: {
 
                 ascendChecker(&test.situation.board.checkers[White][10]);
+                ascendChecker(&test.situation.board.checkers[Black][9]);
+                for (int i = 0; i < 8; i++) {
+                    removeChecker(&test.situation.board, 0, Black);
+                    removeChecker(&test.situation.board, 0, White);
+                }
                 updateBoardRender(&test.situation.board);
                 Color forWho = White;
                 while (true) {
