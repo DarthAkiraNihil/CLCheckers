@@ -14,66 +14,6 @@
  *
  */
 
-/*void renderBoard(Board* board, short drawX, short drawY, bool pasteCoordinates) {
-    drawFrame(10, 10, drawX, drawY);
-    if (pasteCoordinates) {
-        gotoxy(drawX + 1, drawY - 1); printf("abcdefgh");
-        gotoxy(drawX + 1, drawY + 10); printf("abcdefgh");
-        for (int i = 0; i < 8; i++) {
-            gotoxy(drawX - 1, drawY + 1 + i);
-            printf("%d", i + 1);
-            gotoxy(drawX + 10, drawY + 1 + i);
-            printf("%d", i + 1);
-        }
-    }
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            short bStat = board->renderedBoardTemplate[j][i];
-            gotoxy(drawX + 1 + i, drawY + 8 - j);
-            switch(bStat) {
-                case EMPTY_BLACK_CELL: {
-                    textbackground(0);
-                    printf(" ");
-                    break;
-                }
-                case EMPTY_WHITE_CELL: {
-                    textbackground(15);
-                    printf(" ");
-                    break;
-                }
-                case FIGURE_REGULAR_BLACK: {
-                    textcolor(12);
-                    printf("O");
-                    break;
-                }
-                case FIGURE_REGULAR_WHITE: {
-                    textcolor(15);
-                    printf("O");
-                    break;
-                }
-                case FIGURE_KING_BLACK: {
-                    textcolor(12);
-                    printf("W");
-                    break;
-                }
-                case FIGURE_KING_WHITE: {
-                    textcolor(15);
-                    printf("W");
-                    break;
-                }
-                case AVALIABLE_MOVEMENT_CELL: {
-                    textbackground(2);
-                    printf(" ");
-                    break;
-                }
-            }
-            textbackground(0);
-        }
-    }
-    textbackground(0);
-    textcolor(15);
-}
-//render*/
 
 void renderBoard(Board* board, Color playerSide, short drawX, short drawY, bool pasteCoordinates) {
     drawFrame(10, 10, drawX, drawY);
@@ -168,8 +108,8 @@ int main() {
         switch (choice) {
             case 1: {
 
-                ascendChecker(&test.situation.board.checkers[White][10]);
-                ascendChecker(&test.situation.board.checkers[Black][9]);
+                //ascendChecker(&test.situation.board.checkers[White][10]);
+                //ascendChecker(&test.situation.board.checkers[Black][9]);
                 for (int i = 0; i < 8; i++) {
                     removeChecker(&test.situation.board, 0, Black);
                     removeChecker(&test.situation.board, 0, White);
@@ -184,16 +124,18 @@ int main() {
                     findAllMoves(&test.situation, forWho);
 
                     for (int i = 0; i < test.situation.rmCount; i++) {
-                        gotoxy(15, 2 + i);
-                        printf("[%d : %d] -> [%d : %d]",
+                        gotoxy(16, 2 + i);
+                        printf("%d) [%d : %d] -> [%d : %d]",
+                               i,
                                test.situation.regularMoves[i].source.x,
                                test.situation.regularMoves[i].source.y,
                                test.situation.regularMoves[i].destination.x,
                                test.situation.regularMoves[i].destination.y);
                     }
                     for (int i = 0; i < test.situation.tmCount; i++) {
-                        gotoxy(38, 2 + i);
-                        printf("[%d : %d] -> [%d : %d] -> [%d : %d]",
+                        gotoxy(39, 2 + i);
+                        printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
+                               i,
                                test.situation.takingMoves[i].source.x,
                                test.situation.takingMoves[i].source.y,
                                test.situation.takingMoves[i].victim.x,
@@ -205,8 +147,22 @@ int main() {
                     //waitForKey(13);
                     int move;
                     scanf("%d", &move);
-                    makeAMove(&test.situation, test.situation.regularMoves[move]);
-                    updateBoardRender(&test.situation.board);
+                    if (test.situation.tmCount > 0) {
+                        TakingMove t = test.situation.takingMoves[move];
+                        makeATakingMove(&test.situation, t);
+                        renderBoard(&test.situation.board, White, 4, 4, true);
+                        waitForKey(13);
+                        cancelATakingMove(&test.situation, t);
+                    }
+                    else {
+                        Move t = test.situation.regularMoves[move];
+                        makeAMove(&test.situation, t);
+                        renderBoard(&test.situation.board, White, 4, 4, true);
+                        waitForKey(13);
+                        cancelAMove(&test.situation, t);
+                        //makeAMove(&test.situation, test.situation.regularMoves[move]);
+                    }
+                    //updateBoardRender(&test.situation.board);
                     forWho = negateColor(forWho);
                     clrscr();
                     //renderBoard(&test.situation.board, White, 4, 4, true);

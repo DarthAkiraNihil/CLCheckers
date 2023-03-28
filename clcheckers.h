@@ -518,24 +518,35 @@ void findAllRegularMovesForOne(GameSituation* situation, Color checkerColor, int
 
 void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex, TakingMove previousMove);
 
-
-inline void findAllMoves(GameSituation* situation, Color forWhichSide) {
-    findAllKingBecomingMoves(situation, forWhichSide);
-    findAllRegularKingMoves(situation, forWhichSide);
-    findAllRegularMoves(situation, forWhichSide);
-    findAllKingTakingMoves(situation, forWhichSide);
-    findAllRegularTakingMoves(situation, forWhichSide);
-    //findAllKingTakingMoves(situation, forWhichSide);
+inline void clearRegularMoveList(GameSituation* situation) {
+    situation->rmCount = 0;
 }
 
-void clearMoveLists(GameSituation* situation) {
-    situation->rmCount = 0;
+inline void clearTakingMoveList(GameSituation* situation) {
     situation->tmCount = 0;
+}
+
+inline void clearMoveLists(GameSituation* situation) {
+    clearRegularMoveList(situation);
+    clearTakingMoveList(situation);
+    //situation->tmCount = 0;
     //situation->krmCount = 0;
     //situation->kbmCount = 0;
     //situation->rtmCount = 0;
     //situation->ktmCount = 0;
 }
+inline void findAllMoves(GameSituation* situation, Color forWhichSide) {
+    findAllKingTakingMoves(situation, forWhichSide);
+    findAllRegularTakingMoves(situation, forWhichSide);
+    if (situation->tmCount == 0) {
+        findAllKingBecomingMoves(situation, forWhichSide);
+        findAllRegularKingMoves(situation, forWhichSide);
+        findAllRegularMoves(situation, forWhichSide);
+    }
+    //findAllKingTakingMoves(situation, forWhichSide);
+}
+
+
 
 void removeChecker(Board* board, int index, Color color) {
     if (index < board->checkersCount[color]) {
@@ -568,7 +579,21 @@ int makeAMove(GameSituation* situation, Move move) {
     //situation->board.boardRender[move.source.y][move.source.x] = EMPTY_BLACK;
 }
 
-void makeATakingMove(GameSituation* situation, TakingMove move);
+int makeATakingMove(GameSituation* situation, TakingMove move) {
+    Color movedColor = negateColor(move.takingSide);
+    int movedIndex = getCheckerIndexByCoordsAndColor(situation, move.source.x, move.source.y, movedColor);
+    Color victimColor = move.takingSide;
+    int victimIndex = getCheckerIndexByCoordsAndColor(situation, move.victim.x, move.victim.y, victimColor);
+    situation->board.checkers[movedColor][movedIndex].coordinates.x = move.destination.x;
+    situation->board.checkers[movedColor][movedIndex].coordinates.y = move.destination.y;
+    if (move.isASpecialMove) ascendChecker(&(situation->board.checkers[movedColor][movedIndex]));
+
+    removeChecker(&(situation->board), victimIndex, victimColor);
+    //updateBoardRender(&(situation->board));
+    updateBoardRender(&(situation->board));
+    //clearMoveLists(situation);
+    if (move.isASpecialMove) return 1; else return 0;
+}
 
 int cancelAMove(GameSituation* situation, Move move) {
     Color movedColor = sideColor(situation, move.destination.x, move.destination.y);
@@ -580,6 +605,27 @@ int cancelAMove(GameSituation* situation, Move move) {
     if (move.isKingBecomingMove) return -1; else return 0;
     //situation->board.boardRender[move.destination.y][move.destination.x] = situation->board.boardRender[move.source.y][move.source.x];
     //situation->board.boardRender[move.source.y][move.source.x] = EMPTY_BLACK;
+}
+
+int cancelATakingMove(GameSituation* situation, TakingMove move) {
+    Color movedColor = negateColor(move.takingSide);
+    int movedIndex = getCheckerIndexByCoordsAndColor(situation, move.destination.x, move.destination.y, movedColor);
+    //Color victimColor = move.takingSide;
+    //int victimIndex = getCheckerIndexByCoordsAndColor(situation, move.victim.x, move.victim.y, victimColor);
+    situation->board.checkers[movedColor][movedIndex].coordinates.x = move.source.x;
+    situation->board.checkers[movedColor][movedIndex].coordinates.y = move.source.y;
+    if (move.isASpecialMove) descendChecker(&(situation->board.checkers[movedColor][movedIndex]));
+    Checker regeneratedVictim;
+    regeneratedVictim.coordinates.x = move.victim.x;
+    regeneratedVictim.coordinates.y = move.victim.y;
+    regeneratedVictim.type = move.victimType;
+    regeneratedVictim.color = move.takingSide;
+    situation->board.checkers[move.takingSide][situation->board.checkersCount[move.takingSide]++] = regeneratedVictim;
+    //removeChecker(&(situation->board), victimIndex, victimColor);
+    //updateBoardRender(&(situation->board));
+    updateBoardRender(&(situation->board));
+    //clearMoveLists(situation);
+    if (move.isASpecialMove) return -1; else return 0;
 }
 
 void cancelATakingSequence();
