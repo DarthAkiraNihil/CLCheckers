@@ -201,16 +201,25 @@ inline void findAllRegularMoves(GameSituation* situation, Color forWhichSide) {
     }
 }
 
-bool isAVictim(GameSituation* situation, Color forWhichSide, int tx, int ty) {
-    BoardCellState tInfo = situation->board.boardRender[ty][tx];
-    if (forWhichSide == Black) {
-        return tInfo == REG_WHITE || tInfo == KING_WHITE;
-    }
-    else if (forWhichSide == White) {
-        return tInfo == REG_BLACK || tInfo == KING_BLACK;
-    }
-    else return false;
+bool isMarkedForDeath(GameSituation* situation, Color checkerColor, int mx, int my) {
+    int index = getCheckerIndexByCoordsAndColor(situation, mx, my, checkerColor);
+    return situation->board.checkers[checkerColor][index].markedForDeath;
 }
+
+bool isAVictim(GameSituation* situation, Color forWhichSide, int tx, int ty) {
+    //bool lock = isMarkedForDeath(situation, negateColor(forWhichSide), getCheckerIndexByCoordsAndColor(situation, tx, ty, forWhichSide));
+    BoardCellState tInfo = situation->board.boardRender[ty][tx];
+    //if (lock) return false;
+    //else {
+        if (forWhichSide == Black) {
+            return (tInfo == REG_WHITE || tInfo == KING_WHITE);
+        } else if (forWhichSide == White) {
+            return (tInfo == REG_BLACK || tInfo == KING_BLACK);
+        } else return false;
+    //}
+}
+
+
 
 bool isAFriend(GameSituation* situation, Color forWhichSide, int tx, int ty) {
     BoardCellState tInfo = situation->board.boardRender[ty][tx];
@@ -532,7 +541,7 @@ void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int 
             if (ex < 6) {
                 //bool farIsFree = false;
 
-                if ((situation->board.boardRender[ey + 2][ex + 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex + 1, ey + 1) && ((ex + 1 != vx) || (ey + 1 != vy))) {
+                if ((situation->board.boardRender[ey + 2][ex + 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex + 1, ey + 1) && (!isMarkedForDeath(situation,negateColor(checkerColor), ex + 1, ey + 1))/* && ((ex + 1 != vx) || (ey + 1 != vy))*/) {
                     takingMove.destination.y = ey + 2;
                     takingMove.destination.x = ex + 2;
                     takingMove.victim.x = ex + 1;
@@ -545,7 +554,8 @@ void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int 
                 }
             }
             if (ex > 1) {
-                if ((situation->board.boardRender[ey + 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex - 1, ey + 1) && ((ex - 1 != vx) || (ey + 1 != vy))) {
+                if ((situation->board.boardRender[ey + 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex - 1, ey + 1) && !isMarkedForDeath(situation,
+                                                                                                                                                             negateColor(checkerColor), ex - 1, ey + 1)/* && ((ex - 1 != vx) || (ey + 1 != vy))*/) {
                     takingMove.destination.y = ey + 2;
                     takingMove.destination.x = ex - 2;
                     takingMove.victim.x = ex + 1;
@@ -560,7 +570,7 @@ void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int 
         }
         if (ey > 1) {
             if (ex < 6) {
-                if ((situation->board.boardRender[ey - 2][ex + 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex + 1, ey - 1) && ((ex + 1 != vx) || (ey - 1 != vy))) {
+                if ((situation->board.boardRender[ey - 2][ex + 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex + 1, ey - 1) && !isMarkedForDeath(situation,negateColor(checkerColor), ex + 1, ey - 1)/* && ((ex + 1 != vx) || (ey - 1 != vy))*/) {
                     takingMove.destination.y = ey - 2;
                     takingMove.destination.x = ex + 2;
                     takingMove.victim.x = ex + 1;
@@ -573,7 +583,7 @@ void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int 
                 }
             }
             if (ey > 1) {
-                if ((situation->board.boardRender[ey - 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex - 1, ey - 1) && ((ex - 1 != vx) || (ey - 1 != vy))) {
+                if ((situation->board.boardRender[ey - 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex - 1, ey - 1) && !isMarkedForDeath(situation,negateColor(checkerColor), ex - 1, ey - 1)/* && ((ex - 1 != vx) || (ey - 1 != vy))*/) {
                     takingMove.destination.y = ey - 2;
                     takingMove.destination.x = ex - 2;
                     takingMove.victim.x = ex - 1;
