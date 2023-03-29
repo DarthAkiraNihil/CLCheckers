@@ -147,19 +147,37 @@ int main() {
                     //waitForKey(13);
                     int move;
                     scanf("%d", &move);
+                    int stat;
                     if (test.situation.tmCount > 0) {
-                        TakingMove t = test.situation.takingMoves[move];
-                        makeATakingMove(&test.situation, t);
-                        renderBoard(&test.situation.board, White, 4, 4, true);
-                        waitForKey(13);
-                        cancelATakingMove(&test.situation, t);
+                        do {
+                            TakingMove t = test.situation.takingMoves[move];
+                            stat = makeATakingMove(&test.situation, t);
+                            renderBoard(&test.situation.board, White, 4, 4, true);
+                            if (stat == -1) {
+                                for (int i = 0; i < test.situation.tmCount; i++) {
+                                    gotoxy(39, 2 + i);
+                                    printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
+                                           i,
+                                           test.situation.takingMoves[i].source.x,
+                                           test.situation.takingMoves[i].source.y,
+                                           test.situation.takingMoves[i].victim.x,
+                                           test.situation.takingMoves[i].victim.y,
+                                           test.situation.takingMoves[i].destination.x,
+                                           test.situation.takingMoves[i].destination.y);
+                                }
+                            }
+                            if (stat == -1) scanf("%d", &move);
+                            //waitForKey(13);
+                            //cancelATakingMove(&test.situation, t);
+                        } while (stat == -1);
+                        removeMarkedForDeath(&test.situation, negateColor(forWho));
                     }
                     else {
                         Move t = test.situation.regularMoves[move];
                         makeAMove(&test.situation, t);
-                        renderBoard(&test.situation.board, White, 4, 4, true);
-                        waitForKey(13);
-                        cancelAMove(&test.situation, t);
+                        //renderBoard(&test.situation.board, White, 4, 4, true);
+                        //waitForKey(13);
+                        //cancelAMove(&test.situation, t);
                         //makeAMove(&test.situation, test.situation.regularMoves[move]);
                     }
                     //updateBoardRender(&test.situation.board);
