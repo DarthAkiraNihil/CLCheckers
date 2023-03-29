@@ -600,7 +600,138 @@ void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int 
 }
 
 void findAllKingTakingMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
-    
+    if (situation->board.checkers[checkerColor][checkerIndex].type == King) {
+        TakingMove takingMove;
+        takingMove.isASpecialMove = false;
+        takingMove.takingSide = negateColor(checkerColor);
+        int ex = situation->board.checkers[checkerColor][checkerIndex].coordinates.x;
+        int ey = situation->board.checkers[checkerColor][checkerIndex].coordinates.y;
+        takingMove.source.x = ex;
+        takingMove.source.y = ey;
+        int primalShift;
+        bool flag = true, victimFound = false;
+        for (primalShift = 1; flag; primalShift++) {
+            if (isAVictim(situation, checkerColor, ex + primalShift, ey + primalShift) && !isMarkedForDeath(situation,negateColor(checkerColor), ex + primalShift, ey + primalShift)) {
+                takingMove.victim.x = ex + primalShift;
+                takingMove.victim.y = ey + primalShift;
+                takingMove.victimType = getCheckerTypeOnBoard(situation, ex + primalShift, ey + primalShift);
+                victimFound = true;
+                flag = false;
+            } else if (situation->board.boardRender[ey + primalShift][ex + primalShift] == EMPTY_BLACK) {
+                //if (ex + primalShift)
+                continue;
+            } else if (isAFriend(situation, checkerColor, ex + primalShift, ey + primalShift) ||
+                       (ex + primalShift == 7) || (ey + primalShift == 7) || isMarkedForDeath(situation,negateColor(checkerColor), ex + primalShift, ey + primalShift)) {
+                flag = false;
+            }
+        }
+
+        if (victimFound && (ex + primalShift - 1 != 7) && (ey + primalShift - 1 != 7)) {
+            flag = true;
+            for (int j = primalShift; flag; j++) {
+                if (ex + j == 8 || ey + j == 8) {
+                    flag = false;
+                } else if (situation->board.boardRender[ey + j][ex + j] == EMPTY_BLACK) {
+                    takingMove.destination.x = ex + j;
+                    takingMove.destination.y = ey + j;
+                    situation->takingMoves[situation->tmCount++] = takingMove;
+                } else flag = false;
+            }
+        }
+
+        flag = true, victimFound = false;
+        for (primalShift = 1; flag; primalShift++) {
+            if (isAVictim(situation, checkerColor, ex - primalShift, ey + primalShift) && !isMarkedForDeath(situation,negateColor(checkerColor), ex - primalShift, ey + primalShift)) {
+                takingMove.victim.x = ex - primalShift;
+                takingMove.victim.y = ey + primalShift;
+                takingMove.victimType = getCheckerTypeOnBoard(situation, ex - primalShift, ey + primalShift);
+                victimFound = true;
+                flag = false;
+            } else if (situation->board.boardRender[ey + primalShift][ex - primalShift] == EMPTY_BLACK) {
+                //if (ex + primalShift)
+                continue;
+            } else if (isAFriend(situation, checkerColor, ex - primalShift, ey + primalShift) ||
+                       (ex - primalShift == 0) || (ey + primalShift == 7) || isMarkedForDeath(situation,negateColor(checkerColor), ex - primalShift, ey + primalShift)) {
+                flag = false;
+            }
+        }
+
+        if (victimFound && (ex - primalShift  + 1 != 0) && (ey + primalShift - 1 != 7)) {
+            flag = true;
+            for (int j = primalShift; flag; j++) {
+                if (ex - j == -1 || ey + j == 8) {
+                    flag = false;
+                } else if (situation->board.boardRender[ey + j][ex - j] == EMPTY_BLACK) {
+                    takingMove.destination.x = ex - j;
+                    takingMove.destination.y = ey + j;
+                    situation->takingMoves[situation->tmCount++] = takingMove;
+                } else flag = false;
+            }
+            // добавлять пустье поля пока не дойдём до непустой клетки
+        }
+
+        flag = true, victimFound = false;
+        for (primalShift = 1; flag; primalShift++) {
+            if (isAVictim(situation, checkerColor, ex + primalShift, ey - primalShift) && !isMarkedForDeath(situation,negateColor(checkerColor), ex + primalShift, ey - primalShift)) {
+                takingMove.victim.x = ex + primalShift;
+                takingMove.victim.y = ey - primalShift;
+                takingMove.victimType = getCheckerTypeOnBoard(situation, ex + primalShift, ey - primalShift);
+                victimFound = true;
+                flag = false;
+            } else if (situation->board.boardRender[ey - primalShift][ex + primalShift] == EMPTY_BLACK) {
+                //if (ex + primalShift)
+                continue;
+            } else if (isAFriend(situation, checkerColor, ex + primalShift, ey - primalShift) ||
+                       (ex + primalShift == 7) || (ey - primalShift == 0) || isMarkedForDeath(situation,negateColor(checkerColor), ex + primalShift, ey - primalShift)) {
+                flag = false;
+            }
+        }
+
+        if (victimFound && (ex + primalShift - 1 != 7) && (ey - primalShift + 1 != 0)) {
+            flag = true;
+            for (int j = primalShift; flag; j++) {
+                if (ex + j == 8 || ey - j == -1) {
+                    flag = false;
+                } else if (situation->board.boardRender[ey - j][ex + j] == EMPTY_BLACK) {
+                    takingMove.destination.x = ex + j;
+                    takingMove.destination.y = ey - j;
+                    situation->takingMoves[situation->tmCount++] = takingMove;
+                } else flag = false;
+            }
+            // добавлять пустье поля пока не дойдём до непустой клетки
+        }
+
+        flag = true, victimFound = false;
+        for (primalShift = 1; flag; primalShift++) {
+            if (isAVictim(situation, checkerColor, ex - primalShift, ey - primalShift) && !isMarkedForDeath(situation,negateColor(checkerColor), ex - primalShift, ey - primalShift)) {
+                takingMove.victim.x = ex - primalShift;
+                takingMove.victim.y = ey - primalShift;
+                takingMove.victimType = getCheckerTypeOnBoard(situation, ex - primalShift, ey - primalShift);
+                victimFound = true;
+                flag = false;
+            } else if (situation->board.boardRender[ey - primalShift][ex - primalShift] == EMPTY_BLACK) {
+                //if (ex + primalShift)
+                continue;
+            } else if (isAFriend(situation, checkerColor, ex - primalShift, ey - primalShift) ||
+                       (ex - primalShift - 1== 0) || (ey - primalShift - 1== 0) && isMarkedForDeath(situation,negateColor(checkerColor), ex - primalShift, ey - primalShift)) {
+                flag = false;
+            }
+        }
+
+        if (victimFound && (ex - primalShift + 1!= 0) && (ey - primalShift + 1!= 0)) {
+            flag = true;
+            for (int j = primalShift; flag; j++) {
+                if (ex - j == -1 || ey - j == -1) {
+                    flag = false;
+                } else if (situation->board.boardRender[ey - j][ex - j] == EMPTY_BLACK) {
+                    takingMove.destination.x = ex - j;
+                    takingMove.destination.y = ey - j;
+                    situation->takingMoves[situation->tmCount++] = takingMove;
+                } else flag = false;
+            }
+            // добавлять пустье поля пока не дойдём до непустой клетки
+        }
+    }
 
     
 }
@@ -678,7 +809,12 @@ int makeATakingMove(GameSituation* situation, TakingMove move) {
     situation->board.checkers[victimColor][victimIndex].markedForDeath = true;
     clearMoveLists(situation);
     updateBoardRender(&(situation->board));
-    findAllTakingMovesForOne(situation, movedColor, movedIndex, move);
+    if (situation->board.checkers[movedColor][movedIndex].type == King) {
+        findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
+    }
+    else {
+        findAllTakingMovesForOne(situation, movedColor, movedIndex, move);
+    }
     if (situation->tmCount != 0) return -1;
     //removeChecker(&(situation->board), victimIndex, victimColor);
     //updateBoardRender(&(situation->board));

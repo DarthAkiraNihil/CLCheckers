@@ -108,14 +108,14 @@ int main() {
         switch (choice) {
             case 1: {
 
-                //ascendChecker(&test.situation.board.checkers[White][10]);
+                ascendChecker(&test.situation.board.checkers[White][10]);
                 //ascendChecker(&test.situation.board.checkers[Black][9]);
                 for (int i = 0; i < 8; i++) {
                     removeChecker(&test.situation.board, 0, Black);
                     removeChecker(&test.situation.board, 0, White);
                 }
                 updateBoardRender(&test.situation.board);
-                Color forWho = White;
+                Color forWho = Black;
                 while (true) {
                     drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
                     renderBoard(&test.situation.board, White, 4, 4, true);
@@ -165,8 +165,12 @@ int main() {
                                            test.situation.takingMoves[i].destination.x,
                                            test.situation.takingMoves[i].destination.y);
                                 }
+                                gotoxy(39, 13);
+                                printf("%d", test.situation.tmCount);
                             }
+
                             if (stat == -1) scanf("%d", &move);
+                            clrscr();
                             //waitForKey(13);
                             //cancelATakingMove(&test.situation, t);
                         } while (stat == -1);
