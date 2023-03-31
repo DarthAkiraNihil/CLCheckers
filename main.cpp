@@ -148,12 +148,16 @@ int main() {
                     int move;
                     scanf("%d", &move);
                     int stat;
+                    clearLastTakingSequence(&test.situation);
                     if (test.situation.tmCount > 0) {
+
                         do {
                             TakingMove t = test.situation.takingMoves[move];
+                            addToLastTakingSequence(&test.situation, t);
                             stat = makeATakingMove(&test.situation, t);
                             renderBoard(&test.situation.board, White, 4, 4, true);
                             if (stat == -1) {
+
                                 for (int i = 0; i < test.situation.tmCount; i++) {
                                     gotoxy(39, 2 + i);
                                     printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
@@ -165,16 +169,33 @@ int main() {
                                            test.situation.takingMoves[i].destination.x,
                                            test.situation.takingMoves[i].destination.y);
                                 }
-                                gotoxy(39, 13);
+                                for (int i = 0; i < test.situation.lastTakingSequence.tmsCount; i++) {
+                                    gotoxy(39, 10 + i);
+                                    printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
+                                           i,
+                                           test.situation.lastTakingSequence.takingMoves[i].source.x,
+                                           test.situation.lastTakingSequence.takingMoves[i].source.y,
+                                           test.situation.lastTakingSequence.takingMoves[i].victim.x,
+                                           test.situation.lastTakingSequence.takingMoves[i].victim.y,
+                                           test.situation.lastTakingSequence.takingMoves[i].destination.x,
+                                           test.situation.lastTakingSequence.takingMoves[i].destination.y);
+                                }
+                                gotoxy(15, 13);
                                 printf("%d", test.situation.tmCount);
                             }
 
                             if (stat == -1) scanf("%d", &move);
                             clrscr();
-                            //waitForKey(13);
+
+
+
                             //cancelATakingMove(&test.situation, t);
+
                         } while (stat == -1);
                         removeMarkedForDeath(&test.situation, negateColor(forWho));
+                        //renderBoard(&test.situation.board, White, 4, 4, true);
+                        waitForKey(13);
+                        if (test.situation.lastTakingSequence.tmsCount > 1) cancelLastTakingSequence(&test.situation);
                     }
                     else {
                         Move t = test.situation.regularMoves[move];

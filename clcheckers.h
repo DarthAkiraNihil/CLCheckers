@@ -736,6 +736,10 @@ void findAllKingTakingMovesForOne(GameSituation* situation, Color checkerColor, 
     
 }
 
+inline void clearLastTakingSequence(GameSituation* situation) {
+    situation->lastTakingSequence.tmsCount = 0;
+}
+
 inline void clearRegularMoveList(GameSituation* situation) {
     situation->rmCount = 0;
 }
@@ -797,7 +801,12 @@ int makeAMove(GameSituation* situation, Move move) {
     //situation->board.boardRender[move.source.y][move.source.x] = EMPTY_BLACK;
 }
 
+void addToLastTakingSequence(GameSituation* situation, TakingMove move) {
+    situation->lastTakingSequence.takingMoves[situation->lastTakingSequence.tmsCount++] = move;
+}
+
 int makeATakingMove(GameSituation* situation, TakingMove move) {
+
     Color movedColor = negateColor(move.takingSide);
     int movedIndex = getCheckerIndexByCoordsAndColor(situation, move.source.x, move.source.y, movedColor);
     Color victimColor = move.takingSide;
@@ -815,13 +824,19 @@ int makeATakingMove(GameSituation* situation, TakingMove move) {
     else {
         findAllTakingMovesForOne(situation, movedColor, movedIndex, move);
     }
-    if (situation->tmCount != 0) return -1;
+
+    if (situation->tmCount != 0) {
+        //situation->lastTakingSequence.takingMoves[situation->lastTakingSequence.tmsCount++] = move;
+        return -1;
+    }
     //removeChecker(&(situation->board), victimIndex, victimColor);
     //updateBoardRender(&(situation->board));
 
     //clearMoveLists(situation);
     if (move.isASpecialMove) return 1; else return 0;
 }
+
+
 
 int cancelAMove(GameSituation* situation, Move move) {
     Color movedColor = sideColor(situation, move.destination.x, move.destination.y);
@@ -866,7 +881,14 @@ void removeMarkedForDeath(GameSituation* situation, Color inWhere) {
     }
     updateBoardRender(&(situation->board));
 }
-void cancelATakingSequence();
+void cancelLastTakingSequence(GameSituation* situation) {
+    for (int i = situation->lastTakingSequence.tmsCount - 1; i > -1; i--) {
+        cancelATakingMove(situation, situation->lastTakingSequence.takingMoves[i]);
+    }
+    clearLastTakingSequence(situation);
+}
+
+int analyysi();
 
 #endif CHECKERS_CLCHECKERS_H
 
