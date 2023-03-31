@@ -523,10 +523,63 @@ inline void findAllKingTakingMoves(GameSituation* situation, Color forWhichSide)
         }
     }
 }
-void findAllRegularMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex);
+//void findAllRegularMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex);
 
 void findAllRegularKingMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
-    
+
+        if (situation->board.checkers[checkerColor][checkerIndex].type == King) {
+            Move move;
+            move.isKingMove = false; move.isKingBecomingMove = false;
+            int ex = situation->board.checkers[checkerColor][checkerIndex].coordinates.x;
+            int ey = situation->board.checkers[checkerColor][checkerIndex].coordinates.y;
+            move.source.x = ex; move.source.y = ey;
+            bool flag = !(ey == 7 || ex == 7);
+            for (int j = 1; flag; j++) {
+                if (situation->board.boardRender[ey + j][ex + j] == EMPTY_BLACK) {
+                    move.destination.x = ex + j; move.destination.y = ey + j;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey + j == 7 || ex + j == 7) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+            flag = !(ey == 7 || ex == 0);
+            for (int j = 1; flag; j++) {
+                if (situation->board.boardRender[ey + j][ex - j] == EMPTY_BLACK) {
+                    move.destination.x = ex - j; move.destination.y = ey + j;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey + j == 7 || ex - j == 0) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+            flag = !(ey == 0 || ex == 7);
+            for (int j = 1; flag; j++) {
+                if (situation->board.boardRender[ey - j][ex + j] == EMPTY_BLACK) {
+                    move.destination.x = ex + j; move.destination.y = ey - j;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey - j == 0 || ex + j == 7) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+            flag = !(ey == 0 || ex == 0);
+            for (int j = 1; flag; j++) {
+                if (situation->board.boardRender[ey - j][ex - j] == EMPTY_BLACK) {
+                    move.destination.x = ex - j; move.destination.y = ey - j;
+                    situation->regularMoves[situation->rmCount++] = move;
+                    if (ey - j == 7 || ex - j == 7) flag = false;
+                }
+                else {
+                    flag = false;
+                }
+            }
+
+        }
+
 }
 
 void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex, TakingMove previousMove) {
@@ -796,7 +849,14 @@ int makeAMove(GameSituation* situation, Move move) {
     //updateBoardRender(&(situation->board));
     updateBoardRender(&(situation->board));
     clearMoveLists(situation);
-    if (move.isKingBecomingMove) return 1; else return 0;
+    if (move.isKingBecomingMove) {
+        findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
+        if (situation->tmCount == 0) {
+            findAllRegularKingMovesForOne(situation, movedColor, movedIndex);
+            return 2;
+        }
+        return 1;
+    } else return 0;
     //situation->board.boardRender[move.destination.y][move.destination.x] = situation->board.boardRender[move.source.y][move.source.x];
     //situation->board.boardRender[move.source.y][move.source.x] = EMPTY_BLACK;
 }
