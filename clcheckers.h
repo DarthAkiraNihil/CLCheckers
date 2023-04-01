@@ -53,6 +53,7 @@ struct GameSituation {
     Color playerSide;
     //Move regularMoves[32], kingRegularMoves[64], kingBecomingMoves[16];
     Move regularMoves[128];
+    Move lastKingBecomingMove;
     //Move regularMoves[128], kingBecomingMoves[16];
     //TakingMove regularTakingMoves[64], kingTakingMoves[32];
     TakingMove takingMoves[100];
@@ -240,16 +241,17 @@ inline void findAllKingBecomingMoves(GameSituation* situation, Color forWhichSid
             int ex = situation->board.checkers[forWhichSide][i].coordinates.x;
             int ey = situation->board.checkers[forWhichSide][i].coordinates.y;
             move.source.x = ex; move.source.y = ey;
+
             if (forWhichSide == Black ? ey == 1 : ey == 6) {
                 if (ex < 7) {
-                    if ((situation->board.boardRender[ey-1][ex+1] == EMPTY_BLACK)) {
-                        move.destination.y = ey - 1; move.destination.x = ex + 1;
+                    if ((situation->board.boardRender[(forWhichSide == Black ? ey - 1 : ey + 1)][ex+1] == EMPTY_BLACK)) {
+                        move.destination.y = (forWhichSide == Black ? ey - 1 : ey + 1); move.destination.x = ex + 1;
                         situation->regularMoves[situation->rmCount++] = move;
                     }
                 }
                 if (ex > 0) {
-                    if ((situation->board.boardRender[ey-1][ex-1] == EMPTY_BLACK)) {
-                        move.destination.y = ey - 1; move.destination.x = ex - 1;
+                    if ((situation->board.boardRender[(forWhichSide == Black ? ey - 1 : ey + 1)][ex-1] == EMPTY_BLACK)) {
+                        move.destination.y = (forWhichSide == Black ? ey - 1 : ey + 1); move.destination.x = ex - 1;
                         situation->regularMoves[situation->rmCount++] = move;
                     }
                 }
@@ -850,6 +852,7 @@ int makeAMove(GameSituation* situation, Move move) {
     updateBoardRender(&(situation->board));
     clearMoveLists(situation);
     if (move.isKingBecomingMove) {
+        situation->lastKingBecomingMove = move;
         findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
         if (situation->tmCount == 0) {
             findAllRegularKingMovesForOne(situation, movedColor, movedIndex);

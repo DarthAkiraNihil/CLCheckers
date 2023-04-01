@@ -115,7 +115,7 @@ int main() {
                     removeChecker(&test.situation.board, 0, White);
                 }
                 updateBoardRender(&test.situation.board);
-                Color forWho = Black;
+                Color forWho = White;
                 while (true) {
                     drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
                     renderBoard(&test.situation.board, White, 4, 4, true);
@@ -199,19 +199,21 @@ int main() {
                     }
                     else {
                         do {
-                            renderBoard(&test.situation.board, White, 4, 4, true);
+
                             if (test.situation.tmCount == 0) {
                                 Move t = test.situation.regularMoves[move];
                                 stat = makeAMove(&test.situation, t);
                             }
                             else {
                                 TakingMove t = test.situation.takingMoves[move];
-                                makeATakingMove(&test.situation, t);
-                                stat = 1;
+                                stat = makeATakingMove(&test.situation, t);
+                                addToLastTakingSequence(&test.situation, t);
+                                //stat = 1;
                             }
-                            if (stat == 1) {
+                            renderBoard(&test.situation.board, White, 4, 4, true);
+                            if (stat == 1 || stat == -1) {
                                 //findAllKingTakingMovesForOne(&test.situation, forWho)
-                                renderBoard(&test.situation.board, White, 4, 4, true);
+                                //renderBoard(&test.situation.board, White, 4, 4, true);
 
                                 for (int i = 0; i < test.situation.tmCount; i++) {
                                     gotoxy(39, 2 + i);
@@ -255,6 +257,7 @@ int main() {
                             //makeAMove(&test.situation, test.situation.regularMoves[move]);
                             if (stat != 0) scanf("%d", &move);
                         } while (stat != 0);
+                        removeMarkedForDeath(&test.situation, negateColor(forWho));
                     }
                     //updateBoardRender(&test.situation.board);
                     forWho = negateColor(forWho);
