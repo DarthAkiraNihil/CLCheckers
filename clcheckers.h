@@ -736,7 +736,9 @@ void removeMarkedForDeath(GameSituation* situation, Color inWhere) {
 }
 
 void findRegularMoveSequenceForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
+    findAllKBMovesForOne(situation, checkerColor, checkerIndex);
     findAllRegularMovesForOne(situation, checkerColor, checkerIndex);
+
     if (situation->rmCount != 0) {
         Move* buffer = new Move[situation->rmCount];
         for (int i = 0; i < situation->rmCount; i++) buffer[i] = situation->regularMoves[i];
@@ -749,7 +751,7 @@ void findRegularMoveSequenceForOne(GameSituation* situation, Color checkerColor,
                 int insertIndex;
                 makeAMove(situation, extracted);
                 if (situation->tmCount == 0 && situation->rmCount != 0) {
-                    for (int j = 0; j < situation->rmCount; i++) {
+                    for (int j = 0; j < situation->rmCount; j++) {
                         insertIndex = situation->rmsCount;
                         situation->regMoveSequences[insertIndex].regularMoves[0] = extracted;
                         situation->regMoveSequences[insertIndex].regularMoves[1] = situation->regularMoves[j];
