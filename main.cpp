@@ -110,7 +110,7 @@ int main() {
 
                 //ascendChecker(&test.situation.board.checkers[White][10]);
                 //ascendChecker(&test.situation.board.checkers[Black][9]);
-                for (int i = 0; i < 8; i++) {
+                for (int i = 0; i < 10; i++) {
                     removeChecker(&test.situation.board, 0, Black);
                     removeChecker(&test.situation.board, 0, White);
                 }
@@ -123,7 +123,35 @@ int main() {
                     //findAllRegularKingMoves(&test.situation, White);
                     findAllMoves(&test.situation, forWho);
 
-                    for (int i = 0; i < test.situation.rmCount; i++) {
+                    for (int i = 0; i < test.situation.rmsCount; i++) {
+                        gotoxy(16, 2 + i);
+                        RegMoveSequence extracted = test.situation.regMoveSequences[i];
+                        if (extracted.rmsCount == 2) {
+                            printf("%d) [%d : %d] -> [%d : %d] + [%d : %d] -> [%d : %d]",
+                                   i,
+                                   test.situation.regMoveSequences[i].regularMoves[0].source.x,
+                                   test.situation.regMoveSequences[i].regularMoves[0].source.y,
+                                   test.situation.regMoveSequences[i].regularMoves[0].destination.x,
+                                   test.situation.regMoveSequences[i].regularMoves[0].destination.y,
+                                   test.situation.regMoveSequences[i].regularMoves[1].source.x,
+                                   test.situation.regMoveSequences[i].regularMoves[1].source.y,
+                                   test.situation.regMoveSequences[i].regularMoves[1].destination.x,
+                                   test.situation.regMoveSequences[i].regularMoves[1].destination.y
+                                   );
+
+                        }
+                        else if (extracted.rmsCount == 1) {
+                            printf("%d) [%d : %d] -> [%d : %d]",
+                                   i,
+                                   test.situation.regMoveSequences[i].regularMoves[0].source.x,
+                                   test.situation.regMoveSequences[i].regularMoves[0].source.y,
+                                   test.situation.regMoveSequences[i].regularMoves[0].destination.x,
+                                   test.situation.regMoveSequences[i].regularMoves[0].destination.y
+                            );
+                        }
+                    }
+
+                    /*for (int i = 0; i < test.situation.rmCount; i++) {
                         gotoxy(16, 2 + i);
                         printf("%d) [%d : %d] -> [%d : %d]",
                                i,
@@ -131,7 +159,7 @@ int main() {
                                test.situation.regularMoves[i].source.y,
                                test.situation.regularMoves[i].destination.x,
                                test.situation.regularMoves[i].destination.y);
-                    }
+                    }*/
                     for (int i = 0; i < test.situation.tmCount; i++) {
                         gotoxy(39, 2 + i);
                         printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
@@ -198,8 +226,9 @@ int main() {
                         if (test.situation.lastTakingSequence.tmsCount > 1) cancelLastTakingSequence(&test.situation);
                     }
                     else {
-                        do {
-
+                        makeARegMoveSequence(&test.situation, test.situation.regMoveSequences[move]);
+                        //do {
+                            /*
                             if (test.situation.tmCount == 0) {
                                 Move t = test.situation.regularMoves[move];
                                 stat = makeAMove(&test.situation, t);
@@ -255,8 +284,8 @@ int main() {
                             //waitForKey(13);
                             //cancelAMove(&test.situation, t);
                             //makeAMove(&test.situation, test.situation.regularMoves[move]);
-                            if (stat != 0) scanf("%d", &move);
-                        } while (stat != 0);
+                            if (stat != 0) scanf("%d", &move);*/
+                        //} while (stat != 0);
                         removeMarkedForDeath(&test.situation, negateColor(forWho));
                     }
                     //updateBoardRender(&test.situation.board);
@@ -278,7 +307,8 @@ int main() {
                             }
                         }
                     } while (key != 13);*/
-                    clearMoveLists(&test.situation);
+                    clearAllSequencesLists(&test.situation);
+                    //clearMoveLists(&test.situation);
                     //waitForKey(13);
                 }
                 break;
