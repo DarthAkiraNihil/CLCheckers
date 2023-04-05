@@ -144,6 +144,7 @@ GameSituation makeNullGameSituation(Color playerSide) {
     gameSituation.tmsCount = 0;
     gameSituation.rmsCount = 0;
     gameSituation.lastTakingSequence.tmsCount = 0;
+    for (int i = 0; i < 16; i++) gameSituation.takingSequences[i].tmsCount = 0;
     Color turnOf;
     //gameSituation.rtmCount = 0; gameSituation.ktmCount = 0;
     return gameSituation;
@@ -677,16 +678,16 @@ int makeATakingMove(GameSituation* situation, TakingMove move) {
     else {
         findAllTakingMovesForOne(situation, movedColor, movedIndex);
     }
-
-    if (situation->tmCount != 0) {
+    return situation->tmCount;
+    //if (situation->tmCount != 0) {
         //situation->lastTakingSequence.takingMoves[situation->lastTakingSequence.tmsCount++] = move;
-        return -1;
-    }
+    //    return -1;
+    //}
     //removeChecker(&(situation->board), victimIndex, victimColor);
     //updateBoardRender(&(situation->board));
 
     //clearMoveLists(situation);
-    if (move.isASpecialMove) return 1; else return 0;
+    //if (move.isASpecialMove) return 1; else return 0;
 }
 
 
@@ -738,6 +739,7 @@ void removeMarkedForDeath(GameSituation* situation, Color inWhere) {
 void findRegularMoveSequenceForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
     findAllKBMovesForOne(situation, checkerColor, checkerIndex);
     findAllRegularMovesForOne(situation, checkerColor, checkerIndex);
+    findAllKingMovesForOne(situation, checkerColor, checkerIndex);
 
     if (situation->rmCount != 0) {
         Move* buffer = new Move[situation->rmCount];
@@ -785,9 +787,37 @@ void makeARegMoveSequence(GameSituation* situation, RegMoveSequence regMoveSeque
     for (int i = 0; i < regMoveSequence.rmsCount; i++) makeAMove(situation, regMoveSequence.regularMoves[i]);
 }
 
+void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
+    findAllKingTakingMovesForOne(situation, checkerColor, checkerIndex);
+    findAllTakingMovesForOne(situation, checkerColor, checkerIndex);
+
+    TakingMove* buffer = new TakingMove[situation->tmCount];
+    for (int i = 0; i < situation->tmCount; i++) buffer[i] = situation->takingMoves[i];
+    int savedTMs = situation->tmCount;
+    for (int i = 0; i < savedTMs; i++) {
+        TakingMove extracted = buffer[i];
+        int stat = makeATakingMove(situation, extracted);
+        int insertIndex = situation->tmsCount, toWhere = situation->takingSequences[insertIndex].tmsCount;
+        situation->takingSequences[insertIndex].takingMoves[toWhere] = extracted; // maybe 0
+        toWhere++;//situation->takingSequences[insertIndex].tmsCount++;
+        //situation->rmsCount++;
+        if (stat != 0) {
+            for (int i = situation->tmsCount; i < situation->tmsCount + stat; i++) {
+                situation->takingSequences[i].takingMoves
+            }
+            findAllTakingSequencesForOne(situation, checkerColor, checkerIndex);
+        }
+        else situation->tmsCount++;
+        cancelATakingMove(situation, extracted);
+    }
+    delete [] buffer;
+}
+// топо стек надо написать но это не стек при обходе храни текущий путь если листь удали если нечего смотреть удали короч так
+
+
 inline void findAllMoves(GameSituation* situation, Color forWhichSide) {
-    findAllKingTakingMoves(situation, forWhichSide);
-    findAllRegularTakingMoves(situation, forWhichSide);
+    //findAllKingTakingMoves(situation, forWhichSide);
+    //findAllRegularTakingMoves(situation, forWhichSide);
     if (situation->tmCount == 0) {
         findAllRegularMoveSequences(situation, forWhichSide);
         //findAllKingBecomingMoves(situation, forWhichSide);
@@ -801,6 +831,8 @@ void clearAllSequencesLists(GameSituation* situation) {
     situation->rmsCount = 0;
     situation->tmsCount = 0;
 }
+
+
 
 void cancelLastTakingSequence(GameSituation* situation) {
     for (int i = situation->lastTakingSequence.tmsCount - 1; i > -1; i--) {

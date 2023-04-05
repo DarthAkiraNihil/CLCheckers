@@ -108,7 +108,7 @@ int main() {
         switch (choice) {
             case 1: {
 
-                //ascendChecker(&test.situation.board.checkers[White][10]);
+                ascendChecker(&test.situation.board.checkers[White][10]);
                 //ascendChecker(&test.situation.board.checkers[Black][9]);
                 for (int i = 0; i < 10; i++) {
                     removeChecker(&test.situation.board, 0, Black);
