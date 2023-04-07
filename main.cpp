@@ -110,13 +110,15 @@ int main() {
 
                 //ascendChecker(&test.situation.board.checkers[White][10]);
                 //ascendChecker(&test.situation.board.checkers[Black][9]);
-                for (int i = 0; i <6; i++) {
+                for (int i = 0; i < 10; i++) {
                     removeChecker(&test.situation.board, 0, Black);
 
                 }
-                for (int i = 0; i < 11; i++) removeChecker(&test.situation.board, 0, White);
+                for (int i = 0; i < 10; i++) removeChecker(&test.situation.board, 0, White);
+                removeChecker(&test.situation.board, 1, White);
+                ascendChecker(&test.situation.board.checkers[White][0]);
                 updateBoardRender(&test.situation.board);
-                Color forWho = White;
+                Color forWho = Black;
                 while (true) {
                     drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
                     renderBoard(&test.situation.board, White, 4, 4, true);

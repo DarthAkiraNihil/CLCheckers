@@ -33,6 +33,11 @@ struct Coordinates {
     int x, y;
 };
 
+const Coordinates NORTH_EAST = {1, 1};
+const Coordinates NORTH_WEST = {-1, 1};
+const Coordinates SOUTH_EAST = {1, -1};
+const Coordinates SOUTH_WEST = {-1, -1};
+
 struct Checker {
     Coordinates coordinates;
     Color color;
@@ -59,6 +64,12 @@ struct RegMoveSequence {
 };
 
 struct TakingSequence {
+    TakingMove takingMoves[16];
+    int tmsCount;
+};
+
+struct MixedSequence {
+    Move kingBecomingMove;
     TakingMove takingMoves[16];
     int tmsCount;
 };
@@ -284,7 +295,54 @@ void findAllKBMovesForOne(GameSituation* situation, Color checkerColor, int chec
     }
 }
 
+bool kingMoveLookingFlag(int x, int y, Coordinates direction) {
+    if (direction.x == NORTH_EAST.x && direction.y == NORTH_EAST.y) {
+        return !(x == 7 || y == 7);
+    }
+    else if (direction.x == NORTH_WEST.x && direction.y == NORTH_WEST.y) {
+        return !(x == 0 || y == 7);
+    }
+    else if (direction.x == SOUTH_EAST.x && direction.y == SOUTH_EAST.y) {
+        return !(x == 7 || y == 0);
+    }
+    else if (direction.x == SOUTH_WEST.x && direction.y == SOUTH_WEST.y) {
+        return !(x == 0 || y == 0);
+    }
+}
+
+void findAllKingMovesForOneOnDir(GameSituation* situation, Color checkerColor, int checkerIndex, Coordinates directionShift) {
+    Move move;
+    move.isKingBecomingMove = false; move.isKingMove = false;
+    int ex = situation->board.checkers[checkerColor][checkerIndex].coordinates.x;
+    int ey = situation->board.checkers[checkerColor][checkerIndex].coordinates.y;
+    move.source = {ex, ey};
+    bool flag = kingMoveLookingFlag(ex, ey, directionShift);
+    int shift = 1;
+    //kingMoveLookingFlag(ex + shift*directionShift.x, ey + shift * directionShift.y, directionShift)
+    while (flag) {
+        if (situation->board.boardRender[ey + shift * directionShift.y][ex + shift*directionShift.x] == EMPTY_BLACK) {
+            move.destination.x = ex + shift*directionShift.x;
+            move.destination.y = ey + shift * directionShift.y;
+            situation->regularMoves[situation->rmCount++] = move;
+            flag = kingMoveLookingFlag(ex + shift*directionShift.x, ey + shift * directionShift.y, directionShift);
+        } else {
+            flag = false;
+        }
+        shift++;
+    }
+
+}
+
 void findAllKingMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
+    if (situation->board.checkers[checkerColor][checkerIndex].type == King) {
+        findAllKingMovesForOneOnDir(situation, checkerColor, checkerIndex, NORTH_EAST);
+        findAllKingMovesForOneOnDir(situation, checkerColor, checkerIndex, NORTH_WEST);
+        findAllKingMovesForOneOnDir(situation, checkerColor, checkerIndex, SOUTH_EAST);
+        findAllKingMovesForOneOnDir(situation, checkerColor, checkerIndex, SOUTH_WEST);
+    }
+}
+
+/*void findAllKingMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
     if (situation->board.checkers[checkerColor][checkerIndex].type == King) {
         Move move;
         move.isKingMove = false;
@@ -339,7 +397,7 @@ void findAllKingMovesForOne(GameSituation* situation, Color checkerColor, int ch
         }
     }
 }
-
+*/
 void findAllRegularMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
     if (situation->board.checkers[checkerColor][checkerIndex].type != King) {
         Move move;
@@ -915,68 +973,7 @@ int evaluateQuality(GameSituation* situation, Color forWhichSide) {
 int analyysi(GameSituation* situation, Color side, int currentDepth, Difficulty maxDepth, MoveContainer* container) {
     int eval = evaluateQuality(situation, side);
     findAllMoves(situation, side);
-    /*
-     * do {
 
-                            if (test.situation.tmCount == 0) {
-                                Move t = test.situation.regularMoves[move];
-                                stat = makeAMove(&test.situation, t);
-                            }
-                            else {
-                                TakingMove t = test.situation.takingMoves[move];
-                                stat = makeATakingMove(&test.situation, t);
-                                addToLastTakingSequence(&test.situation, t);
-                                //stat = 1;
-                            }
-                            renderBoard(&test.situation.board, White, 4, 4, true);
-                            if (stat == 1 || stat == -1) {
-                                //findAllKingTakingMovesForOne(&test.situation, forWho)
-                                //renderBoard(&test.situation.board, White, 4, 4, true);
-
-                                for (int i = 0; i < test.situation.tmCount; i++) {
-                                    gotoxy(39, 2 + i);
-                                    printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
-                                           i,
-                                           test.situation.takingMoves[i].source.x,
-                                           test.situation.takingMoves[i].source.y,
-                                           test.situation.takingMoves[i].victim.x,
-                                           test.situation.takingMoves[i].victim.y,
-                                           test.situation.takingMoves[i].destination.x,
-                                           test.situation.takingMoves[i].destination.y);
-                                }
-                                for (int i = 0; i < test.situation.lastTakingSequence.tmsCount; i++) {
-                                    gotoxy(39, 10 + i);
-                                    printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
-                                           i,
-                                           test.situation.lastTakingSequence.takingMoves[i].source.x,
-                                           test.situation.lastTakingSequence.takingMoves[i].source.y,
-                                           test.situation.lastTakingSequence.takingMoves[i].victim.x,
-                                           test.situation.lastTakingSequence.takingMoves[i].victim.y,
-                                           test.situation.lastTakingSequence.takingMoves[i].destination.x,
-                                           test.situation.lastTakingSequence.takingMoves[i].destination.y);
-                                }
-                                gotoxy(15, 13);
-                                printf("%d", test.situation.tmCount);
-
-                            } else if (stat == 2) {
-                                for (int i = 0; i < test.situation.rmCount; i++) {
-                                    gotoxy(16, 2 + i);
-                                    printf("%d) [%d : %d] -> [%d : %d]",
-                                           i,
-                                           test.situation.regularMoves[i].source.x,
-                                           test.situation.regularMoves[i].source.y,
-                                           test.situation.regularMoves[i].destination.x,
-                                           test.situation.regularMoves[i].destination.y);
-                                }
-                            }
-                            //renderBoard(&test.situation.board, White, 4, 4, true);
-                            //waitForKey(13);
-                            //cancelAMove(&test.situation, t);
-                            //makeAMove(&test.situation, test.situation.regularMoves[move]);
-                            if (stat != 0) scanf("%d", &move);
-                        } while (stat != 0);
-                        removeMarkedForDeath(&test.situation, negateColor(forWho));
-     */
     int bestMoveIndex = -1, bestMoveType = 0;
     if (situation->tmCount != 0) {
         //... todo
