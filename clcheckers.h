@@ -97,6 +97,27 @@ struct Game {
     GameType type;
 };
 
+void appendToATakingSequence(TakingSequence* sequence, TakingMove move) {
+    sequence->takingMoves[sequence->tmsCount++] = move;
+}
+
+void deleteLastFromATakingSequence(TakingSequence* sequence) {
+    sequence->tmsCount--;
+}
+
+void copyToAnotherTakingSequence(TakingSequence* source, TakingSequence* destination) {
+    for (int i = 0; i < source->tmsCount; i++) {
+        destination->takingMoves[i] = source->takingMoves[i];
+    }
+    destination->tmsCount = source->tmsCount;
+}
+TakingSequence getNullPath() {
+    TakingSequence path;
+    path.tmsCount = 0;
+    return path;
+}
+
+
 void initiateChecker(Checker* checker, int x, int y, Color color) {
     checker->coordinates.x = x;
     checker->coordinates.y = y;
@@ -787,7 +808,7 @@ void makeARegMoveSequence(GameSituation* situation, RegMoveSequence regMoveSeque
     for (int i = 0; i < regMoveSequence.rmsCount; i++) makeAMove(situation, regMoveSequence.regularMoves[i]);
 }
 
-void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
+void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, int checkerIndex, TakingSequence* currentPath) {
     findAllKingTakingMovesForOne(situation, checkerColor, checkerIndex);
     findAllTakingMovesForOne(situation, checkerColor, checkerIndex);
 
@@ -796,23 +817,20 @@ void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, 
     int savedTMs = situation->tmCount;
     for (int i = 0; i < savedTMs; i++) {
         TakingMove extracted = buffer[i];
+        appendToATakingSequence(currentPath, extracted);
         int stat = makeATakingMove(situation, extracted);
-        int insertIndex = situation->tmsCount, toWhere = situation->takingSequences[insertIndex].tmsCount;
-        situation->takingSequences[insertIndex].takingMoves[toWhere] = extracted; // maybe 0
-        toWhere++;//situation->takingSequences[insertIndex].tmsCount++;
-        //situation->rmsCount++;
-        if (stat != 0) {
-            for (int i = situation->tmsCount; i < situation->tmsCount + stat; i++) {
-                situation->takingSequences[i].takingMoves
-            }
-            findAllTakingSequencesForOne(situation, checkerColor, checkerIndex);
+        if (stat == 0) {
+            copyToAnotherTakingSequence(&(situation->takingSequences[situation->tmsCount++]), currentPath);
+            deleteLastFromATakingSequence(currentPath);
         }
-        else situation->tmsCount++;
+        else {
+            findAllTakingSequencesForOne(situation, checkerColor, checkerIndex, currentPath);
+        }
         cancelATakingMove(situation, extracted);
     }
     delete [] buffer;
 }
-// топо стек надо написать но это не стек при обходе храни текущий путь если листь удали если нечего смотреть удали короч так
+
 
 
 inline void findAllMoves(GameSituation* situation, Color forWhichSide) {
