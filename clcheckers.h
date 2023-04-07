@@ -16,6 +16,7 @@ enum Difficulty {Easy = 2, Normal = 3, Hard = 4, Insane = 5, Extreme = 6, Diabol
 
 const int regularCheckerCost = 100;
 const int kingCheckerCost = 250;
+bool ENABLED_EMULATION = true;
 
 const int qualityFactor[8][8] = {
         {1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200},
@@ -419,8 +420,8 @@ void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int 
                                                                                                                                                              negateColor(checkerColor), ex - 1, ey + 1)/* && ((ex - 1 != vx) || (ey + 1 != vy))*/) {
                     takingMove.destination.y = ey + 2;
                     takingMove.destination.x = ex - 2;
-                    takingMove.victim.x = ex + 1;
-                    takingMove.victim.y = ey - 1;
+                    takingMove.victim.x = ex - 1;
+                    takingMove.victim.y = ey + 1;
                     takingMove.takingSide = negateColor(checkerColor);
                     takingMove.victimType = getCheckerTypeOnBoard(situation, ex - 1, ey + 1);
                     takingMove.isASpecialMove = (checkerColor == White && ey == 5);
@@ -443,7 +444,7 @@ void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int 
                     //situation->rmCount++;
                 }
             }
-            if (ey > 1) {
+            if (ex > 1) {
                 if ((situation->board.boardRender[ey - 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex - 1, ey - 1) && !isMarkedForDeath(situation,negateColor(checkerColor), ex - 1, ey - 1)/* && ((ex - 1 != vx) || (ey - 1 != vy))*/) {
                     takingMove.destination.y = ey - 2;
                     takingMove.destination.x = ex - 2;
@@ -725,7 +726,7 @@ int cancelAMove(GameSituation* situation, Move move) {
     //situation->board.boardRender[move.source.y][move.source.x] = EMPTY_BLACK;
 }
 
-int cancelATakingMove(GameSituation* situation, TakingMove move) {
+int cancelATakingMove(GameSituation* situation, TakingMove move, bool emulated) {
     Color movedColor = negateColor(move.takingSide);
     int movedIndex = getCheckerIndexByCoordsAndColor(situation, move.destination.x, move.destination.y, movedColor);
     //Color victimColor = move.takingSide;
@@ -733,12 +734,19 @@ int cancelATakingMove(GameSituation* situation, TakingMove move) {
     situation->board.checkers[movedColor][movedIndex].coordinates.x = move.source.x;
     situation->board.checkers[movedColor][movedIndex].coordinates.y = move.source.y;
     if (move.isASpecialMove) descendChecker(&(situation->board.checkers[movedColor][movedIndex]));
-    Checker regeneratedVictim;
-    regeneratedVictim.coordinates.x = move.victim.x;
-    regeneratedVictim.coordinates.y = move.victim.y;
-    regeneratedVictim.type = move.victimType;
-    regeneratedVictim.color = move.takingSide;
-    situation->board.checkers[move.takingSide][situation->board.checkersCount[move.takingSide]++] = regeneratedVictim;
+    if (!emulated) {
+        Checker regeneratedVictim;
+        regeneratedVictim.coordinates.x = move.victim.x;
+        regeneratedVictim.coordinates.y = move.victim.y;
+        regeneratedVictim.type = move.victimType;
+        regeneratedVictim.color = move.takingSide;
+        regeneratedVictim.markedForDeath = false;
+        situation->board.checkers[move.takingSide][situation->board.checkersCount[move.takingSide]++] = regeneratedVictim;
+    }
+    else {
+        int falseVictimIndex = getCheckerIndexByCoordsAndColor(situation, move.victim.x, move.victim.y, move.takingSide);
+        situation->board.checkers[move.takingSide][falseVictimIndex].markedForDeath = false;
+    }
     //removeChecker(&(situation->board), victimIndex, victimColor);
     //updateBoardRender(&(situation->board));
     updateBoardRender(&(situation->board));
@@ -820,28 +828,43 @@ void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, 
         appendToATakingSequence(currentPath, extracted);
         int stat = makeATakingMove(situation, extracted);
         if (stat == 0) {
-            copyToAnotherTakingSequence(&(situation->takingSequences[situation->tmsCount++]), currentPath);
+            copyToAnotherTakingSequence(currentPath, &(situation->takingSequences[situation->tmsCount++]));
             deleteLastFromATakingSequence(currentPath);
         }
         else {
             findAllTakingSequencesForOne(situation, checkerColor, checkerIndex, currentPath);
         }
-        cancelATakingMove(situation, extracted);
+        cancelATakingMove(situation, extracted, ENABLED_EMULATION);
     }
     delete [] buffer;
 }
 
+void makeATakingMoveSequence(GameSituation* situation, TakingSequence takingSequence) {
+    for (int i = 0; i < takingSequence.tmsCount; i++) makeATakingMove(situation, takingSequence.takingMoves[i]);
 
+}
+
+void findAllTakingMoveSequences(GameSituation* situation, Color forWhichSide) {
+    for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
+        TakingSequence path = getNullPath();
+        findAllTakingSequencesForOne(situation, forWhichSide, i, &path);
+        clearMoveLists(situation);
+    }
+}
 
 inline void findAllMoves(GameSituation* situation, Color forWhichSide) {
+    findAllTakingMoveSequences(situation, forWhichSide);
     //findAllKingTakingMoves(situation, forWhichSide);
     //findAllRegularTakingMoves(situation, forWhichSide);
-    if (situation->tmCount == 0) {
+    if (situation->tmsCount == 0) {
         findAllRegularMoveSequences(situation, forWhichSide);
         //findAllKingBecomingMoves(situation, forWhichSide);
         //findAllKingMoves(situation, forWhichSide);
         //findAllRegularMoves(situation, forWhichSide);
     }
+    //else {
+    //    situation->board.checkersCount[negateColor(forWhichSide)]--;
+    //}
     //findAllKingTakingMoves(situation, forWhichSide);
 }
 
@@ -852,12 +875,12 @@ void clearAllSequencesLists(GameSituation* situation) {
 
 
 
-void cancelLastTakingSequence(GameSituation* situation) {
+/*void cancelLastTakingSequence(GameSituation* situation) {
     for (int i = situation->lastTakingSequence.tmsCount - 1; i > -1; i--) {
         cancelATakingMove(situation, situation->lastTakingSequence.takingMoves[i]);
     }
     clearLastTakingSequence(situation);
-}
+}*/
 
 bool won(GameSituation* situation, Color who) {
     return situation->board.checkersCount[negateColor(who)] == 0;

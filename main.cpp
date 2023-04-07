@@ -108,12 +108,13 @@ int main() {
         switch (choice) {
             case 1: {
 
-                ascendChecker(&test.situation.board.checkers[White][10]);
+                //ascendChecker(&test.situation.board.checkers[White][10]);
                 //ascendChecker(&test.situation.board.checkers[Black][9]);
-                for (int i = 0; i < 10; i++) {
+                for (int i = 0; i <6; i++) {
                     removeChecker(&test.situation.board, 0, Black);
-                    removeChecker(&test.situation.board, 0, White);
+
                 }
+                for (int i = 0; i < 11; i++) removeChecker(&test.situation.board, 0, White);
                 updateBoardRender(&test.situation.board);
                 Color forWho = White;
                 while (true) {
@@ -160,16 +161,20 @@ int main() {
                                test.situation.regularMoves[i].destination.x,
                                test.situation.regularMoves[i].destination.y);
                     }*/
-                    for (int i = 0; i < test.situation.tmCount; i++) {
-                        gotoxy(39, 2 + i);
-                        printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
-                               i,
-                               test.situation.takingMoves[i].source.x,
-                               test.situation.takingMoves[i].source.y,
-                               test.situation.takingMoves[i].victim.x,
-                               test.situation.takingMoves[i].victim.y,
-                               test.situation.takingMoves[i].destination.x,
-                               test.situation.takingMoves[i].destination.y);
+                    for (int i = 0; i < test.situation.tmsCount; i++) {
+
+                        gotoxy(16, 2 + i);
+                        printf("%d)", i);
+                        for (int j = 0; j < test.situation.takingSequences[i].tmsCount; j++) {
+                            printf("[%d:%d][%d:%d][%d:%d]|",
+                                   test.situation.takingSequences[i].takingMoves[j].source.x,
+                                   test.situation.takingSequences[i].takingMoves[j].source.y,
+                                   test.situation.takingSequences[i].takingMoves[j].victim.x,
+                                   test.situation.takingSequences[i].takingMoves[j].victim.y,
+                                   test.situation.takingSequences[i].takingMoves[j].destination.x,
+                                   test.situation.takingSequences[i].takingMoves[j].destination.y);
+                        }
+
                     }
                     gotoxy(15, 16);
                     //waitForKey(13);
@@ -177,13 +182,14 @@ int main() {
                     scanf("%d", &move);
                     int stat;
                     clearLastTakingSequence(&test.situation);
-                    if (test.situation.tmCount > 0) {
+                    if (test.situation.tmsCount > 0) {
 
-                        do {
-                            TakingMove t = test.situation.takingMoves[move];
-                            addToLastTakingSequence(&test.situation, t);
-                            stat = makeATakingMove(&test.situation, t);
-                            renderBoard(&test.situation.board, White, 4, 4, true);
+                        //do {
+                            //TakingMove t = test.situation.takingMoves[move];
+                            //addToLastTakingSequence(&test.situation, t);
+                            //stat = makeATakingMove(&test.situation, t);
+                            makeATakingMoveSequence(&test.situation, test.situation.takingSequences[move]);
+                            /*renderBoard(&test.situation.board, White, 4, 4, true);
                             if (stat == -1) {
 
                                 for (int i = 0; i < test.situation.tmCount; i++) {
@@ -213,17 +219,17 @@ int main() {
                             }
 
                             if (stat == -1) scanf("%d", &move);
-                            clrscr();
+                            clrscr();*/
 
 
 
                             //cancelATakingMove(&test.situation, t);
 
-                        } while (stat == -1);
+                        //} while (stat == -1);
                         removeMarkedForDeath(&test.situation, negateColor(forWho));
                         //renderBoard(&test.situation.board, White, 4, 4, true);
-                        waitForKey(13);
-                        if (test.situation.lastTakingSequence.tmsCount > 1) cancelLastTakingSequence(&test.situation);
+                        //waitForKey(13);
+                        //if (test.situation.lastTakingSequence.tmsCount > 1) cancelLastTakingSequence(&test.situation);
                     }
                     else {
                         makeARegMoveSequence(&test.situation, test.situation.regMoveSequences[move]);
@@ -286,7 +292,7 @@ int main() {
                             //makeAMove(&test.situation, test.situation.regularMoves[move]);
                             if (stat != 0) scanf("%d", &move);*/
                         //} while (stat != 0);
-                        removeMarkedForDeath(&test.situation, negateColor(forWho));
+                        //removeMarkedForDeath(&test.situation, negateColor(forWho));
                     }
                     //updateBoardRender(&test.situation.board);
                     forWho = negateColor(forWho);
