@@ -3,7 +3,7 @@
 //#include "conio2.h"
 #include "interface.h"
 //#include "checkerslib.h"
-#include "clcheckers.h"
+#include "clcengine/clcengine_main.h"
 #include "appconsts.h"
 #include <windows.h>
 
