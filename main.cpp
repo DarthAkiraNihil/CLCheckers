@@ -80,6 +80,30 @@ void renderBoard(Board* board, Color playerSide, short drawX, short drawY, bool 
     textcolor(15);
 }
 
+void printRegMoveSeq(RegMoveSequence sequence, Coordinates at) {
+    gotoxy(at.x, at.y);
+    if (sequence.rmsCount == 2) {
+        printf("[%d:%d][%d:%d]->[%d:%d][%d:%d]",
+               sequence.regularMoves[0].source.x,
+               sequence.regularMoves[0].source.y,
+               sequence.regularMoves[0].destination.x,
+               sequence.regularMoves[0].destination.y,
+               sequence.regularMoves[1].source.x,
+               sequence.regularMoves[1].source.y,
+               sequence.regularMoves[1].destination.x,
+               sequence.regularMoves[1].destination.y
+               );
+    }
+    else {
+        printf("[%d:%d][%d:%d]",
+               sequence.regularMoves[0].source.x,
+               sequence.regularMoves[0].source.y,
+               sequence.regularMoves[0].destination.x,
+               sequence.regularMoves[0].destination.y
+        );
+    }
+}
+
 int main() {
 
     clrscr();
@@ -100,6 +124,7 @@ int main() {
     TextLineWidget tlw;
     tlw.length = 29;
     tlw.locX = 4; tlw.locY = 2;
+    Color player = White;
     setInitialText(&tlw, "pidarok");
     //drawTextLineWidget(tlw);
     drawMenu(1, mainMenuPoints, 5, 2, 2, 12);
@@ -114,19 +139,28 @@ int main() {
                     removeChecker(&test.situation.board, 0, Black);
 
                 }
-                for (int i = 0; i < 8; i++) removeChecker(&test.situation.board, 0, White);
-                removeChecker(&test.situation.board, 1, White);
+                for (int i = 0; i < 11; i++) removeChecker(&test.situation.board, 0, White);
+                //removeChecker(&test.situation.board, 1, White);
                 //ascendChecker(&test.situation.board.checkers[White][0]);
                 //ascendChecker(&test.situation.board.checkers[Black][0]);
                 updateBoardRender(&test.situation.board);
-                Color forWho = Black;
+                Color forWho = player;
                 while (true) {
                     drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
-                    renderBoard(&test.situation.board, White, 4, 4, true);
+                    renderBoard(&test.situation.board, player, 4, 4, true);
                     //findAllRegularMoves(&test.situation, White);
                     //findAllRegularKingMoves(&test.situation, White);
-                    findAllMoves(&test.situation, forWho);
+                    //if (forWho == player) {
+                        //findAllMoves(&test.situation, forWho);
+                    //}
+                    //else {
+                        SeqContainer bestMove = getBestMove(test.situation, forWho, Insane);
+                        printRegMoveSeq(bestMove.regMoveSequence, {15, 10});
+                   // }
 
+                    gotoxy(3,20);
+                    printf("%f", evalQuality(&test.situation));
+                    waitForKey(13);
                     for (int i = 0; i < test.situation.rmsCount; i++) {
                         gotoxy(16, 2 + i);
                         RegMoveSequence extracted = test.situation.regMoveSequences[i];
@@ -315,6 +349,7 @@ int main() {
                     }
                     //updateBoardRender(&test.situation.board);
                     forWho = negateColor(forWho);
+                    //SeqContainer = 
                     clrscr();
                     //renderBoard(&test.situation.board, White, 4, 4, true);
                     /*int key;
@@ -332,7 +367,7 @@ int main() {
                             }
                         }
                     } while (key != 13);*/
-                    clearAllSequencesLists(&test.situation);
+                    flushSequenceLists(&test.situation);
                     //clearMoveLists(&test.situation);
                     //waitForKey(13);
                 }

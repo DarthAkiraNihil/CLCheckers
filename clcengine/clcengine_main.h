@@ -85,6 +85,16 @@ GameSituation makeNullGameSituation(Color playerSide) {
     return gameSituation;
 }
 
+SeqContainer getNullContainer() {
+    SeqContainer container;
+    container.eval = 0;
+    container.seqNumberToDo = -1;
+    container.takingSequence.tmsCount = 0;
+    container.regMoveSequence.rmsCount = 0;
+    container.mixedSequence.takingSequence.tmsCount = 0;
+    return container;
+}
+
 Game createANewGame(Color playerSide, Color firstMove, GameType type) {
     Game newGame;
     newGame.situation = makeNullGameSituation(playerSide);
@@ -555,7 +565,7 @@ int cancelAMove(GameSituation* situation, Move move) {
     //situation->board.boardRender[move.source.y][move.source.x] = EMPTY_BLACK;
 }
 
-int cancelATakingMove(GameSituation* situation, TakingMove move, bool emulated) {
+int cancelATakingMove(GameSituation* situation, TakingMove move, bool emulated = false) {
     Color movedColor = negateColor(move.takingSide);
     int movedIndex = getCheckerIndexByCoordsAndColor(situation, move.destination.x, move.destination.y, movedColor);
     //Color victimColor = move.takingSide;
@@ -644,6 +654,11 @@ void findAllRegularMoveSequences(GameSituation* situation, Color forWhichSide) {
 void makeARegMoveSequence(GameSituation* situation, RegMoveSequence regMoveSequence) {
     for (int i = 0; i < regMoveSequence.rmsCount; i++) makeAMove(situation, regMoveSequence.regularMoves[i]);
 }
+
+void cancelARegMoveSequence(GameSituation* situation, RegMoveSequence regMoveSequence) {
+    for (int i = regMoveSequence.rmsCount - 1; i > -1; i--) cancelAMove(situation, regMoveSequence.regularMoves[i]);
+}
+
 //over loadede for mized sequence
 void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, int checkerIndex, TakingSequence* currentPath, bool afterMove = false) {
     if (!afterMove) {
@@ -678,7 +693,10 @@ void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, 
 
 void makeATakingMoveSequence(GameSituation* situation, TakingSequence takingSequence) {
     for (int i = 0; i < takingSequence.tmsCount; i++) makeATakingMove(situation, takingSequence.takingMoves[i]);
+}
 
+void cancelATakingMoveSequence(GameSituation* situation, TakingSequence takingSequence) {
+    for (int i = takingSequence.tmsCount - 1; i > -1; i--) cancelATakingMove(situation, takingSequence.takingMoves[i]);
 }
 
 void findAllTakingMoveSequences(GameSituation* situation, Color forWhichSide) {
@@ -767,6 +785,11 @@ void makeAMixedSequence(GameSituation* situation, MixedSequence mixedSequence) {
     makeATakingMoveSequence(situation, mixedSequence.takingSequence);
 }
 
+void cancelAMixedSequence(GameSituation* situation, MixedSequence mixedSequence) {
+    cancelATakingMoveSequence(situation, mixedSequence.takingSequence);
+    cancelAMove(situation, mixedSequence.kingBecomingMove);
+}
+
 inline void findAllMoves(GameSituation* situation, Color forWhichSide) {
     findAllTakingMoveSequences(situation, forWhichSide);
     findAllMixedSequences(situation, forWhichSide);
@@ -784,77 +807,128 @@ inline void findAllMoves(GameSituation* situation, Color forWhichSide) {
     //findAllKingTakingMoves(situation, forWhichSide);
 }
 
-void clearAllSequencesLists(GameSituation* situation) {
+void flushSequenceLists(GameSituation* situation) {
     situation->rmsCount = 0;
     situation->tmsCount = 0;
+    situation->mmsCount = 0;
 }
 
-
-
-/*void cancelLastTakingSequence(GameSituation* situation) {
-    for (int i = situation->lastTakingSequence.tmsCount - 1; i > -1; i--) {
-        cancelATakingMove(situation, situation->lastTakingSequence.takingMoves[i]);
-    }
-    clearLastTakingSequence(situation);
-}*/
-
-bool won(GameSituation* situation, Color who) {
-    return situation->board.checkersCount[negateColor(who)] == 0;
+bool replaceConditionFor(float nEval, float oEval, Color side) {
+    if (side == White) return (nEval < oEval); else return (nEval > oEval);
 }
 
-int evaluateQuality(GameSituation* situation, Color forWhichSide) {
-    int whiteEval = 0, blackEval = 0;
-    if (won(situation, forWhichSide)) {
-        return 10000000;
-    }
+float evalQuality(GameSituation* situation) {
+    float eval = 0;
     for (int i = 0; i < situation->board.checkersCount[White]; i++) {
         if (situation->board.checkers[White][i].type == King)  {
-            whiteEval += kingCheckerCost * qualityFactor[situation->board.checkers[White][i].coordinates.y][situation->board.checkers[White][i].coordinates.x];
+            eval -= kingCheckerCost;
         }
         else {
-            whiteEval += regularCheckerCost * qualityFactor[situation->board.checkers[White][i].coordinates.y][situation->board.checkers[White][i].coordinates.x];
+            eval -= regularCheckerCost * qualityFactor[7 - situation->board.checkers[White][i].coordinates.y][7 - situation->board.checkers[White][i].coordinates.x];
         }
     }
     for (int i = 0; i < situation->board.checkersCount[Black]; i++) {
         if (situation->board.checkers[Black][i].type == King)  {
-            blackEval += kingCheckerCost * qualityFactor[situation->board.checkers[Black][i].coordinates.y][situation->board.checkers[Black][i].coordinates.x];
+            eval += kingCheckerCost;
         }
         else {
-            blackEval += regularCheckerCost * qualityFactor[situation->board.checkers[Black][i].coordinates.y][situation->board.checkers[Black][i].coordinates.x];
+            eval += regularCheckerCost * qualityFactor[situation->board.checkers[Black][i].coordinates.y][situation->board.checkers[Black][i].coordinates.x];
         }
+
     }
-    return (forWhichSide == White) ? whiteEval - blackEval : blackEval - whiteEval;
+    return eval;
 }
 
+bool wonByFigures(GameSituation* situation, Color whatSide) {
+    return situation->board.checkersCount[negateColor(whatSide)] == 0;
+}
 
+float getVictoryEvalFor(Color side) {
+    if (side == Black) return BLACK_VICTORY; else return WHITE_VICTORY;
+}
 
-int analyysi(GameSituation* situation, Color side, int currentDepth, Difficulty maxDepth, SeqContainer* container) {
+bool lostByMoves(GameSituation* situation) {
+    return (situation->tmsCount + situation->rmsCount + situation->mmsCount) == 0;
+}
+
+SeqContainer analyysi(GameSituation* situation, Color side, int currentDepth, Difficulty maxDepth) {
     //int eval = evaluateQuality(situation, side);
     // inf if blackss wind -inf else
+    SeqContainer toReturn = getNullContainer();
+    float topBorder = getVictoryEvalFor(negateColor(side)), soFuckingDeepEval;//container->eval = getVictoryEvalFor(negateColor(side));
     findAllMoves(situation, side);
-
-    int bestMoveIndex = -1, bestMoveType = 0;
-    if (situation->tmsCount + situation->mmsCount == 0) {
-        RegMoveSequence* backup = new RegMoveSequence[situation->rmsCount];
-        for (int i = 0; i < situation->rmsCount; i++) backup[i] = situation->regMoveSequences[i];
+    if (lostByMoves(situation)) {
+        toReturn.eval = topBorder;
+        return toReturn;
+    }
+    if (currentDepth == maxDepth) {
+        toReturn.eval = evalQuality(situation);
+        return toReturn;
+    }
+    //int bestMoveIndex = -1, bestMoveType = 0;
+    if (situation->tmsCount == 0) {
+        MixedSequence* msBackup = new MixedSequence[situation->mmsCount];
+        for (int i = 0; i < situation->mmsCount; i++) msBackup[i] = situation->mixedSequences[i];
+        int savedMSS = situation->mmsCount;
+        for (int i = 0; i < savedMSS; i++) {
+            makeAMixedSequence(situation, msBackup[i]);
+            flushSequenceLists(situation);
+            SeqContainer soFuckingDeepContainer = analyysi(situation, negateColor(side), currentDepth + 1, maxDepth);
+            cancelAMixedSequence(situation, msBackup[i]);
+            if (replaceConditionFor(soFuckingDeepContainer.eval, topBorder, side)) {
+                topBorder = soFuckingDeepContainer.eval;
+                toReturn.eval = topBorder;
+                toReturn.mixedSequence = msBackup[i];
+                toReturn.seqNumberToDo = 3;
+            }
+            //return soFuckingDeepEval;
+        }
+        delete [] msBackup;
+        RegMoveSequence* rmsBackup = new RegMoveSequence[situation->rmsCount];
+        for (int i = 0; i < situation->rmsCount; i++) rmsBackup[i] = situation->regMoveSequences[i];
         int savedRMSS = situation->rmsCount;
-        delete [] backup;
-        // todo loop for regular
+        for (int i = 0; i < savedRMSS; i++) {
+            makeARegMoveSequence(situation, rmsBackup[i]);
+            flushSequenceLists(situation);
+            SeqContainer soFuckingDeepContainer = analyysi(situation, negateColor(side), currentDepth + 1, maxDepth);
+            cancelARegMoveSequence(situation, rmsBackup[i]);
+            if (replaceConditionFor(soFuckingDeepContainer.eval, topBorder, side)) {
+                topBorder = soFuckingDeepContainer.eval;
+                toReturn.eval = topBorder;
+                toReturn.regMoveSequence = rmsBackup[i];
+                toReturn.seqNumberToDo = 1;
+            }
+        }
+        delete [] rmsBackup;
+        return toReturn;
     }
     else {
-        // todo lop for tak and mix
+        TakingSequence* tsBackup = new TakingSequence[situation->tmsCount];
+        for (int i = 0; i < situation->tmsCount; i++) tsBackup[i] = situation->takingSequences[i];
+        int savedTSS = situation->tmsCount;
+        for (int i = 0; i < savedTSS; i++) {
+            makeATakingMoveSequence(situation, tsBackup[i]);
+            flushSequenceLists(situation);
+            SeqContainer soFuckingDeepContainer = analyysi(situation, negateColor(side), currentDepth + 1, maxDepth);
+            cancelATakingMoveSequence(situation, tsBackup[i]);
+            if (replaceConditionFor(soFuckingDeepContainer.eval, topBorder, side)) {
+                topBorder = soFuckingDeepContainer.eval;
+                toReturn.eval = topBorder;
+                toReturn.takingSequence = tsBackup[i];
+                toReturn.seqNumberToDo = 2;
+            }
+        }
+        delete [] tsBackup;
+        // todo lop for tak
+        return toReturn;
     }
-
-
-    flushMoveBuffers(situation);
-    findAllMoves(situation, negateColor(side));
 }
 
 SeqContainer getBestMove(GameSituation situation, Color side, Difficulty depth) {
     GameSituation copyOfGS = situation;
-    SeqContainer bestMoveContainer; bestMoveContainer.eval = -10000000; bestMoveContainer.seqNumberToDo = -1;
-    analyysi(&copyOfGS, side, 0, depth, &bestMoveContainer);
-    return bestMoveContainer;
+    SeqContainer bestMoveContainer; bestMoveContainer.seqNumberToDo = -1;
+
+    return analyysi(&copyOfGS, side, 0, depth);
 
 }
 

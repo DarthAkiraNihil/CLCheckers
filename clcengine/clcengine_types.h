@@ -10,7 +10,7 @@ enum Color {Black, White};
 enum CheckerType {Regular, King};
 enum GameState {PlayerMove, EnemyMoveReal, EnemyMoveComputer, BlackWon, WhiteWon};
 enum GameType {RvsR, RvsC}; //RvsR = Real versus Real, RvsC = Real vs Computer
-enum Difficulty {Easy = 2, Normal = 3, Hard = 4, Insane = 5, Extreme = 6, Diabolic = 8};
+enum Difficulty {Easy = 2, Normal = 4, Hard = 6, Insane = 8, Extreme = 10, Diabolic = 12};
 // may delete last two
 
 
@@ -18,16 +18,20 @@ const int regularCheckerCost = 100;
 const int kingCheckerCost = 250;
 bool ENABLED_EMULATION = true;
 
-const int qualityFactor[8][8] = {
-        {1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200},
-        {1150, 1150, 1150, 1150, 1150, 1150, 1150, 1150},
-        {1150, 1150, 1150, 1150, 1150, 1150, 1150, 1150},
-        {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000},
-        {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000},
-        {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000},
-        {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000},
-        {1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000}
+const float BLACK_VICTORY = 100000.0;
+const float WHITE_VICTORY = -100000.0;
+
+const float qualityFactor[8][4] = {
+        {1.2, 1.2, 1.2, 1.2},
+        {1.15, 1.2, 1.2, 1.15},
+        {1.15, 1.2, 1.2, 1.13},
+        {1.0, 1.2, 1.15, 1.0},
+        {1.0, 1.2, 1.2, 1.0},
+        {1.0, 1.0, 1.0, 1.0},
+        {1.0, 1.0, 1.0, 1.0},
+        {1.0, 1.0, 1.0, 1.0},
 };
+
 
 struct Coordinates {
     int x, y;
@@ -101,7 +105,8 @@ struct SeqContainer {
     RegMoveSequence regMoveSequence;
     TakingSequence takingSequence;
     MixedSequence mixedSequence;
-    int seqNumberToDo, eval;
+    int seqNumberToDo;
+    float eval;
 };
 
 struct Game {
