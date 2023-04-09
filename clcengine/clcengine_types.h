@@ -70,8 +70,7 @@ struct TakingSequence {
 
 struct MixedSequence {
     Move kingBecomingMove;
-    TakingMove takingMoves[16];
-    int tmsCount;
+    TakingSequence takingSequence;
 };
 
 struct Board {
@@ -90,9 +89,10 @@ struct GameSituation {
     Move lastKingBecomingMove;
     //Move regularMoves[128], kingBecomingMoves[16];
     //TakingMove regularTakingMoves[64], kingTakingMoves[32];
-    int tmsCount, rmsCount;
+    int tmsCount, rmsCount, mmsCount;
     TakingMove takingMoves[100];
     TakingSequence lastTakingSequence, takingSequences[16];
+    MixedSequence mixedSequences[16];
     RegMoveSequence regMoveSequences[32];
 };
 

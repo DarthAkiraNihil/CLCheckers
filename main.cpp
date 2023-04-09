@@ -109,14 +109,15 @@ int main() {
             case 1: {
 
                 //ascendChecker(&test.situation.board.checkers[White][10]);
-                //ascendChecker(&test.situation.board.checkers[Black][9]);
-                for (int i = 0; i < 6; i++) {
+
+                for (int i = 0; i < 11; i++) {
                     removeChecker(&test.situation.board, 0, Black);
 
                 }
-                for (int i = 0; i < 11; i++) removeChecker(&test.situation.board, 0, White);
-                //removeChecker(&test.situation.board, 1, White);
+                for (int i = 0; i < 8; i++) removeChecker(&test.situation.board, 0, White);
+                removeChecker(&test.situation.board, 1, White);
                 //ascendChecker(&test.situation.board.checkers[White][0]);
+                //ascendChecker(&test.situation.board.checkers[Black][0]);
                 updateBoardRender(&test.situation.board);
                 Color forWho = Black;
                 while (true) {
@@ -130,7 +131,7 @@ int main() {
                         gotoxy(16, 2 + i);
                         RegMoveSequence extracted = test.situation.regMoveSequences[i];
                         if (extracted.rmsCount == 2) {
-                            printf("%d) [%d : %d] -> [%d : %d] + [%d : %d] -> [%d : %d]",
+                            printf("%d) [%d : %d][%d : %d] + [%d : %d][%d : %d]",
                                    i,
                                    test.situation.regMoveSequences[i].regularMoves[0].source.x,
                                    test.situation.regMoveSequences[i].regularMoves[0].source.y,
@@ -175,6 +176,22 @@ int main() {
                                    test.situation.takingSequences[i].takingMoves[j].victim.y,
                                    test.situation.takingSequences[i].takingMoves[j].destination.x,
                                    test.situation.takingSequences[i].takingMoves[j].destination.y);
+                        }
+
+                    }
+                    for (int i = 0; i < test.situation.mmsCount; i++) {
+                        MixedSequence extracted = test.situation.mixedSequences[i];
+                        gotoxy(16, 15 + i);
+                        printf("%d)[%d:%d][%d:%d]>", i, extracted.kingBecomingMove.source.x,extracted.kingBecomingMove.source.y,extracted.kingBecomingMove.destination.x,extracted.kingBecomingMove.destination.y);
+
+                        for (int j = 0; j < extracted.takingSequence.tmsCount; j++) {
+                            printf("[%d:%d|%d:%d|%d:%d]|",
+                                   extracted.takingSequence.takingMoves[j].source.x,
+                                   extracted.takingSequence.takingMoves[j].source.y,
+                                   extracted.takingSequence.takingMoves[j].victim.x,
+                                   extracted.takingSequence.takingMoves[j].victim.y,
+                                   extracted.takingSequence.takingMoves[j].destination.x,
+                                   extracted.takingSequence.takingMoves[j].destination.y);
                         }
 
                     }
