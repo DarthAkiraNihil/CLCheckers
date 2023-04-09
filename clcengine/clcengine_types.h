@@ -82,25 +82,26 @@ struct Board {
 struct GameSituation {
     Board board;
     //int rmCount, krmCount, kbmCount, rtmCount, ktmCount;
-    int rmCount, tmCount;
+    //int rmCount, tmCount;
     Color playerSide;
     //Move regularMoves[32], kingRegularMoves[64], kingBecomingMoves[16];
-    Move regularMoves[128];
+    Move regularMovesBuffer[128];
     Move lastKingBecomingMove;
     //Move regularMoves[128], kingBecomingMoves[16];
     //TakingMove regularTakingMoves[64], kingTakingMoves[32];
     int tmsCount, rmsCount, mmsCount;
-    TakingMove takingMoves[100];
+    TakingMove takingMovesBuffer[100];
+    int tmBufferLen, rmBufferLen;
     TakingSequence lastTakingSequence, takingSequences[16];
     MixedSequence mixedSequences[16];
     RegMoveSequence regMoveSequences[32];
 };
 
-struct MoveContainer {
-    Move move;
-    TakingMove takingMove;
+struct SeqContainer {
+    RegMoveSequence regMoveSequence;
     TakingSequence takingSequence;
-    int whatToTake;
+    MixedSequence mixedSequence;
+    int seqNumberToDo, eval;
 };
 
 struct Game {
