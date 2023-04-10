@@ -30,7 +30,6 @@ TakingSequence getNullPath() {
     return path;
 }
 
-
 void initiateChecker(Checker* checker, int x, int y, Color color) {
     checker->coordinates.x = x;
     checker->coordinates.y = y;
@@ -55,7 +54,7 @@ void updateBoardRender(Board* board) {
     }
 }
 
-Board createANewBoard(/*Color playerSide*/) {
+Board createANewBoard() {
     Board newBoard;
     newBoard.checkersCount[Black] = 12; newBoard.checkersCount[White] = 12;
     int valueOfInitedPairs = 0;
@@ -73,38 +72,22 @@ GameSituation makeNullGameSituation(Color playerSide) {
     GameSituation gameSituation;
     gameSituation.board = createANewBoard();
     gameSituation.playerSide = playerSide;
-    gameSituation.rmBufferLen = 0; //gameSituation.krmCount = 0; gameSituation.kbmCount = 0;
+    gameSituation.rmBufferLen = 0;
     gameSituation.tmBufferLen = 0;
     gameSituation.tmsCount = 0;
     gameSituation.rmsCount = 0;
     gameSituation.mmsCount = 0;
     gameSituation.lastTakingSequence.tmsCount = 0;
     for (int i = 0; i < 16; i++) gameSituation.takingSequences[i].tmsCount = 0;
-    Color turnOf;
-    //gameSituation.rtmCount = 0; gameSituation.ktmCount = 0;
+    //Color turnOf;
     return gameSituation;
 }
-
-
 
 Game createANewGame(Color playerSide, Color firstMove, GameType type) {
     Game newGame;
     newGame.situation = makeNullGameSituation(playerSide);
     newGame.state = (playerSide == firstMove) ? PlayerMove : ((type == RvsR) ? EnemyMoveReal : EnemyMoveComputer);
     return newGame;
-}
-
-Checker getCheckerByCoords(GameSituation* situation, int cx, int cy) {
-    for (int i = 0; i < situation->board.checkersCount[White]; i++) {
-        if (situation->board.checkers[White][i].coordinates.x == cx && situation->board.checkers[White][i].coordinates.y == cy) {
-            return situation->board.checkers[White][i];
-        }
-    }
-    for (int i = 0; i < situation->board.checkersCount[Black]; i++) {
-        if (situation->board.checkers[Black][i].coordinates.x == cx && situation->board.checkers[Black][i].coordinates.y == cy) {
-            return situation->board.checkers[Black][i];
-        }
-    }
 }
 
 int getCheckerIndexByCoordsAndColor(GameSituation* situation, int cx, int cy, Color color) {
@@ -129,7 +112,6 @@ Color negateColor(Color color) {
     if (color == White) return Black;
     else if (color == Black) return White;
 }
-
 
 CheckerType getCheckerTypeOnBoard(GameSituation* situation, int cx, int cy) {
     BoardCellState tInfo = situation->board.boardRender[cy][cx];
@@ -157,24 +139,14 @@ bool isMarkedForDeath(GameSituation* situation, Color checkerColor, int mx, int 
     return situation->board.checkers[checkerColor][index].markedForDeath;
 }
 
-
-
 bool isAVictim(GameSituation* situation, Color forWhichSide, int tx, int ty) {
-    //bool lock = isMarkedForDeath(situation, negateColor(forWhichSide), getCheckerIndexByCoordsAndColor(situation, tx, ty, forWhichSide));
     BoardCellState tInfo = situation->board.boardRender[ty][tx];
-    //if (lock) return false;
-    //else {
-        if (forWhichSide == Black) {
-            return (tInfo == REG_WHITE || tInfo == KING_WHITE);
-        } else if (forWhichSide == White) {
-            return (tInfo == REG_BLACK || tInfo == KING_BLACK);
-        } else return false;
-    //}
+    if (forWhichSide == Black) {
+        return (tInfo == REG_WHITE || tInfo == KING_WHITE);
+    } else if (forWhichSide == White) {
+        return (tInfo == REG_BLACK || tInfo == KING_BLACK);
+    } else return false;
 }
-
-
-
-
 
 bool isNotOnKBBorder(int y, Color side) {
     return (side == White) ? y < 6 : y > 1;
@@ -186,18 +158,18 @@ void findAllKBMovesForOne(GameSituation* situation, Color checkerColor, int chec
         move.isKingMove = false; move.isKingBecomingMove = true;
         int ex = situation->board.checkers[checkerColor][checkerIndex].coordinates.x;
         int ey = situation->board.checkers[checkerColor][checkerIndex].coordinates.y;
-        move.source.x = ex; move.source.y = ey;
+        move.source = {ex, ey};
 
         if (checkerColor == Black ? ey == 1 : ey == 6) {
             if (ex < 7) {
                 if ((situation->board.boardRender[(checkerColor == Black ? ey - 1 : ey + 1)][ex+1] == EMPTY_BLACK)) {
-                    move.destination.y = (checkerColor == Black ? ey - 1 : ey + 1); move.destination.x = ex + 1;
+                    move.destination = {ex + 1, checkerColor == Black ? ey - 1 : ey + 1};
                     situation->regularMovesBuffer[situation->rmBufferLen++] = move;
                 }
             }
             if (ex > 0) {
                 if ((situation->board.boardRender[(checkerColor == Black ? ey - 1 : ey + 1)][ex-1] == EMPTY_BLACK)) {
-                    move.destination.y = (checkerColor == Black ? ey - 1 : ey + 1); move.destination.x = ex - 1;
+                    move.destination = {ex - 1, checkerColor == Black ? ey - 1 : ey + 1};
                     situation->regularMovesBuffer[situation->rmBufferLen++] = move;
                 }
             }
@@ -227,7 +199,6 @@ bool regMoveLookingFlag(int x, int y, Coordinates direction) {
     else if (direction.x == NORTH_WEST.x) {
         return x > 0;
     }
-
 }
 
 void findAllKingMovesForOneOnDir(GameSituation* situation, Color checkerColor, int checkerIndex, Coordinates directionShift) {
@@ -238,11 +209,9 @@ void findAllKingMovesForOneOnDir(GameSituation* situation, Color checkerColor, i
     move.source = {ex, ey};
     bool flag = longMoveLookingFlag(ex, ey, directionShift);
     int shift = 1;
-    //kingMoveLookingFlag(ex + shift*directionShift.x, ey + shift * directionShift.y, directionShift)
     while (flag) {
         if (situation->board.boardRender[ey + shift * directionShift.y][ex + shift*directionShift.x] == EMPTY_BLACK) {
-            move.destination.x = ex + shift*directionShift.x;
-            move.destination.y = ey + shift * directionShift.y;
+            move.destination = {ex + shift * directionShift.x, ey + shift * directionShift.y};
             situation->regularMovesBuffer[situation->rmBufferLen++] = move;
             flag = longMoveLookingFlag(ex + shift*directionShift.x, ey + shift * directionShift.y, directionShift);
         } else {
@@ -288,70 +257,53 @@ void findAllRegularMovesForOne(GameSituation* situation, Color checkerColor, int
     }
 }
 
-void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex/*, TakingMove previousMove*/) {
+void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
     if (situation->board.checkers[checkerColor][checkerIndex].type != King) {
         TakingMove takingMove;
         int ex = situation->board.checkers[checkerColor][checkerIndex].coordinates.x;
         int ey = situation->board.checkers[checkerColor][checkerIndex].coordinates.y;
-        takingMove.source.x = ex;
-        takingMove.source.y = ey;
-        //int vx = previousMove.victim.x, vy = previousMove.victim.y;
+        takingMove.source = {ex, ey};
         if (ey < 6) {
             if (ex < 6) {
-                //bool farIsFree = false;
-
                 if ((situation->board.boardRender[ey + 2][ex + 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex + 1, ey + 1) && (!isMarkedForDeath(situation,negateColor(checkerColor), ex + 1, ey + 1))/* && ((ex + 1 != vx) || (ey + 1 != vy))*/) {
-                    takingMove.destination.y = ey + 2;
-                    takingMove.destination.x = ex + 2;
-                    takingMove.victim.x = ex + 1;
-                    takingMove.victim.y = ey + 1;
+                    takingMove.destination = {ex + 2, ey + 2};
+                    takingMove.victim = {ex + 1, ey + 1};
                     takingMove.takingSide = negateColor(checkerColor);
                     takingMove.victimType = getCheckerTypeOnBoard(situation, ex + 1, ey + 1);
                     takingMove.isASpecialMove = (checkerColor == White && ey == 5);
                     situation->takingMovesBuffer[situation->tmBufferLen++] = takingMove;
-                    //situation->rmCount++;
                 }
             }
             if (ex > 1) {
-                if ((situation->board.boardRender[ey + 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex - 1, ey + 1) && !isMarkedForDeath(situation,
-                                                                                                                                                             negateColor(checkerColor), ex - 1, ey + 1)/* && ((ex - 1 != vx) || (ey + 1 != vy))*/) {
-                    takingMove.destination.y = ey + 2;
-                    takingMove.destination.x = ex - 2;
-                    takingMove.victim.x = ex - 1;
-                    takingMove.victim.y = ey + 1;
+                if ((situation->board.boardRender[ey + 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex - 1, ey + 1) && !isMarkedForDeath(situation,negateColor(checkerColor), ex - 1, ey + 1)/* && ((ex - 1 != vx) || (ey + 1 != vy))*/) {
+                    takingMove.destination = {ex - 2, ey + 2};
+                    takingMove.victim = {ex - 1, ey + 1};
                     takingMove.takingSide = negateColor(checkerColor);
                     takingMove.victimType = getCheckerTypeOnBoard(situation, ex - 1, ey + 1);
                     takingMove.isASpecialMove = (checkerColor == White && ey == 5);
                     situation->takingMovesBuffer[situation->tmBufferLen++] = takingMove;
-                    //situation->rmCount++;
                 }
             }
         }
         if (ey > 1) {
             if (ex < 6) {
                 if ((situation->board.boardRender[ey - 2][ex + 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex + 1, ey - 1) && !isMarkedForDeath(situation,negateColor(checkerColor), ex + 1, ey - 1)/* && ((ex + 1 != vx) || (ey - 1 != vy))*/) {
-                    takingMove.destination.y = ey - 2;
-                    takingMove.destination.x = ex + 2;
-                    takingMove.victim.x = ex + 1;
-                    takingMove.victim.y = ey - 1;
+                    takingMove.destination = {ex + 2, ey - 2};
+                    takingMove.victim = {ex + 1, ey - 1};
                     takingMove.takingSide = negateColor(checkerColor);
                     takingMove.victimType = getCheckerTypeOnBoard(situation, ex + 1, ey - 1);
                     takingMove.isASpecialMove = (checkerColor == Black && ey == 2);
                     situation->takingMovesBuffer[situation->tmBufferLen++] = takingMove;
-                    //situation->rmCount++;
                 }
             }
             if (ex > 1) {
                 if ((situation->board.boardRender[ey - 2][ex - 2] == EMPTY_BLACK) && isAVictim(situation, checkerColor, ex - 1, ey - 1) && !isMarkedForDeath(situation,negateColor(checkerColor), ex - 1, ey - 1)/* && ((ex - 1 != vx) || (ey - 1 != vy))*/) {
-                    takingMove.destination.y = ey - 2;
-                    takingMove.destination.x = ex - 2;
-                    takingMove.victim.x = ex - 1;
-                    takingMove.victim.y = ey - 1;
+                    takingMove.destination = {ex - 2, ey - 2};
+                    takingMove.victim = {ex - 1, ey - 1};
                     takingMove.takingSide = negateColor(checkerColor);
                     takingMove.victimType = getCheckerTypeOnBoard(situation, ex - 1, ey - 1);
                     takingMove.isASpecialMove = (checkerColor == Black && ey == 2);
                     situation->takingMovesBuffer[situation->tmBufferLen++] = takingMove;
-                    //situation->rmCount++;
                 }
             }
         }
@@ -359,20 +311,14 @@ void findAllTakingMovesForOne(GameSituation* situation, Color checkerColor, int 
 }
 
 int findDistanceToVictim(GameSituation* situation, int x, int y, Color forWhichSide, Coordinates direction) {
-    // -1 if no victim
     int shift = 1;
-    //bool flag = true;
     while (longMoveLookingFlag(x + shift*direction.x, y + shift * direction.y, direction)) {
-        if (isAFriend(situation, forWhichSide, x + shift*direction.x, y + shift * direction.y)|| isMarkedForDeath(situation, negateColor(forWhichSide), x + shift*direction.x, y + shift * direction.y)) return -1;
-
-        //else if (isMarkedForDeath(situation, negateColor(forWhichSide), x + shift*direction.x, y + shift * direction.y)) return -1;
+        if (isAFriend(situation, forWhichSide, x + shift*direction.x, y + shift * direction.y) || isMarkedForDeath(situation, negateColor(forWhichSide), x + shift*direction.x, y + shift * direction.y)) return -1;
         else if (isAFriend(situation, forWhichSide, x + shift*direction.x, y + shift * direction.y)) return -1;
         else if (isAVictim(situation, forWhichSide, x + shift * direction.x, y + shift * direction.y)) {
             return shift;
         }
         else if (situation->board.boardRender[y + shift * direction.y][x + shift*direction.x] == EMPTY_BLACK) shift++;
-        //else return -1;
-
     }
     return -1;
 }
@@ -390,11 +336,9 @@ void findAllKingTakingMovesForOneOnDir(GameSituation* situation, Color checkerCo
         takingMove.victimType = getCheckerTypeOnBoard(situation, ex + victimDistance * directionShift.x, ey + victimDistance * directionShift.y);
         bool flag = longMoveLookingFlag(ex + victimDistance * directionShift.x, ey + victimDistance * directionShift.y, directionShift);
         int additionalShift = 1;
-        //kingMoveLookingFlag(ex + shift*directionShift.x, ey + shift * directionShift.y, directionShift)
         while (flag) {
             if (situation->board.boardRender[ey + directionShift.y * (victimDistance + additionalShift)][ex + directionShift.x * (victimDistance + additionalShift)] == EMPTY_BLACK) {
                 takingMove.destination = {ex + directionShift.x * (victimDistance + additionalShift), ey + directionShift.y * (victimDistance + additionalShift)};
-
                 situation->takingMovesBuffer[situation->tmBufferLen++] = takingMove;
                 flag = longMoveLookingFlag(ex + directionShift.x * (victimDistance + additionalShift), ey + directionShift.y * (victimDistance + additionalShift), directionShift);
             } else {
@@ -403,7 +347,6 @@ void findAllKingTakingMovesForOneOnDir(GameSituation* situation, Color checkerCo
             additionalShift++;
         }
     }
-
 }
 
 void findAllKingTakingMovesForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
@@ -413,46 +356,11 @@ void findAllKingTakingMovesForOne(GameSituation* situation, Color checkerColor, 
         findAllKingTakingMovesForOneOnDir(situation, checkerColor, checkerIndex, SOUTH_EAST);
         findAllKingTakingMovesForOneOnDir(situation, checkerColor, checkerIndex, SOUTH_WEST);
     }
-
-
 }
-
-void findAllRegularTakingMoves(GameSituation* situation, Color forWhichSide) {
-    for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
-        findAllTakingMovesForOne(situation, forWhichSide, i);
-    }
-}
-
-void findAllKingTakingMoves(GameSituation* situation, Color forWhichSide, bool afterMove) {
-    for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
-        findAllKingTakingMovesForOne(situation, forWhichSide, i);
-    }
-}
-
-inline void findAllTakingSequencesForOne(GameSituation* situation, Checker* checker, int found);
-
-inline void clearLastTakingSequence(GameSituation* situation) {
-    situation->lastTakingSequence.tmsCount = 0;
-}
-
-/*inline void clearRegularMoveList(GameSituation* situation) {
-    situation->rmCount = 0;
-}
-
-inline void clearTakingMoveList(GameSituation* situation) {
-    situation->tmCount = 0;
-}*/
 
 inline void flushMoveBuffers(GameSituation* situation) {
     situation->tmBufferLen = 0;
     situation->rmBufferLen = 0;
-   //clearRegularMoveList(situation);
-    //clearTakingMoveList(situation);
-    //situation->tmCount = 0;
-    //situation->krmCount = 0;
-    //situation->kbmCount = 0;
-    //situation->rtmCount = 0;
-    //situation->ktmCount = 0;
 }
 
 
@@ -478,10 +386,8 @@ void ascendChecker(Checker* checker) {
 int makeAMove(GameSituation* situation, Move move) {
     Color movedColor = sideColor(situation, move.source.x, move.source.y);
     int movedIndex = getCheckerIndexByCoordsAndColor(situation, move.source.x, move.source.y, movedColor);
-    situation->board.checkers[movedColor][movedIndex].coordinates.x = move.destination.x;
-    situation->board.checkers[movedColor][movedIndex].coordinates.y = move.destination.y;
+    situation->board.checkers[movedColor][movedIndex].coordinates = {move.destination.x, move.destination.y};
     if (move.isKingBecomingMove) ascendChecker(&(situation->board.checkers[movedColor][movedIndex]));
-    //updateBoardRender(&(situation->board));
     updateBoardRender(&(situation->board));
     flushMoveBuffers(situation);
     if (move.isKingBecomingMove) {
@@ -493,24 +399,15 @@ int makeAMove(GameSituation* situation, Move move) {
         }
         return 1;
     } else return 0;
-    //situation->board.boardRender[move.destination.y][move.destination.x] = situation->board.boardRender[move.source.y][move.source.x];
-    //situation->board.boardRender[move.source.y][move.source.x] = EMPTY_BLACK;
-}
-
-void addToLastTakingSequence(GameSituation* situation, TakingMove move) {
-    situation->lastTakingSequence.takingMoves[situation->lastTakingSequence.tmsCount++] = move;
 }
 
 int makeATakingMove(GameSituation* situation, TakingMove move) {
-
     Color movedColor = negateColor(move.takingSide);
     int movedIndex = getCheckerIndexByCoordsAndColor(situation, move.source.x, move.source.y, movedColor);
     Color victimColor = move.takingSide;
     int victimIndex = getCheckerIndexByCoordsAndColor(situation, move.victim.x, move.victim.y, victimColor);
-    situation->board.checkers[movedColor][movedIndex].coordinates.x = move.destination.x;
-    situation->board.checkers[movedColor][movedIndex].coordinates.y = move.destination.y;
+    situation->board.checkers[movedColor][movedIndex].coordinates = {move.destination.x, move.destination.y};
     if (move.isASpecialMove) ascendChecker(&(situation->board.checkers[movedColor][movedIndex]));
-
     situation->board.checkers[victimColor][victimIndex].markedForDeath = true;
     flushMoveBuffers(situation);
     updateBoardRender(&(situation->board));
@@ -521,15 +418,6 @@ int makeATakingMove(GameSituation* situation, TakingMove move) {
         findAllTakingMovesForOne(situation, movedColor, movedIndex);
     }
     return situation->tmBufferLen;
-    //if (situation->tmCount != 0) {
-        //situation->lastTakingSequence.takingMoves[situation->lastTakingSequence.tmsCount++] = move;
-    //    return -1;
-    //}
-    //removeChecker(&(situation->board), victimIndex, victimColor);
-    //updateBoardRender(&(situation->board));
-
-    //clearMoveLists(situation);
-    //if (move.isASpecialMove) return 1; else return 0;
 }
 
 
@@ -537,27 +425,20 @@ int makeATakingMove(GameSituation* situation, TakingMove move) {
 int cancelAMove(GameSituation* situation, Move move) {
     Color movedColor = sideColor(situation, move.destination.x, move.destination.y);
     int movedIndex = getCheckerIndexByCoordsAndColor(situation, move.destination.x, move.destination.y, movedColor);
-    situation->board.checkers[movedColor][movedIndex].coordinates.x = move.source.x;
-    situation->board.checkers[movedColor][movedIndex].coordinates.y = move.source.y;
+    situation->board.checkers[movedColor][movedIndex].coordinates = {move.source.x, move.source.y};
     if (move.isKingBecomingMove) descendChecker(&(situation->board.checkers[movedColor][movedIndex]));
     updateBoardRender(&(situation->board));
     if (move.isKingBecomingMove) return -1; else return 0;
-    //situation->board.boardRender[move.destination.y][move.destination.x] = situation->board.boardRender[move.source.y][move.source.x];
-    //situation->board.boardRender[move.source.y][move.source.x] = EMPTY_BLACK;
 }
 
 int cancelATakingMove(GameSituation* situation, TakingMove move, bool emulated = false) {
     Color movedColor = negateColor(move.takingSide);
     int movedIndex = getCheckerIndexByCoordsAndColor(situation, move.destination.x, move.destination.y, movedColor);
-    //Color victimColor = move.takingSide;
-    //int victimIndex = getCheckerIndexByCoordsAndColor(situation, move.victim.x, move.victim.y, victimColor);
-    situation->board.checkers[movedColor][movedIndex].coordinates.x = move.source.x;
-    situation->board.checkers[movedColor][movedIndex].coordinates.y = move.source.y;
+    situation->board.checkers[movedColor][movedIndex].coordinates = {move.source.x, move.source.y};
     if (move.isASpecialMove) descendChecker(&(situation->board.checkers[movedColor][movedIndex]));
     if (!emulated) {
         Checker regeneratedVictim;
-        regeneratedVictim.coordinates.x = move.victim.x;
-        regeneratedVictim.coordinates.y = move.victim.y;
+        regeneratedVictim.coordinates = {move.victim.x, move.victim.y};
         regeneratedVictim.type = move.victimType;
         regeneratedVictim.color = move.takingSide;
         regeneratedVictim.markedForDeath = false;
@@ -567,13 +448,9 @@ int cancelATakingMove(GameSituation* situation, TakingMove move, bool emulated =
         int falseVictimIndex = getCheckerIndexByCoordsAndColor(situation, move.victim.x, move.victim.y, move.takingSide);
         situation->board.checkers[move.takingSide][falseVictimIndex].markedForDeath = false;
     }
-    //removeChecker(&(situation->board), victimIndex, victimColor);
-    //updateBoardRender(&(situation->board));
     updateBoardRender(&(situation->board));
-    //clearMoveLists(situation);
     if (move.isASpecialMove) return -1; else return 0;
 }
-
 
 void removeMarkedForDeath(GameSituation* situation, Color inWhere) {
     for (int i = 0; i < situation->board.checkersCount[inWhere]; i++) {
@@ -597,7 +474,6 @@ void findRegularMoveSequenceForOne(GameSituation* situation, Color checkerColor,
         for (int i = 0; i < savedRMs; i++) {
             Move extracted = buffer[i];
             if (extracted.isKingBecomingMove) {
-                //int insertIndex = situation->rmsCount;
                 flushMoveBuffers(situation);
                 int insertIndex;
                 makeAMove(situation, extracted);
@@ -611,8 +487,6 @@ void findRegularMoveSequenceForOne(GameSituation* situation, Color checkerColor,
                     }
                 }
                 cancelAMove(situation, extracted);
-                //situation->regMoveSequences[insertIndex].regularMoves[situation->regMoveSequences[insertIndex].rmsCount++] = extracted;
-                //situation->rmsCount++;
             }
             else {
                 int insertIndex = situation->rmsCount;
@@ -640,13 +514,11 @@ void cancelARegMoveSequence(GameSituation* situation, RegMoveSequence regMoveSeq
     for (int i = regMoveSequence.rmsCount - 1; i > -1; i--) cancelAMove(situation, regMoveSequence.regularMoves[i]);
 }
 
-//over loadede for mized sequence
 void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, int checkerIndex, TakingSequence* currentPath, bool afterMove = false) {
     if (!afterMove) {
         findAllKingTakingMovesForOne(situation, checkerColor, checkerIndex);
         findAllTakingMovesForOne(situation, checkerColor, checkerIndex);
     }
-
     TakingMove* buffer = new TakingMove[situation->tmBufferLen];
     for (int i = 0; i < situation->tmBufferLen; i++) buffer[i] = situation->takingMovesBuffer[i];
     int savedTMs = situation->tmBufferLen;
@@ -655,15 +527,11 @@ void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, 
         appendToATakingSequence(currentPath, extracted);
         int stat = makeATakingMove(situation, extracted);
         if (stat == 0) {
-
-                copyToAnotherTakingSequence(currentPath, &(situation->takingSequences[situation->tmsCount++]));
-
-            //deleteLastFromATakingSequence(currentPath);
+            copyToAnotherTakingSequence(currentPath, &(situation->takingSequences[situation->tmsCount++]));
         }
         else {
             findAllTakingSequencesForOne(situation, checkerColor, checkerIndex, currentPath, true);
         }
-
         cancelATakingMove(situation, extracted, ENABLED_EMULATION);
         deleteLastFromATakingSequence(currentPath);
     }
@@ -693,7 +561,6 @@ void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, 
         findAllKingTakingMovesForOne(situation, checkerColor, checkerIndex);
         findAllTakingMovesForOne(situation, checkerColor, checkerIndex);
     }
-
     TakingMove* buffer = new TakingMove[situation->tmBufferLen];
     for (int i = 0; i < situation->tmBufferLen; i++) buffer[i] = situation->takingMovesBuffer[i];
     int savedTMs = situation->tmBufferLen;
@@ -704,14 +571,10 @@ void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, 
         if (stat == 0) {
             situation->mixedSequences[situation->mmsCount].kingBecomingMove = kingBecomingMoveToInsert;
             copyToAnotherTakingSequence(currentPath, &(situation->mixedSequences[situation->mmsCount++].takingSequence));
-            //copyToAnotherTakingSequence(currentPath, &(situation->takingSequences[situation->tmsCount++]));
-
-            //deleteLastFromATakingSequence(currentPath);
         }
         else {
             findAllTakingSequencesForOne(situation, checkerColor, checkerIndex, currentPath, true);
         }
-
         cancelATakingMove(situation, extracted, ENABLED_EMULATION);
         deleteLastFromATakingSequence(currentPath);
     }
@@ -729,33 +592,23 @@ void findAllMixedSequencesForOne(GameSituation* situation, Color checkerColor, i
             Move extracted = buffer[i];
             situation->mixedSequences[situation->mmsCount].kingBecomingMove = extracted;
             if (extracted.isKingBecomingMove) {
-                //situation->mixedSequences[situation->mmsCount].kingBecomingMove = extracted;
-                //int insertIndex = situation->rmsCount;
                 flushMoveBuffers(situation);
-                //int insertIndex;
                 makeAMove(situation, extracted);
                 if (situation->tmBufferLen != 0) {
                     savedTMs = situation->tmBufferLen;
                     flushMoveBuffers(situation);
-                    //insertIndex = situation->mmsCount;
-
                     TakingSequence null = getNullPath();
                     findAllTakingSequencesForOne(situation, checkerColor, checkerIndex, &null, extracted);
-                    //situation->mmsCount++;
                 }
                 cancelAMove(situation, extracted);
-                //situation->regMoveSequences[insertIndex].regularMoves[situation->regMoveSequences[insertIndex].rmsCount++] = extracted;
-                //situation->rmsCount++;
             }
         }
         delete [] buffer;
     }
-    //for (int i = savedTMs)
 }
 
 void findAllMixedSequences(GameSituation* situation, Color forWhichSide) {
     for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
-        //TakingSequence path = getNullPath();
         findAllMixedSequencesForOne(situation, forWhichSide, i);
         flushMoveBuffers(situation);
     }
@@ -773,20 +626,10 @@ void cancelAMixedSequence(GameSituation* situation, MixedSequence mixedSequence)
 
 inline void findAllMoves(GameSituation* situation, Color forWhichSide) {
     findAllTakingMoveSequences(situation, forWhichSide);
-
-    //findAllKingTakingMoves(situation, forWhichSide);
-    //findAllRegularTakingMoves(situation, forWhichSide);
     if (situation->tmsCount == 0) {
         findAllMixedSequences(situation, forWhichSide);
         findAllRegularMoveSequences(situation, forWhichSide);
-        //findAllKingBecomingMoves(situation, forWhichSide);
-        //findAllKingMoves(situation, forWhichSide);
-        //findAllRegularMoves(situation, forWhichSide);
     }
-    //else {
-    //    situation->board.checkersCount[negateColor(forWhichSide)]--;
-    //}
-    //findAllKingTakingMoves(situation, forWhichSide);
 }
 
 void flushSequenceLists(GameSituation* situation) {
@@ -821,10 +664,6 @@ float evalQuality(GameSituation* situation) {
     return eval;
 }
 
-bool wonByFigures(GameSituation* situation, Color whatSide) {
-    return situation->board.checkersCount[negateColor(whatSide)] == 0;
-}
-
 float getVictoryEvalFor(Color side) {
     if (side == Black) return BLACK_VICTORY; else return WHITE_VICTORY;
 }
@@ -843,7 +682,7 @@ SeqContainer getNullContainer(Color side) {
     return container;
 }
 
-SeqContainer analyysi(GameSituation* situation, Color side, int currentDepth, Difficulty maxDepth) {
+SeqContainer analyze(GameSituation* situation, Color side, int currentDepth, Difficulty maxDepth) {
     SeqContainer toReturn = getNullContainer(side);
     float topBorder = getVictoryEvalFor(negateColor(side)), soFuckingDeepEval;//container->eval = getVictoryEvalFor(negateColor(side));
     findAllMoves(situation, side);
@@ -863,10 +702,10 @@ SeqContainer analyysi(GameSituation* situation, Color side, int currentDepth, Di
             makeAMixedSequence(situation, msBackup[i]);
             removeMarkedForDeath(situation, negateColor(side));
             flushSequenceLists(situation);
-            SeqContainer soFuckingDeepContainer = analyysi(situation, negateColor(side), currentDepth + 1, maxDepth);
+            SeqContainer deepMoveAnalyzed = analyze(situation, negateColor(side), currentDepth + 1, maxDepth);
             cancelAMixedSequence(situation, msBackup[i]);
-            if (replaceConditionFor(soFuckingDeepContainer.eval, topBorder, side)) {
-                topBorder = soFuckingDeepContainer.eval;
+            if (replaceConditionFor(deepMoveAnalyzed.eval, topBorder, side)) {
+                topBorder = deepMoveAnalyzed.eval;
                 toReturn.eval = topBorder;
                 toReturn.mixedSequence = msBackup[i];
                 toReturn.seqNumberToDo = 3;
@@ -879,10 +718,10 @@ SeqContainer analyysi(GameSituation* situation, Color side, int currentDepth, Di
         for (int i = 0; i < savedRMSS; i++) {
             makeARegMoveSequence(situation, rmsBackup[i]);
             flushSequenceLists(situation);
-            SeqContainer soFuckingDeepContainer = analyysi(situation, negateColor(side), currentDepth + 1, maxDepth);
+            SeqContainer deepMoveAnalyzed = analyze(situation, negateColor(side), currentDepth + 1, maxDepth);
             cancelARegMoveSequence(situation, rmsBackup[i]);
-            if (replaceConditionFor(soFuckingDeepContainer.eval, topBorder, side)) {
-                topBorder = soFuckingDeepContainer.eval;
+            if (replaceConditionFor(deepMoveAnalyzed.eval, topBorder, side)) {
+                topBorder = deepMoveAnalyzed.eval;
                 toReturn.eval = topBorder;
                 toReturn.regMoveSequence = rmsBackup[i];
                 toReturn.seqNumberToDo = 1;
@@ -899,10 +738,10 @@ SeqContainer analyysi(GameSituation* situation, Color side, int currentDepth, Di
             makeATakingMoveSequence(situation, tsBackup[i]);
             removeMarkedForDeath(situation, negateColor(side));
             flushSequenceLists(situation);
-            SeqContainer soFuckingDeepContainer = analyysi(situation, negateColor(side), currentDepth + 1, maxDepth);
+            SeqContainer deepMoveAnalyzed = analyze(situation, negateColor(side), currentDepth + 1, maxDepth);
             cancelATakingMoveSequence(situation, tsBackup[i]);
-            if (replaceConditionFor(soFuckingDeepContainer.eval, topBorder, side)) {
-                topBorder = soFuckingDeepContainer.eval;
+            if (replaceConditionFor(deepMoveAnalyzed.eval, topBorder, side)) {
+                topBorder = deepMoveAnalyzed.eval;
                 toReturn.eval = topBorder;
                 toReturn.takingSequence = tsBackup[i];
                 toReturn.seqNumberToDo = 2;
@@ -915,10 +754,7 @@ SeqContainer analyysi(GameSituation* situation, Color side, int currentDepth, Di
 
 SeqContainer getBestMove(GameSituation situation, Color side, Difficulty depth) {
     GameSituation copyOfGS = situation;
-    SeqContainer bestMoveContainer; bestMoveContainer.seqNumberToDo = -1;
-
-    return analyysi(&copyOfGS, side, 0, depth);
-
+    return analyze(&copyOfGS, side, 0, depth);
 }
 
 #endif CHECKERS_CLCHECKERS_H
