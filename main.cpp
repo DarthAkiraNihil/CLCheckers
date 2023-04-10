@@ -201,7 +201,7 @@ int main() {
                         }
                     }
                     else {
-                        SeqContainer bestMove = getBestMove(test.situation, forWho, Hard);
+                        SeqContainer bestMove = getBestMove(test.situation, forWho, Insane);
                         //while (bestMove.seqNumberToDo == -1) bestMove = getBestMove(test.situation, forWho, Hard);
                         switch (bestMove.seqNumberToDo) {
                             case 1: {

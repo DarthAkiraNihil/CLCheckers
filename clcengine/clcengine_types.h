@@ -10,7 +10,7 @@ enum Color {Black, White};
 enum CheckerType {Regular, King};
 enum GameState {PlayerMove, EnemyMoveReal, EnemyMoveComputer, BlackWon, WhiteWon};
 enum GameType {RvsR, RvsC}; //RvsR = Real versus Real, RvsC = Real vs Computer
-enum Difficulty {Easy = 3, Normal = 4, Hard = 7, Insane = 7, Extreme = 8, Diabolic = 10};
+enum Difficulty {Dumbass = 2, Easy, Normal, Hard = 6, Harder, Insane, Extreme, Diabolic};
 // may delete last two
 
 
@@ -85,18 +85,12 @@ struct Board {
 
 struct GameSituation {
     Board board;
-    //int rmCount, krmCount, kbmCount, rtmCount, ktmCount;
-    //int rmCount, tmCount;
     Color playerSide;
-    //Move regularMoves[32], kingRegularMoves[64], kingBecomingMoves[16];
-    Move regularMovesBuffer[128];
-    Move lastKingBecomingMove;
-    //Move regularMoves[128], kingBecomingMoves[16];
-    //TakingMove regularTakingMoves[64], kingTakingMoves[32];
+    Move regularMovesBuffer[24];
     int tmsCount, rmsCount, mmsCount;
-    TakingMove takingMovesBuffer[100];
+    TakingMove takingMovesBuffer[24];
     int tmBufferLen, rmBufferLen;
-    TakingSequence lastTakingSequence, takingSequences[16];
+    TakingSequence takingSequences[16];
     MixedSequence mixedSequences[16];
     RegMoveSequence regMoveSequences[32];
 };

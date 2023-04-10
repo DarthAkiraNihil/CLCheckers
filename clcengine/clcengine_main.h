@@ -77,7 +77,6 @@ GameSituation makeNullGameSituation(Color playerSide) {
     gameSituation.tmsCount = 0;
     gameSituation.rmsCount = 0;
     gameSituation.mmsCount = 0;
-    gameSituation.lastTakingSequence.tmsCount = 0;
     for (int i = 0; i < 16; i++) gameSituation.takingSequences[i].tmsCount = 0;
     //Color turnOf;
     return gameSituation;
@@ -391,7 +390,6 @@ int makeAMove(GameSituation* situation, Move move) {
     updateBoardRender(&(situation->board));
     flushMoveBuffers(situation);
     if (move.isKingBecomingMove) {
-        situation->lastKingBecomingMove = move;
         findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
         if (situation->tmBufferLen == 0) {
             findAllKingMovesForOne(situation, movedColor, movedIndex);
