@@ -104,6 +104,34 @@ void printRegMoveSeq(RegMoveSequence sequence, Coordinates at) {
     }
 }
 
+void printTakingSeq(TakingSequence sequence, Coordinates at) {
+    gotoxy(at.x, at.y);
+
+
+    for (int j = 0; j < sequence.tmsCount; j++) {
+        printf("[%d:%d][%d:%d][%d:%d]|",
+               sequence.takingMoves[j].source.x,
+               sequence.takingMoves[j].source.y,
+               sequence.takingMoves[j].victim.x,
+               sequence.takingMoves[j].victim.y,
+               sequence.takingMoves[j].destination.x,
+               sequence.takingMoves[j].destination.y);
+    }
+
+
+}
+
+void printMixedSeq(MixedSequence sequence, Coordinates at) {
+    gotoxy(at.x, at.y);
+
+        printf("[%d:%d][%d:%d]>", sequence.kingBecomingMove.source.x,sequence.kingBecomingMove.source.y,sequence.kingBecomingMove.destination.x,sequence.kingBecomingMove.destination.y);
+    printTakingSeq(sequence.takingSequence, {at.x+12, at.y});
+
+
+
+
+}
+
 int main() {
 
     clrscr();
@@ -133,243 +161,75 @@ int main() {
         switch (choice) {
             case 1: {
 
-                //ascendChecker(&test.situation.board.checkers[White][10]);
-
-                for (int i = 0; i < 11; i++) {
-                    removeChecker(&test.situation.board, 0, Black);
-
-                }
-                for (int i = 0; i < 11; i++) removeChecker(&test.situation.board, 0, White);
-                //removeChecker(&test.situation.board, 1, White);
-                //ascendChecker(&test.situation.board.checkers[White][0]);
-                //ascendChecker(&test.situation.board.checkers[Black][0]);
-                updateBoardRender(&test.situation.board);
                 Color forWho = player;
                 while (true) {
                     drawFrame(WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGTH, 1, 1);
                     renderBoard(&test.situation.board, player, 4, 4, true);
-                    //findAllRegularMoves(&test.situation, White);
-                    //findAllRegularKingMoves(&test.situation, White);
-                    //if (forWho == player) {
-                        //findAllMoves(&test.situation, forWho);
-                    //}
-                    //else {
-                        SeqContainer bestMove = getBestMove(test.situation, forWho, Insane);
-                        printRegMoveSeq(bestMove.regMoveSequence, {15, 10});
-                   // }
 
-                    gotoxy(3,20);
-                    printf("%f", evalQuality(&test.situation));
-                    waitForKey(13);
-                    for (int i = 0; i < test.situation.rmsCount; i++) {
-                        gotoxy(16, 2 + i);
-                        RegMoveSequence extracted = test.situation.regMoveSequences[i];
-                        if (extracted.rmsCount == 2) {
-                            printf("%d) [%d : %d][%d : %d] + [%d : %d][%d : %d]",
-                                   i,
-                                   test.situation.regMoveSequences[i].regularMoves[0].source.x,
-                                   test.situation.regMoveSequences[i].regularMoves[0].source.y,
-                                   test.situation.regMoveSequences[i].regularMoves[0].destination.x,
-                                   test.situation.regMoveSequences[i].regularMoves[0].destination.y,
-                                   test.situation.regMoveSequences[i].regularMoves[1].source.x,
-                                   test.situation.regMoveSequences[i].regularMoves[1].source.y,
-                                   test.situation.regMoveSequences[i].regularMoves[1].destination.x,
-                                   test.situation.regMoveSequences[i].regularMoves[1].destination.y
-                                   );
-
+                    if (forWho == player) {
+                        findAllMoves(&test.situation, forWho);
+                        for (int i = 0; i < test.situation.rmsCount; i++) {
+                            gotoxy(16, 2 + i);
+                            printf("%d)", i);
+                            printRegMoveSeq(test.situation.regMoveSequences[i], {20, 2+ i});
                         }
-                        else if (extracted.rmsCount == 1) {
-                            printf("%d) [%d : %d] -> [%d : %d]",
-                                   i,
-                                   test.situation.regMoveSequences[i].regularMoves[0].source.x,
-                                   test.situation.regMoveSequences[i].regularMoves[0].source.y,
-                                   test.situation.regMoveSequences[i].regularMoves[0].destination.x,
-                                   test.situation.regMoveSequences[i].regularMoves[0].destination.y
-                            );
+                        for (int i = 0; i < test.situation.mmsCount; i++) {
+                            gotoxy(16, 2 + i);
+                            printf("%d)", i);
+                            printMixedSeq(test.situation.mixedSequences[i], {20, 15 + i});
                         }
-                    }
-
-                    /*for (int i = 0; i < test.situation.rmCount; i++) {
-                        gotoxy(16, 2 + i);
-                        printf("%d) [%d : %d] -> [%d : %d]",
-                               i,
-                               test.situation.regularMoves[i].source.x,
-                               test.situation.regularMoves[i].source.y,
-                               test.situation.regularMoves[i].destination.x,
-                               test.situation.regularMoves[i].destination.y);
-                    }*/
-                    for (int i = 0; i < test.situation.tmsCount; i++) {
-
-                        gotoxy(16, 2 + i);
-                        printf("%d)", i);
-                        for (int j = 0; j < test.situation.takingSequences[i].tmsCount; j++) {
-                            printf("[%d:%d][%d:%d][%d:%d]|",
-                                   test.situation.takingSequences[i].takingMoves[j].source.x,
-                                   test.situation.takingSequences[i].takingMoves[j].source.y,
-                                   test.situation.takingSequences[i].takingMoves[j].victim.x,
-                                   test.situation.takingSequences[i].takingMoves[j].victim.y,
-                                   test.situation.takingSequences[i].takingMoves[j].destination.x,
-                                   test.situation.takingSequences[i].takingMoves[j].destination.y);
+                        for (int i = 0; i < test.situation.tmsCount; i++) {
+                            gotoxy(16, 2 + i);
+                            printf("%d)", i);
+                            printTakingSeq(test.situation.takingSequences[i], {20, 2+ i});
                         }
-
-                    }
-                    for (int i = 0; i < test.situation.mmsCount; i++) {
-                        MixedSequence extracted = test.situation.mixedSequences[i];
-                        gotoxy(16, 15 + i);
-                        printf("%d)[%d:%d][%d:%d]>", i, extracted.kingBecomingMove.source.x,extracted.kingBecomingMove.source.y,extracted.kingBecomingMove.destination.x,extracted.kingBecomingMove.destination.y);
-
-                        for (int j = 0; j < extracted.takingSequence.tmsCount; j++) {
-                            printf("[%d:%d|%d:%d|%d:%d]|",
-                                   extracted.takingSequence.takingMoves[j].source.x,
-                                   extracted.takingSequence.takingMoves[j].source.y,
-                                   extracted.takingSequence.takingMoves[j].victim.x,
-                                   extracted.takingSequence.takingMoves[j].victim.y,
-                                   extracted.takingSequence.takingMoves[j].destination.x,
-                                   extracted.takingSequence.takingMoves[j].destination.y);
-                        }
-
-                    }
-                    gotoxy(15, 16);
-                    //waitForKey(13);
-                    int move;
-                    scanf("%d", &move);
-                    int stat;
-                    clearLastTakingSequence(&test.situation);
-                    if (test.situation.tmsCount > 0) {
-
-                        //do {
-                            //TakingMove t = test.situation.takingMoves[move];
-                            //addToLastTakingSequence(&test.situation, t);
-                            //stat = makeATakingMove(&test.situation, t);
-                            makeATakingMoveSequence(&test.situation, test.situation.takingSequences[move]);
-                            /*renderBoard(&test.situation.board, White, 4, 4, true);
-                            if (stat == -1) {
-
-                                for (int i = 0; i < test.situation.tmCount; i++) {
-                                    gotoxy(39, 2 + i);
-                                    printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
-                                           i,
-                                           test.situation.takingMoves[i].source.x,
-                                           test.situation.takingMoves[i].source.y,
-                                           test.situation.takingMoves[i].victim.x,
-                                           test.situation.takingMoves[i].victim.y,
-                                           test.situation.takingMoves[i].destination.x,
-                                           test.situation.takingMoves[i].destination.y);
-                                }
-                                for (int i = 0; i < test.situation.lastTakingSequence.tmsCount; i++) {
-                                    gotoxy(39, 10 + i);
-                                    printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
-                                           i,
-                                           test.situation.lastTakingSequence.takingMoves[i].source.x,
-                                           test.situation.lastTakingSequence.takingMoves[i].source.y,
-                                           test.situation.lastTakingSequence.takingMoves[i].victim.x,
-                                           test.situation.lastTakingSequence.takingMoves[i].victim.y,
-                                           test.situation.lastTakingSequence.takingMoves[i].destination.x,
-                                           test.situation.lastTakingSequence.takingMoves[i].destination.y);
-                                }
-                                gotoxy(15, 13);
-                                printf("%d", test.situation.tmCount);
-                            }
-
-                            if (stat == -1) scanf("%d", &move);
-                            clrscr();*/
-
-
-
-                            //cancelATakingMove(&test.situation, t);
-
-                        //} while (stat == -1);
-                        removeMarkedForDeath(&test.situation, negateColor(forWho));
-                        //renderBoard(&test.situation.board, White, 4, 4, true);
-                        //waitForKey(13);
-                        //if (test.situation.lastTakingSequence.tmsCount > 1) cancelLastTakingSequence(&test.situation);
-                    }
-                    else {
-                        makeARegMoveSequence(&test.situation, test.situation.regMoveSequences[move]);
-                        //do {
-                            /*
-                            if (test.situation.tmCount == 0) {
-                                Move t = test.situation.regularMoves[move];
-                                stat = makeAMove(&test.situation, t);
+                        gotoxy(2, 15);
+                        int move;
+                        scanf("%d", &move);
+                        if (move >= 0) {
+                            if (test.situation.tmsCount > 0) {
+                                makeATakingMoveSequence(&test.situation, test.situation.takingSequences[move]);
+                                //removeMarkedForDeath(&test.situation, forWho);
                             }
                             else {
-                                TakingMove t = test.situation.takingMoves[move];
-                                stat = makeATakingMove(&test.situation, t);
-                                addToLastTakingSequence(&test.situation, t);
-                                //stat = 1;
-                            }
-                            renderBoard(&test.situation.board, White, 4, 4, true);
-                            if (stat == 1 || stat == -1) {
-                                //findAllKingTakingMovesForOne(&test.situation, forWho)
-                                //renderBoard(&test.situation.board, White, 4, 4, true);
-
-                                for (int i = 0; i < test.situation.tmCount; i++) {
-                                    gotoxy(39, 2 + i);
-                                    printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
-                                           i,
-                                           test.situation.takingMoves[i].source.x,
-                                           test.situation.takingMoves[i].source.y,
-                                           test.situation.takingMoves[i].victim.x,
-                                           test.situation.takingMoves[i].victim.y,
-                                           test.situation.takingMoves[i].destination.x,
-                                           test.situation.takingMoves[i].destination.y);
-                                }
-                                for (int i = 0; i < test.situation.lastTakingSequence.tmsCount; i++) {
-                                    gotoxy(39, 10 + i);
-                                    printf("%d) [%d : %d] -> [%d : %d] -> [%d : %d]",
-                                           i,
-                                           test.situation.lastTakingSequence.takingMoves[i].source.x,
-                                           test.situation.lastTakingSequence.takingMoves[i].source.y,
-                                           test.situation.lastTakingSequence.takingMoves[i].victim.x,
-                                           test.situation.lastTakingSequence.takingMoves[i].victim.y,
-                                           test.situation.lastTakingSequence.takingMoves[i].destination.x,
-                                           test.situation.lastTakingSequence.takingMoves[i].destination.y);
-                                }
-                                gotoxy(15, 13);
-                                printf("%d", test.situation.tmCount);
-
-                            } else if (stat == 2) {
-                                for (int i = 0; i < test.situation.rmCount; i++) {
-                                    gotoxy(16, 2 + i);
-                                    printf("%d) [%d : %d] -> [%d : %d]",
-                                           i,
-                                           test.situation.regularMoves[i].source.x,
-                                           test.situation.regularMoves[i].source.y,
-                                           test.situation.regularMoves[i].destination.x,
-                                           test.situation.regularMoves[i].destination.y);
-                                }
-                            }
-                            //renderBoard(&test.situation.board, White, 4, 4, true);
-                            //waitForKey(13);
-                            //cancelAMove(&test.situation, t);
-                            //makeAMove(&test.situation, test.situation.regularMoves[move]);
-                            if (stat != 0) scanf("%d", &move);*/
-                        //} while (stat != 0);
-                        //removeMarkedForDeath(&test.situation, negateColor(forWho));
-                    }
-                    //updateBoardRender(&test.situation.board);
-                    forWho = negateColor(forWho);
-                    //SeqContainer = 
-                    clrscr();
-                    //renderBoard(&test.situation.board, White, 4, 4, true);
-                    /*int key;
-                    do {
-                        key = getch();
-                        if (key == 224) {
-                            key = getch();
-                            switch (key) {
-                                case 80: {
-
-                                }
-                                case 72: {
-
-                                }
+                                makeARegMoveSequence(&test.situation, test.situation.regMoveSequences[move]);
                             }
                         }
-                    } while (key != 13);*/
+                        else {
+                            makeAMixedSequence(&test.situation, test.situation.mixedSequences[-move + 1]);
+                            //removeMarkedForDeath(&test.situation, forWho);
+                        }
+                    }
+                    else {
+                        SeqContainer bestMove = getBestMove(test.situation, forWho, Hard);
+                        //while (bestMove.seqNumberToDo == -1) bestMove = getBestMove(test.situation, forWho, Hard);
+                        switch (bestMove.seqNumberToDo) {
+                            case 1: {
+                                makeARegMoveSequence(&test.situation, bestMove.regMoveSequence);
+                                break;
+                            }
+                            case 2: {
+                                makeATakingMoveSequence(&test.situation, bestMove.takingSequence);
+                                //removeMarkedForDeath(&test.situation, forWho);
+                                break;
+                            }
+                            case 3: {
+                                makeAMixedSequence(&test.situation, bestMove.mixedSequence);
+                                //removeMarkedForDeath(&test.situation, forWho);
+                                break;
+                            }
+                        }
+                        //printRegMoveSeq(bestMove.regMoveSequence, {15, 10});
+                   }
+
+                    //updateBoardRender(&test.situation.board);
+                    updateBoardRender(&test.situation.board);
+                    forWho = negateColor(forWho);
+                    removeMarkedForDeath(&test.situation, forWho);
+                    clrscr();
+
                     flushSequenceLists(&test.situation);
-                    //clearMoveLists(&test.situation);
-                    //waitForKey(13);
+
                 }
                 break;
             }

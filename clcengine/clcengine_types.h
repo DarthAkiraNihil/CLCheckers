@@ -10,7 +10,7 @@ enum Color {Black, White};
 enum CheckerType {Regular, King};
 enum GameState {PlayerMove, EnemyMoveReal, EnemyMoveComputer, BlackWon, WhiteWon};
 enum GameType {RvsR, RvsC}; //RvsR = Real versus Real, RvsC = Real vs Computer
-enum Difficulty {Easy = 2, Normal = 4, Hard = 6, Insane = 8, Extreme = 10, Diabolic = 12};
+enum Difficulty {Easy = 3, Normal = 4, Hard = 6, Insane = 7, Extreme = 8, Diabolic = 10};
 // may delete last two
 
 
