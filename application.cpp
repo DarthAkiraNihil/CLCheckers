@@ -13,11 +13,15 @@
 
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
-
+Coordinates getPasteCoordinates() {
+    RECT screen;
+    GetWindowRect(GetDesktopWindow(), &screen);
+    return {(screen.right - WINDOW_SIZE_LENGTH) / 2, (screen.bottom - WINDOW_SIZE_HEIGHT) / 2};
+}
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, int cmdShow) {
     WNDCLASSEX mainClass = newWindowClass((HBRUSH) COLOR_WINDOW, LoadCursor(NULL, IDC_ARROW), instance, LoadIcon(NULL, IDI_APPLICATION), applicationProcessor);
-
+    Coordinates pasteCoordinates = getPasteCoordinates();
     mainClass.lpszClassName = _TEXT(APPLICATION_MAIN_CLASS_NAME);
     mainClass.hIcon = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_BIG_ICON), IMAGE_ICON, 128, 128, 0);
     mainClass.hIconSm = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_WIN_ICON), IMAGE_ICON, 16, 16, 0);
@@ -25,7 +29,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
 
     MSG applicationMSG = {0};
     //CreateWindowA
-    CreateWindowExA(0, mainClass.lpszClassName, APPLICATION_TITLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 100, 100, 500, 250, NULL, NULL, NULL, NULL);
+    CreateWindowExA(0, mainClass.lpszClassName, APPLICATION_TITLE, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE, pasteCoordinates.x, pasteCoordinates.y, WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGHT, NULL, NULL, NULL, NULL);
 
     while (GetMessage(&applicationMSG, NULL, NULL, NULL)) {
         TranslateMessage(&applicationMSG);

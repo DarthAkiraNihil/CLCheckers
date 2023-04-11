@@ -3,6 +3,7 @@
 //
 
 #include "clcengine_types.h"
+#include <windows.h>
 
 #ifndef CHECKERS_CLCHECKERS_H
 #define CHECKERS_CLCHECKERS_H
@@ -508,6 +509,13 @@ void makeARegMoveSequence(GameSituation* situation, RegMoveSequence regMoveSeque
     for (int i = 0; i < regMoveSequence.rmsCount; i++) makeAMove(situation, regMoveSequence.regularMoves[i]);
 }
 
+void makeARegMoveSequenceWithDelay(GameSituation* situation, RegMoveSequence regMoveSequence, int mSecDelay) {
+    for (int i = 0; i < regMoveSequence.rmsCount; i++) {
+        makeAMove(situation, regMoveSequence.regularMoves[i]);
+        Sleep(mSecDelay);
+    }
+}
+
 void cancelARegMoveSequence(GameSituation* situation, RegMoveSequence regMoveSequence) {
     for (int i = regMoveSequence.rmsCount - 1; i > -1; i--) cancelAMove(situation, regMoveSequence.regularMoves[i]);
 }
@@ -540,6 +548,13 @@ void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, 
 
 void makeATakingMoveSequence(GameSituation* situation, TakingSequence takingSequence) {
     for (int i = 0; i < takingSequence.tmsCount; i++) makeATakingMove(situation, takingSequence.takingMoves[i]);
+}
+
+void makeATakingSequenceWithDelay(GameSituation* situation, TakingSequence takingSequence, int mSecDelay) {
+    for (int i = 0; i < takingSequence.tmsCount; i++) {
+        makeATakingMove(situation, takingSequence.takingMoves[i]);
+        Sleep(mSecDelay);
+    }
 }
 
 void cancelATakingMoveSequence(GameSituation* situation, TakingSequence takingSequence) {
@@ -615,6 +630,12 @@ void findAllMixedSequences(GameSituation* situation, Color forWhichSide) {
 void makeAMixedSequence(GameSituation* situation, MixedSequence mixedSequence) {
     makeAMove(situation, mixedSequence.kingBecomingMove);
     makeATakingMoveSequence(situation, mixedSequence.takingSequence);
+}
+
+void makeAMixedSequenceWithDelay(GameSituation* situation, MixedSequence mixedSequence, int mSecDelay) {
+    makeAMove(situation, mixedSequence.kingBecomingMove);
+    Sleep(mSecDelay);
+    makeATakingSequenceWithDelay(situation, mixedSequence.takingSequence, mSecDelay);
 }
 
 void cancelAMixedSequence(GameSituation* situation, MixedSequence mixedSequence) {
