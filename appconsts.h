@@ -3,7 +3,9 @@
 
 const int WINDOW_SIZE_LENGTH = 79;
 const int WINDOW_SIZE_HEIGTH = 20;
-const char APPLICATION_TITLE[] = "CLCheckers beta 1\0";
+
+TCHAR APPLICATION_MAIN_CLASS_NAME[] = "CLCMain";
+const char APPLICATION_TITLE[] = "CLCheckers beta 1";
 
 const char* mainMenuPoints[36] = {
         "Начать новую игру",

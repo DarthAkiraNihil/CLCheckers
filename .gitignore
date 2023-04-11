@@ -3,3 +3,5 @@ cmake-build-debug/
 ./conio2.h
 /conio2.h
 /cmake-build-release/
+/test.cpp
+/package.ico

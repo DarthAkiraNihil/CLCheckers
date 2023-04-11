@@ -1,21 +1,73 @@
 #include <cstdio>
-#include <cstring>
+//#include <cstring>
+//#include <tchar.h>
+#include <memory.h>
 //#include "conio2.h"
 #include "interface.h"
 //#include "checkerslib.h"
 #include "clcengine/clcengine_main.h"
 #include "appconsts.h"
-#include <windows.h>
+#include "resources.h"
+#include "defs.h"
+//#include <windows.h>
 
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
-/*
- * THIS FILE IS FOR TESTING OF THE GAME ENGINE UNTIL I RELEASE THE MAIN INTERFACE
- *
- */
 
 
-void renderBoard(Board* board, Color playerSide, short drawX, short drawY, bool pasteCoordinates) {
+int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, int cmdShow) {
+    WNDCLASSEX mainClass = newWindowClass((HBRUSH) COLOR_WINDOW, LoadCursor(NULL, IDC_ARROW), instance, LoadIcon(NULL, IDI_APPLICATION), applicationProcessor);
+
+    mainClass.lpszClassName = _TEXT(APPLICATION_MAIN_CLASS_NAME);
+    mainClass.hIcon = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_BIG_ICON), IMAGE_ICON, 128, 128, 0);
+    mainClass.hIconSm = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_WIN_ICON), IMAGE_ICON, 16, 16, 0);
+    if (!RegisterClassEx(&mainClass)) {return -1;}
+
+    MSG applicationMSG = {0};
+    //CreateWindowA
+    CreateWindowExA(0, mainClass.lpszClassName, APPLICATION_TITLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE, 100, 100, 500, 250, NULL, NULL, NULL, NULL);
+
+    while (GetMessage(&applicationMSG, NULL, NULL, NULL)) {
+        TranslateMessage(&applicationMSG);
+        DispatchMessageA(&applicationMSG);
+    }
+}
+
+WNDCLASSEX newWindowClass(HBRUSH backgroundColor, HCURSOR cursor, HINSTANCE instance, HICON icon/*, LPCWSTR name*/, WNDPROC procedureToCall) {
+    WNDCLASSEX newClass;
+    memset(&newClass, 0, sizeof(newClass));
+    newClass.cbSize = sizeof(WNDCLASSEX);
+
+    //newClass.hIcon = icon;
+    newClass.hCursor = cursor;
+    newClass.hInstance = instance;
+    /*newClass.lpszClassName = (LPCSTR) (name);*/
+    newClass.hbrBackground = backgroundColor;
+    newClass.lpfnWndProc = procedureToCall;
+    return newClass;
+}
+
+
+LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
+    switch (message) {
+        case WM_CREATE: {
+            break;
+        }
+        case WM_LBUTTONUP: {
+            MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
+            break;
+        }
+        case WM_DESTROY : {
+            PostQuitMessage(0);
+            break;
+        }
+        default: {
+            return DefWindowProc(window, message, wParam, lParam);
+        }
+    }
+}
+
+/*void renderBoard(Board* board, Color playerSide, short drawX, short drawY, bool pasteCoordinates) {
     drawFrame(10, 10, drawX, drawY);
     if (pasteCoordinates) {
         gotoxy(drawX + 1, drawY - 1); printf("abcdefgh");
@@ -67,11 +119,7 @@ void renderBoard(Board* board, Color playerSide, short drawX, short drawY, bool 
                     printf("W");
                     break;
                 }
-                /*case AVALIABLE_MOVEMENT_CELL: {
-                    textbackground(2);
-                    printf(" ");
-                    break;
-                }*/
+
             }
             textbackground(0);
         }
@@ -252,3 +300,4 @@ int main() {
     } while (choice != 5);
     return 0;
 }
+*/
