@@ -1,0 +1,4 @@
+#include "resources.h"
+IDI_APP_BIG_ICON ICON "appIconBig.ico"
+IDI_APP_WIN_ICON ICON "appIconSmall.ico"
+IDB_TEST BITMAP "test.bmp"

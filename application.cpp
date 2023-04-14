@@ -1,5 +1,6 @@
 #include <cstdio>
-//#include <cstring>
+#include <cstring>
+#include <unistd.h>
 //#include <tchar.h>
 #include <memory.h>
 //#include "conio2.h"
@@ -7,10 +8,13 @@
 //#include "checkerslib.h"
 #include "clcengine/clcengine_main.h"
 #include "appconsts.h"
-#include "resources.h"
+#include "resources/resources.h"
 #include "defs.h"
 //#include <windows.h>
-
+HBITMAP test = NULL;
+HINSTANCE gInstance;
+HWND mainHandle;
+char pathos[255];
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
 Coordinates getPasteCoordinates() {
@@ -20,6 +24,7 @@ Coordinates getPasteCoordinates() {
 }
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, int cmdShow) {
+    Game game = createANewGame(White, White, RvsC);
     WNDCLASSEX mainClass = newWindowClass((HBRUSH) COLOR_WINDOW, LoadCursor(NULL, IDC_ARROW), instance, LoadIcon(NULL, IDI_APPLICATION), applicationProcessor);
     Coordinates pasteCoordinates = getPasteCoordinates();
     mainClass.lpszClassName = _TEXT(APPLICATION_MAIN_CLASS_NAME);
@@ -28,9 +33,31 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     if (!RegisterClassEx(&mainClass)) {return -1;}
 
     MSG applicationMSG = {0};
-    //CreateWindowA
-    CreateWindowExA(0, mainClass.lpszClassName, APPLICATION_TITLE, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE, pasteCoordinates.x, pasteCoordinates.y, WINDOW_SIZE_LENGTH, WINDOW_SIZE_HEIGHT, NULL, NULL, NULL, NULL);
+    gInstance = instance;
 
+    getcwd(pathos, sizeof(pathos));
+
+    test = LoadBitmap(gInstance, MAKEINTRESOURCE(IDB_TEST));
+    //CreateWindowA
+    HWND mainWindow = CreateWindowExA(
+		0,
+		mainClass.lpszClassName,
+		APPLICATION_TITLE,
+		WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE,
+		pasteCoordinates.x,
+		pasteCoordinates.y,
+		WINDOW_SIZE_LENGTH,
+		WINDOW_SIZE_HEIGHT,
+		NULL,
+		NULL,
+		NULL,
+		NULL
+	);
+    HBITMAP hBitmap=LoadBitmap(instance, "resources/test.bmp");
+
+
+    ShowWindow(mainWindow, SW_SHOWNORMAL);
+    UpdateWindow(mainWindow);
     while (GetMessage(&applicationMSG, NULL, NULL, NULL)) {
         TranslateMessage(&applicationMSG);
         DispatchMessageA(&applicationMSG);
@@ -53,17 +80,60 @@ WNDCLASSEX newWindowClass(HBRUSH backgroundColor, HCURSOR cursor, HINSTANCE inst
 
 
 LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
+
     switch (message) {
         case WM_CREATE: {
+            test = (HBITMAP)LoadImage(gInstance, "C:\\Users\\EgrZver\\Documents\\CodeShit\\CLionCPP\\Checkers\\resources\\test.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+            break;
+        }
+        case WM_PAINT: {
+            PAINTSTRUCT     ps;
+            HDC             hdc;
+            BITMAP          bitmap;
+            HDC             hdcMem;
+            HGDIOBJ         oldBitmap;
+
+            hdc = BeginPaint(window, &ps);
+
+            hdcMem = CreateCompatibleDC(hdc);
+            oldBitmap = SelectObject(hdcMem, test);
+
+            GetObject(test, sizeof(bitmap), &bitmap);
+            BitBlt(hdc, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hdcMem, 0, 0, SRCCOPY);
+
+            SelectObject(hdcMem, oldBitmap);
+            DeleteDC(hdcMem);
+
+            EndPaint(window, &ps);
+            /*PAINTSTRUCT paintStruct;
+            HDC handle = BeginPaint(window, &paintStruct);
+            HDC mdc = CreateCompatibleDC(handle);
+            BitBlt(handle, 0, 0, 128, 128, mdc, 0, 0, SRCCOPY);
+            EndPaint(window, &paintStruct);*/
             break;
         }
         case WM_LBUTTONUP: {
-            MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
+            MessageBox(window, pathos, "OOOOO MA GAD", 0);
+            break;
+        }
+        case WM_RBUTTONUP: {
+            //printf("Aha!");
             break;
         }
         case WM_DESTROY : {
             PostQuitMessage(0);
+            return 0;
+            //applicationProcessor(window, WM_CLOSE, NULL, NULL);
+            //return 0;
             break;
+        }
+        case WM_CLOSE: {
+            DestroyWindow(window);
+            //return 0;
+        }
+        case WM_QUIT: {
+            break;
+            //return 0;
         }
         default: {
             return DefWindowProc(window, message, wParam, lParam);

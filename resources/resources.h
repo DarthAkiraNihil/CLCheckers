@@ -7,5 +7,6 @@
 
 #define IDI_APP_BIG_ICON 1
 #define IDI_APP_WIN_ICON 2
+#define IDB_TEST 3
 
 #endif //CHECKERS_RESOURCES_H
