@@ -22,19 +22,19 @@ const char* mainMenuPointsDescriptions[50] = {
         "Уже уходите?"
 };
 
-const char *emptyBlackTexture = "resources\\emptyBlack.bmp";
+/*const char *emptyBlackTexture = "resources\\emptyBlack.bmp";
 const char *emptyWhiteTexture = "resources\\emptyWhite.bmp";
 const char *regBlackTexture = "resources\\regBlack.bmp";
 const char *regWhiteTexture = "resources\\regWhite.bmp";
 const char *kingBlackTexture = "resources\\kingBlack.bmp";
-const char *kingWhiteTexture = "resources\\kingWhite.bmp";
+const char *kingWhiteTexture = "resources\\kingWhite.bmp";*/
 const char* textures[6] = {
-    emptyBlackTexture,
-    emptyWhiteTexture,
-    regBlackTexture,
-    regWhiteTexture,
-    kingBlackTexture,
-    kingWhiteTexture
+    "resources\\emptyBlack.bmp",
+    "resources\\emptyWhite.bmp",
+    "resources\\regBlack.bmp",
+    "resources\\regWhite.bmp",
+    "resources\\kingBlack.bmp",
+    "resources\\kingWhite.bmp"
 };
 /*const char* texturePaths[50] = {
     "resource/emptyBlack.bmp",
