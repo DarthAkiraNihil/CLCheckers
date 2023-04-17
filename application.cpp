@@ -81,6 +81,8 @@ void renderBoard(Board* board, Color playerSide, HDC handler, int x = 0, int y =
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, int cmdShow) {
     game = createANewGame(White, White, RvsC);
+    ascendChecker(&game.situation.board.checkers[White][8]);
+    updateBoardRender(&game.situation.board);
     WNDCLASSEX mainClass = newWindowClass((HBRUSH) COLOR_WINDOW, LoadCursor(NULL, IDC_ARROW), instance, LoadIcon(NULL, IDI_APPLICATION), applicationProcessor);
     Coordinates pasteCoordinates = getPasteCoordinates();
     mainClass.lpszClassName = _TEXT(APPLICATION_MAIN_CLASS_NAME);
