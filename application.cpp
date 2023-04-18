@@ -11,7 +11,7 @@
 #include "resources/resources.h"
 #include "defs.h"
 //#include <windows.h>
-HBITMAP boardTextures[6];// = NULL;
+HBITMAP boardTextures[6], boardBorder;// = NULL;
 HBITMAP test;
 HINSTANCE gInstance;
 HWND mainHandle;
@@ -46,6 +46,15 @@ void loadBoardTextures() {
     //break;
 }
 
+HBITMAP loadImage(const char* path) {
+    char fPath[255], *fName;
+    //char cwdcpy[255];
+    GetFullPathNameA(path, 255, fPath, &fName);
+        //puts(fPath);
+        return (HBITMAP) LoadImage(gInstance, fPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+}
+
 void renderBoardTexture(int x, int y, int textureNumber, HDC handler) {
     //PAINTSTRUCT paintStructure;
     HDC /*handler,*/ handlerMemory;
@@ -62,16 +71,33 @@ void renderBoardTexture(int x, int y, int textureNumber, HDC handler) {
     DeleteDC(handlerMemory);
 }
 
+void renderBoardBorder(int x, int y, HDC handler) {
+    //PAINTSTRUCT paintStructure;
+    HDC /*handler,*/ handlerMemory;
+    BITMAP textureBitmap;
+    HGDIOBJ oldBitmap;
+
+    handlerMemory = CreateCompatibleDC(handler);
+    oldBitmap = SelectObject(handlerMemory, boardBorder);
+
+    GetObject(boardBorder, sizeof(textureBitmap), &textureBitmap);
+    BitBlt(handler, x, y, textureBitmap.bmWidth, textureBitmap.bmHeight, handlerMemory, 0, 0, SRCCOPY);
+
+    SelectObject(handlerMemory, oldBitmap);
+    DeleteDC(handlerMemory);
+}
+
 void renderBoard(Board* board, Color playerSide, HDC handler, int x = 0, int y = 0) {
+    renderBoardBorder(x, y, handler);
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             short bStat = board->boardRender[j][i];
             if (playerSide == Black) {
-                renderBoardTexture(x + 56 * (7 - i), y + 56 * j, bStat, handler); //56 x 56
+                renderBoardTexture(33 + x + 56 * (7 - i), 33 + y + 56 * j, bStat, handler); //56 x 56
                 //gotoxy(drawX + 8 - i, drawY + 1 + j);
             }
             else if (playerSide == White) {
-                renderBoardTexture(x + 56 * i, y + 56 * (7- j), bStat, handler);
+                renderBoardTexture(33 + x + 56 * i, 33 + y + 56 * (7- j), bStat, handler);
                 //gotoxy(drawX + 1 + i, drawY + 8 - j);
             }
         }
@@ -147,10 +173,12 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             //strcat(cwdcpy, "\\resources\\test.bpm");
             //getcwd(pathos, sizeof(pathos));
             //chdir(pathos);
-            char testPath[255], *testName[255];
-            GetFullPathNameA(file, 255, testPath, testName);
-            test = (HBITMAP)LoadImage(gInstance, testPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+            //char testPath[255], *testName[255];
+            //GetFullPathNameA(file, 255, testPath, testName);
+            //test = (HBITMAP)LoadImage(gInstance, testPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
             loadBoardTextures();
+            boardBorder = loadImage("resources\\border.bmp");
+            //boardBorder = (HBITMAP) LoadImage(gInstance, testPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
             /*GetFullPathNameA(textures[0], 255, testPath, testName);
             boardTextures[0] = (HBITMAP)LoadImage(gInstance, testPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
             GetFullPathNameA(textures[1], 255, testPath, testName);
@@ -159,14 +187,14 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             break;
         }
         case WM_PAINT: {
-            PAINTSTRUCT     ps;
-            HDC             hdc;
+            PAINTSTRUCT  paintStructure;
+            HDC handler;
             BITMAP          bitmap;
             HDC             hdcMem;
             HGDIOBJ         oldBitmap;
 
-            hdc = BeginPaint(window, &ps);
-            renderBoard(&game.situation.board, Black, hdc, 20, 20);
+            handler = BeginPaint(window, &paintStructure);
+            renderBoard(&game.situation.board, Black, handler, 20, 20);
             //renderBoardTexture(100, 100, 0, hdc);
            //renderBoardTexture(100, 180, 5, hdc);
             //hdcMem = CreateCompatibleDC(hdc);
@@ -182,7 +210,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             //SelectObject(hdcMem, oldBitmap);
             //DeleteDC(hdcMem);
 
-            EndPaint(window, &ps);
+            EndPaint(window, &paintStructure);
             /*PAINTSTRUCT paintStruct;
             HDC handle = BeginPaint(window, &paintStruct);
             HDC mdc = CreateCompatibleDC(handle);

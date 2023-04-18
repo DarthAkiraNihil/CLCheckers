@@ -14,6 +14,6 @@
 #define IDB_BC_REG_WHITE 6
 #define IDB_BC_KING_BLACK 7
 #define IDB_BC_KING_WHITE 8
-
+#define IDB_BOARD_BORDER 12
 
 #endif //CHECKERS_RESOURCES_H
