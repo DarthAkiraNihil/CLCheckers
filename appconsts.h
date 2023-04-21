@@ -1,8 +1,15 @@
 #ifndef CHECKERS_APPCONSTS_H
 #define CHECKERS_APPCONSTS_H
 
-const int WINDOW_SIZE_LENGTH = 600;
-const int WINDOW_SIZE_HEIGHT = 600;
+const int WINDOW_SIZE_LENGTH = 700;
+const int WINDOW_SIZE_HEIGHT = 700;
+
+const int buttonTheFuck = 0;
+const int buttonTheHell = 1;
+const int buttonTheShit = 2;
+const int buttonTheDamn = 3;
+const int buttonTheIdiot = 4;
+
 
 TCHAR APPLICATION_MAIN_CLASS_NAME[] = "CLCMain";
 const char APPLICATION_TITLE[] = "CLCheckers by TheSwagVader";

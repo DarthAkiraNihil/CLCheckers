@@ -7,10 +7,9 @@
 #include "resources/resources.h"
 #include "defs.h"
 HBITMAP boardTextures[6], boardBorder;
-
 HINSTANCE gInstance;
 Game game;
-char pathos[255];
+HWND buttons[10];
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
 Coordinates getPasteCoordinates() {
@@ -96,11 +95,24 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
 		pasteCoordinates.y,
 		WINDOW_SIZE_LENGTH,
 		WINDOW_SIZE_HEIGHT,
-		NULL,
-		NULL,
-		NULL,
-		NULL
+        NULL,
+        NULL,
+    NULL,
+    NULL
 	);
+    buttons[buttonTheFuck] = CreateWindow("button", "Pososi jopu", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                               540, 20, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonTheHell] = CreateWindow("button", "DIE!", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                                         540, 80, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonTheShit] = CreateWindow("button", "Axol x Melony 4eva", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                                         540, 140, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonTheDamn] = CreateWindow("button", "SUCK A DICK!", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                                         540, 200, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonTheIdiot] = CreateWindow("button", "zamn", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+                                         540, 260, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
+
+
+
 
     ShowWindow(mainWindow, SW_SHOWNORMAL);
     UpdateWindow(mainWindow);
@@ -130,6 +142,24 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             boardBorder = loadImage("resources\\border.bmp");
             break;
         }
+        case WM_COMMAND: {
+            if (lParam == (LPARAM) buttons[buttonTheFuck]) {
+                MessageBox(window, "Chego ty zhdesh?", "govnuk", 0);
+            }
+            else if (lParam == (LPARAM) buttons[buttonTheHell]) {
+                MessageBox(window, "really", "do it if you want", 0);
+            }
+            else if (lParam == (LPARAM) buttons[buttonTheShit]) {
+                MessageBox(window, "And that's the fact!", "The truth", 0);
+            }
+            else if (lParam == (LPARAM) buttons[buttonTheDamn]) {
+                MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
+            }
+            else if (lParam == (LPARAM) buttons[buttonTheIdiot]) {
+                MessageBox(window, "no bitches?", "What a loh", 0);
+            }
+            break;
+        }
         case WM_PAINT: {
             PAINTSTRUCT  paintStructure;
             HDC handler;
@@ -142,6 +172,9 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             break;
         }
         case WM_RBUTTONUP: {
+            break;
+        }
+        case WM_SETFONT : {
             break;
         }
         case WM_DESTROY : {
