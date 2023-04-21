@@ -35,13 +35,14 @@ const char *regBlackTexture = "resources\\regBlack.bmp";
 const char *regWhiteTexture = "resources\\regWhite.bmp";
 const char *kingBlackTexture = "resources\\kingBlack.bmp";
 const char *kingWhiteTexture = "resources\\kingWhite.bmp";*/
-const char* textures[6] = {
+const char* textures[7] = {
     "resources\\emptyBlack.bmp",
     "resources\\emptyWhite.bmp",
     "resources\\regBlack.bmp",
     "resources\\regWhite.bmp",
     "resources\\kingBlack.bmp",
-    "resources\\kingWhite.bmp"
+    "resources\\kingWhite.bmp",
+    "resources\\emptyToMove.bmp"
 };
 /*const char* texturePaths[50] = {
     "resource/emptyBlack.bmp",
