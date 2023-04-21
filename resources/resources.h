@@ -5,7 +5,7 @@
 #ifndef CHECKERS_RESOURCES_H
 #define CHECKERS_RESOURCES_H
 
-#define IDB_TEST 10
+
 #define IDI_APP_BIG_ICON 1
 #define IDI_APP_WIN_ICON 2
 #define IDB_BC_EMPTY_BLACK 3

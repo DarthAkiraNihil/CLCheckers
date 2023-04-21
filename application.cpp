@@ -1,24 +1,17 @@
-#include <cstdio>
 #include <cstring>
-#include <unistd.h>
-//#include <tchar.h>
 #include <memory.h>
 //#include "conio2.h"
 #include "interface.h"
-//#include "checkerslib.h"
 #include "clcengine/clcengine_main.h"
 #include "appconsts.h"
 #include "resources/resources.h"
 #include "defs.h"
-//#include <windows.h>
-HBITMAP boardTextures[6], boardBorder;// = NULL;
-HBITMAP test;
+HBITMAP boardTextures[6], boardBorder;
+
 HINSTANCE gInstance;
-HWND mainHandle;
 Game game;
 char pathos[255];
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
-char testPath[255], *testName[255]; const char *file = "resources\\test.bmp";
 
 Coordinates getPasteCoordinates() {
     RECT screen;
@@ -28,61 +21,38 @@ Coordinates getPasteCoordinates() {
 
 void loadBoardTextures() {
     char fPath[255], *fName;
-    //char cwdcpy[255];
     for (int i = 0; i < 6; i++) {
-        //const char *texture = texturePaths[i];
         GetFullPathNameA(textures[i], 255, fPath, &fName);
-        //puts(fPath);
         boardTextures[i] = (HBITMAP) LoadImage(gInstance, fPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     }
-    //strcpy(cwdcpy, pathos);
-    //strcat(cwdcpy, "\\resources\\test.bpm");
-    //getcwd(pathos, sizeof(pathos));
-    //chdir(pathos);
-
-    //GetFullPathNameA(file, 255, testPath, testName);
-    //test = (HBITMAP)LoadImage(gInstance, testPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    //test = (HBITMAP)LoadImage(gInstance, "resources\\test.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    //break;
 }
 
 HBITMAP loadImage(const char* path) {
     char fPath[255], *fName;
-    //char cwdcpy[255];
     GetFullPathNameA(path, 255, fPath, &fName);
-        //puts(fPath);
         return (HBITMAP) LoadImage(gInstance, fPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-
 }
 
 void renderBoardTexture(int x, int y, int textureNumber, HDC handler) {
-    //PAINTSTRUCT paintStructure;
-    HDC /*handler,*/ handlerMemory;
+    HDC handlerMemory;
     BITMAP textureBitmap;
     HGDIOBJ oldBitmap;
-
     handlerMemory = CreateCompatibleDC(handler);
     oldBitmap = SelectObject(handlerMemory, boardTextures[textureNumber]);
-
     GetObject(boardTextures[textureNumber], sizeof(textureBitmap), &textureBitmap);
     BitBlt(handler, x, y, textureBitmap.bmWidth, textureBitmap.bmHeight, handlerMemory, 0, 0, SRCCOPY);
-
     SelectObject(handlerMemory, oldBitmap);
     DeleteDC(handlerMemory);
 }
 
 void renderBoardBorder(int x, int y, HDC handler) {
-    //PAINTSTRUCT paintStructure;
-    HDC /*handler,*/ handlerMemory;
+    HDC handlerMemory;
     BITMAP textureBitmap;
     HGDIOBJ oldBitmap;
-
     handlerMemory = CreateCompatibleDC(handler);
     oldBitmap = SelectObject(handlerMemory, boardBorder);
-
     GetObject(boardBorder, sizeof(textureBitmap), &textureBitmap);
     BitBlt(handler, x, y, textureBitmap.bmWidth, textureBitmap.bmHeight, handlerMemory, 0, 0, SRCCOPY);
-
     SelectObject(handlerMemory, oldBitmap);
     DeleteDC(handlerMemory);
 }
@@ -94,11 +64,9 @@ void renderBoard(Board* board, Color playerSide, HDC handler, int x = 0, int y =
             short bStat = board->boardRender[j][i];
             if (playerSide == Black) {
                 renderBoardTexture(33 + x + 56 * (7 - i), 33 + y + 56 * j, bStat, handler); //56 x 56
-                //gotoxy(drawX + 8 - i, drawY + 1 + j);
             }
             else if (playerSide == White) {
                 renderBoardTexture(33 + x + 56 * i, 33 + y + 56 * (7- j), bStat, handler);
-                //gotoxy(drawX + 1 + i, drawY + 8 - j);
             }
         }
     }
@@ -119,10 +87,6 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     MSG applicationMSG = {0};
     gInstance = instance;
 
-    getcwd(pathos, sizeof(pathos));
-    chdir(pathos);
-    //test = LoadBitmap(gInstance, MAKEINTRESOURCE(IDB_TEST));
-    //CreateWindowA
     HWND mainWindow = CreateWindowExA(
 		0,
 		mainClass.lpszClassName,
@@ -137,8 +101,6 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
 		NULL,
 		NULL
 	);
-    //HBITMAP hBitmap=LoadBitmap(instance, "resources/test.bmp");
-
 
     ShowWindow(mainWindow, SW_SHOWNORMAL);
     UpdateWindow(mainWindow);
@@ -152,11 +114,8 @@ WNDCLASSEX newWindowClass(HBRUSH backgroundColor, HCURSOR cursor, HINSTANCE inst
     WNDCLASSEX newClass;
     memset(&newClass, 0, sizeof(newClass));
     newClass.cbSize = sizeof(WNDCLASSEX);
-
-    //newClass.hIcon = icon;
     newClass.hCursor = cursor;
     newClass.hInstance = instance;
-    /*newClass.lpszClassName = (LPCSTR) (name);*/
     newClass.hbrBackground = backgroundColor;
     newClass.lpfnWndProc = procedureToCall;
     return newClass;
@@ -167,79 +126,33 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
 
     switch (message) {
         case WM_CREATE: {
-            //loadBoardTextures();
-            //char cwdcpy[255];
-            //strcpy(cwdcpy, pathos);
-            //strcat(cwdcpy, "\\resources\\test.bpm");
-            //getcwd(pathos, sizeof(pathos));
-            //chdir(pathos);
-            //char testPath[255], *testName[255];
-            //GetFullPathNameA(file, 255, testPath, testName);
-            //test = (HBITMAP)LoadImage(gInstance, testPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
             loadBoardTextures();
             boardBorder = loadImage("resources\\border.bmp");
-            //boardBorder = (HBITMAP) LoadImage(gInstance, testPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-            /*GetFullPathNameA(textures[0], 255, testPath, testName);
-            boardTextures[0] = (HBITMAP)LoadImage(gInstance, testPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-            GetFullPathNameA(textures[1], 255, testPath, testName);
-            boardTextures[1] = (HBITMAP)LoadImage(gInstance, testPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);*/
-            //test = (HBITMAP)LoadImage(gInstance, "resources\\test.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);*/
             break;
         }
         case WM_PAINT: {
             PAINTSTRUCT  paintStructure;
             HDC handler;
-            BITMAP          bitmap;
-            HDC             hdcMem;
-            HGDIOBJ         oldBitmap;
-
             handler = BeginPaint(window, &paintStructure);
             renderBoard(&game.situation.board, Black, handler, 20, 20);
-            //renderBoardTexture(100, 100, 0, hdc);
-           //renderBoardTexture(100, 180, 5, hdc);
-            //hdcMem = CreateCompatibleDC(hdc);
-            //oldBitmap = SelectObject(hdcMem, boardTextures[0]);
-
-            //GetObject(test, sizeof(bitmap), &bitmap);
-            //BitBlt(hdc, 0, 90, bitmap.bmWidth, bitmap.bmHeight, hdcMem, 0, 0, SRCCOPY);
-            //oldBitmap = SelectObject(hdcMem, boardTextures[0]);
-            /*SelectObject(hdcMem, boardTextures[0]);
-            GetObject(boardTextures[0], sizeof(bitmap), &bitmap);
-            BitBlt(hdc, 100, 100, bitmap.bmWidth, bitmap.bmHeight, hdcMem, 0, 0, SRCCOPY);*/
-
-            //SelectObject(hdcMem, oldBitmap);
-            //DeleteDC(hdcMem);
-
             EndPaint(window, &paintStructure);
-            /*PAINTSTRUCT paintStruct;
-            HDC handle = BeginPaint(window, &paintStruct);
-            HDC mdc = CreateCompatibleDC(handle);
-            BitBlt(handle, 0, 0, 128, 128, mdc, 0, 0, SRCCOPY);
-            EndPaint(window, &paintStruct);*/
             break;
         }
         case WM_LBUTTONUP: {
-            //MessageBox(window, testPath, "OOOOO MA GAD", 0);
             break;
         }
         case WM_RBUTTONUP: {
-            //printf("Aha!");
             break;
         }
         case WM_DESTROY : {
             PostQuitMessage(0);
             return 0;
-            //applicationProcessor(window, WM_CLOSE, NULL, NULL);
-            //return 0;
-            break;
         }
         case WM_CLOSE: {
             DestroyWindow(window);
-            //return 0;
         }
         case WM_QUIT: {
             break;
-            //return 0;
         }
         default: {
             return DefWindowProc(window, message, wParam, lParam);
