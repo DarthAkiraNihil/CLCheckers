@@ -9,9 +9,10 @@
 HBITMAP boardTextures[7], boardBorder;
 HINSTANCE gInstance;
 Game game;
-Coordinates b;
-Color playerSide;
+//Coordinates b;
+Color playerSide1;
 HWND buttons[10];
+bool findMoves = false;
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
 Coordinates getPasteCoordinates() {
@@ -82,14 +83,26 @@ inline Coordinates transformXYToBoardXY(int x, int y, Color playerSide) {
     }
 }
 
+inline Coordinates getPasteCoords(int x, int y, Color playerSide) {
+    if (playerSide == Black) {
+        return {33 + boardPasteX + 56 * (7 - x), 33 + boardPasteY + 56 * y};
+    }
+    else {
+        return {33 + boardPasteX + 56 * x, 33 + boardPasteY + 56 * (7 - y)};
+    }
+}
+
 inline Coordinates getNearestCorner(int x, int y) {
     return {((x - 33 - boardPasteX) / 56) * 56 + 33 + boardPasteX, ((y - 33 - boardPasteY) / 56) * 56 + 33 + boardPasteY};
 }
 
+inline bool in(int var, int leftBorder, int rightBorder) {
+    return (var > leftBorder) && (var < rightBorder);
+}
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, int cmdShow) {
-    playerSide = Black;
-    game = createANewGame(playerSide, White, RvsC);
+    playerSide1 = Black;
+    game = createANewGame(playerSide1, White, RvsC);
     ascendChecker(&game.situation.board.checkers[White][8]);
     updateBoardRender(&game.situation.board);
     WNDCLASSEX mainClass = newWindowClass((HBRUSH) COLOR_WINDOW, LoadCursor(NULL, IDC_ARROW), instance, LoadIcon(NULL, IDI_APPLICATION), applicationProcessor);
@@ -176,7 +189,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
         }
         case WM_PAINT: {
             handler = BeginPaint(window, &paintStructure);
-            renderBoard(&game.situation.board, playerSide, handler, boardPasteX, boardPasteY);
+            renderBoard(&game.situation.board, playerSide1, handler, boardPasteX, boardPasteY);
             EndPaint(window, &paintStructure);
             break;
         }
@@ -185,19 +198,39 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             GetCursorPos(&p);
             ScreenToClient(window, &p);
             char pr[50];
-            if (p.x > boardPasteX + 33 && p.y > boardPasteY + 33 && p.x < boardPasteX + 8*56+33 && p.y < boardPasteY + 8*56 + 33) {
+            if (in((int) p.x, boardPasteX + 33, boardPasteX + 8 * 56 + 33) && in((int) p.y, boardPasteY + 33, boardPasteY + 8*56 + 33)) {
+
                 //Coordinates b = transformXYToBoardXY(p.x, p.y, playerSide);
-                b = getNearestCorner(p.x, p.y);
+                Coordinates placeToRender = getNearestCorner(p.x, p.y);
+                Coordinates boardPos = transformXYToBoardXY(p.x, p.y, playerSide1);
+                if (!findMoves) {
+                    findAllMoves(&game.situation, playerSide1);
+                    findMoves = true;
+                }
                 handler = GetDC(window);//BeginPaint(window, &paintStructure);
-                renderBoardTexture(b.x, b.y, 6, handler);
+                renderBoard(&game.situation.board, playerSide1, handler, boardPasteX, boardPasteY);
+                for (int i = 0; i < game.situation.board.checkersCount[playerSide1]; i++) {
+                    for (int j = 0; j < game.situation.rmsCount; j++) {
+                        if (game.situation.regMoveSequences[i].regularMoves[0].source.x == boardPos.x && game.situation.regMoveSequences[i].regularMoves[0].source.y == boardPos.y) {
+                            Coordinates t = getPasteCoords(game.situation.regMoveSequences[i].regularMoves[0].destination.x, game.situation.regMoveSequences[i].regularMoves[0].destination.y, playerSide1);
+                            renderBoardTexture(t.x, t.y, 6, handler);
+                        }
+                    }
+                }
+
+                ReleaseDC(window, handler);
                 //EndPaint(window, &paintStructure);
                 //renderBoardTexture(b.x, b.y, );
-                //sprintf(pr, "x: %ld, y: %ld; bx: %d, by: %d", p.x, p.y, b.x, b.y);
+
+                //sprintf(pr, "x: %ld, y: %ld; bx: %d, by: %d", p.x, p.y, boardPos.x, boardPos.y);
 
                 //MessageBoxA(window, pr, "ASS", 0);
             }
 
 
+            break;
+        }
+        case WM_LBUTTONDOWN : {
             break;
         }
         case WM_RBUTTONUP: {
