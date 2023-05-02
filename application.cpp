@@ -9,6 +9,8 @@
 HBITMAP boardTextures[7], boardBorder;
 HINSTANCE gInstance;
 Game game;
+Coordinates b;
+Color playerSide;
 HWND buttons[10];
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
@@ -65,15 +67,29 @@ void renderBoard(Board* board, Color playerSide, HDC handler, int x = 0, int y =
                 renderBoardTexture(33 + x + 56 * (7 - i), 33 + y + 56 * j, bStat, handler); //56 x 56
             }
             else if (playerSide == White) {
-                renderBoardTexture(33 + x + 56 * i, 33 + y + 56 * (7- j), bStat, handler);
+                renderBoardTexture(33 + x + 56 * i, 33 + y + 56 * (7 - j), bStat, handler);
             }
         }
     }
 }
+//tedt writing
+inline Coordinates transformXYToBoardXY(int x, int y, Color playerSide) {
+    if (playerSide == Black) {
+        return {7 - (x - 33 - boardPasteX) / 56, (y - 33 - boardPasteY) / 56};
+    }
+    else {
+        return { (x - 33 - boardPasteX) / 56, 7 - (y - 33 - boardPasteY) / 56};
+    }
+}
+
+inline Coordinates getNearestCorner(int x, int y) {
+    return {((x - 33 - boardPasteX) / 56) * 56 + 33 + boardPasteX, ((y - 33 - boardPasteY) / 56) * 56 + 33 + boardPasteY};
+}
 
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, int cmdShow) {
-    game = createANewGame(White, White, RvsC);
+    playerSide = Black;
+    game = createANewGame(playerSide, White, RvsC);
     ascendChecker(&game.situation.board.checkers[White][8]);
     updateBoardRender(&game.situation.board);
     WNDCLASSEX mainClass = newWindowClass((HBRUSH) COLOR_WINDOW, LoadCursor(NULL, IDC_ARROW), instance, LoadIcon(NULL, IDI_APPLICATION), applicationProcessor);
@@ -81,6 +97,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     mainClass.lpszClassName = _TEXT(APPLICATION_MAIN_CLASS_NAME);
     mainClass.hIcon = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_BIG_ICON), IMAGE_ICON, 128, 128, 0);
     mainClass.hIconSm = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_WIN_ICON), IMAGE_ICON, 16, 16, 0);
+    mainClass.hbrBackground = (HBRUSH) CreateSolidBrush(RGB(255, 255, 255));
     if (!RegisterClassEx(&mainClass)) {return -1;}
 
     MSG applicationMSG = {0};
@@ -100,6 +117,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
         NULL,
         NULL
     );
+
     buttons[buttonTheFuck] = CreateWindow("button", "Pososi jopu", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 20, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
     buttons[buttonTheHell] = CreateWindow("button", "DIE!", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 80, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
     buttons[buttonTheShit] = CreateWindow("button", "Axol x Melony 4eva", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 140, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
@@ -130,7 +148,8 @@ WNDCLASSEX newWindowClass(HBRUSH backgroundColor, HCURSOR cursor, HINSTANCE inst
 
 
 LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
-
+    PAINTSTRUCT  paintStructure;
+    HDC handler;
     switch (message) {
         case WM_CREATE: {
             loadBoardTextures();
@@ -156,10 +175,8 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             break;
         }
         case WM_PAINT: {
-            PAINTSTRUCT  paintStructure;
-            HDC handler;
             handler = BeginPaint(window, &paintStructure);
-            renderBoard(&game.situation.board, Black, handler, 20, 20);
+            renderBoard(&game.situation.board, playerSide, handler, boardPasteX, boardPasteY);
             EndPaint(window, &paintStructure);
             break;
         }
@@ -168,9 +185,19 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             GetCursorPos(&p);
             ScreenToClient(window, &p);
             char pr[50];
-            sprintf(pr, "x: %ld, y: %ld", p.x, p.y);
+            if (p.x > boardPasteX + 33 && p.y > boardPasteY + 33 && p.x < boardPasteX + 8*56+33 && p.y < boardPasteY + 8*56 + 33) {
+                //Coordinates b = transformXYToBoardXY(p.x, p.y, playerSide);
+                b = getNearestCorner(p.x, p.y);
+                handler = GetDC(window);//BeginPaint(window, &paintStructure);
+                renderBoardTexture(b.x, b.y, 6, handler);
+                //EndPaint(window, &paintStructure);
+                //renderBoardTexture(b.x, b.y, );
+                //sprintf(pr, "x: %ld, y: %ld; bx: %d, by: %d", p.x, p.y, b.x, b.y);
 
-            MessageBoxA(window, pr, "ASS", 0);
+                //MessageBoxA(window, pr, "ASS", 0);
+            }
+
+
             break;
         }
         case WM_RBUTTONUP: {
