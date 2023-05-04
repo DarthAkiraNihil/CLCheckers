@@ -717,6 +717,10 @@ SeqContainer analyze(GameSituation* situation, Color side, int currentDepth, Dif
         MixedSequence* msBackup = new MixedSequence[situation->mmsCount];
         for (int i = 0; i < situation->mmsCount; i++) msBackup[i] = situation->mixedSequences[i];
         int savedMSS = situation->mmsCount;
+        RegMoveSequence* rmsBackup = new RegMoveSequence[situation->rmsCount];
+        for (int i = 0; i < situation->rmsCount; i++) rmsBackup[i] = situation->regMoveSequences[i];
+        int savedRMSS = situation->rmsCount;
+
         for (int i = 0; i < savedMSS; i++) {
             makeAMixedSequence(situation, msBackup[i]);
             removeMarkedForDeath(situation, negateColor(side));
@@ -731,9 +735,6 @@ SeqContainer analyze(GameSituation* situation, Color side, int currentDepth, Dif
             }
         }
         delete [] msBackup;
-        RegMoveSequence* rmsBackup = new RegMoveSequence[situation->rmsCount];
-        for (int i = 0; i < situation->rmsCount; i++) rmsBackup[i] = situation->regMoveSequences[i];
-        int savedRMSS = situation->rmsCount;
         for (int i = 0; i < savedRMSS; i++) {
             makeARegMoveSequence(situation, rmsBackup[i]);
             flushSequenceLists(situation);
