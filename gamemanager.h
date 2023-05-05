@@ -60,14 +60,14 @@ bool destinationInRMSBuffer(RegMoveSequence* buffer, Coordinates destination) {
 }
 
 bool destinationInTSBuffer(TakingSequence* buffer, Coordinates destination, int seqMove) {
-    for (int i = 0; i < sizeOfRMSFC; i++) {
+    for (int i = 0; i < sizeOfTSFC; i++) {
         if (isCoordinatesEqual(buffer[i].takingMoves[seqMove].destination, destination)) return true;
     }
     return false;
 }
 
 bool destinationKBMInMSBuffer(MixedSequence* buffer, Coordinates destination) {
-    for (int i = 0; i < sizeOfRMSFC; i++) {
+    for (int i = 0; i < sizeOfMSFC; i++) {
         if (isCoordinatesEqual(buffer[i].kingBecomingMove.destination, destination)) return true;
     }
     return false;
