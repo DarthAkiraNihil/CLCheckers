@@ -108,4 +108,100 @@ void renderKBMove(Move kingBecomingMove, HDC handler) {
     renderBoardTexture(renderPlace.x, renderPlace.y, 6, handler);
 }
 
+void makeARegMoveSequenceWithDelay(GameSituation* situation, RegMoveSequence regMoveSequence, int mSecDelay, HDC handler) {
+    for (int i = 0; i < regMoveSequence.rmsCount; i++) {
+        makeAMove(situation, regMoveSequence.regularMoves[i]);
+        updateBoardRender(&(situation->board));
+        renderBoard(&(situation->board), player, handler, boardPasteX, boardPasteY);
+        Sleep(mSecDelay);
+    }
+}
+
+/*
+ * removeMarkedForDeath(&game.situation, player);
+
+                    flushSequenceLists(&game.situation);
+                    moveHasBeenMade = false;
+
+ */
+
+void makeATakingSequenceWithDelay(GameSituation* situation, TakingSequence takingSequence, int mSecDelay, HDC handler) {
+    for (int i = 0; i < takingSequence.tmsCount; i++) {
+        makeATakingMove(situation, takingSequence.takingMoves[i]);
+        removeMarkedForDeath(situation, player);
+        updateBoardRender(&(situation->board));
+        renderBoard(&(situation->board), player, handler, boardPasteX, boardPasteY);
+        Sleep(mSecDelay);
+    }
+}
+
+void makeAMixedSequenceWithDelay(GameSituation* situation, MixedSequence mixedSequence, int mSecDelay, HDC handler) {
+    makeAMove(situation, mixedSequence.kingBecomingMove);
+    updateBoardRender(&(situation->board));
+    renderBoard(&(situation->board), player, handler, boardPasteX, boardPasteY);
+    Sleep(mSecDelay);
+    makeATakingSequenceWithDelay(situation, mixedSequence.takingSequence, mSecDelay, handler);
+}
+
+void renderBoard2(Board* board, Color playerSide, short drawX, short drawY, bool pasteCoordinates) {
+    drawFrame(10, 10, drawX, drawY);
+    if (pasteCoordinates) {
+        gotoxy(drawX + 1, drawY - 1); printf("abcdefgh");
+        gotoxy(drawX + 1, drawY + 10); printf("abcdefgh");
+        for (int i = 0; i < 8; i++) {
+            gotoxy(drawX - 1, drawY + 1 + i);
+            printf("%d", i + 1);
+            gotoxy(drawX + 10, drawY + 1 + i);
+            printf("%d", i + 1);
+        }
+    }
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            short bStat = board->boardRender[j][i];
+            if (playerSide == Black) {
+                gotoxy(drawX + 8 - i, drawY + 1 + j);
+            }
+            else if (playerSide == White) {
+                gotoxy(drawX + 1 + i, drawY + 8 - j);
+            }
+            switch(bStat) {
+                case EMPTY_BLACK: {
+                    textbackground(0);
+                    printf(" ");
+                    break;
+                }
+                case EMPTY_WHITE: {
+                    textbackground(15);
+                    printf(" ");
+                    break;
+                }
+                case REG_BLACK: {
+                    textcolor(12);
+                    printf("O");
+                    break;
+                }
+                case REG_WHITE: {
+                    textcolor(15);
+                    printf("O");
+                    break;
+                }
+                case KING_BLACK: {
+                    textcolor(12);
+                    printf("W");
+                    break;
+                }
+                case KING_WHITE: {
+                    textcolor(15);
+                    printf("W");
+                    break;
+                }
+
+            }
+            textbackground(0);
+        }
+    }
+    textbackground(0);
+    textcolor(15);
+}
+
 #endif //CHECKERS_GRAPHIC_SUBSYSTEM_H

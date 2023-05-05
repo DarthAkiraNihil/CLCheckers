@@ -13,6 +13,8 @@ const int buttonTheIdiot = 4;
 const int boardPasteX = 20;
 const int boardPasteY = 20;
 
+const int moveMakingDelay = 500;
+
 
 TCHAR APPLICATION_MAIN_CLASS_NAME[] = "CLCMain";
 const char APPLICATION_TITLE[] = "CLCheckers by TheSwagVader";

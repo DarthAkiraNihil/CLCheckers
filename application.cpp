@@ -129,10 +129,92 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 }
                 handler = GetDC(window);//BeginPaint(window, &paintStructure);
                 renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
-                if (destinationInRMSBuffer(rmsForChosen, boardPos)) {
+                switch (inWhatBufferIsDestination(boardPos)) {
+                    case 1: {
+                        Move extracted = extractMoveFromRSBuffer(rmsForChosen, boardPos);
+                        makeAMove(&game.situation, extracted);
+                        updateBoardRender(&game.situation.board);
+                        renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
+                        flushBuffers();
+                        movesHaveBeenFound = false; moveHasBeenMade = true;
+                        break;
+                    }
+                    case 2: {
+                        printf("ASS");
+                        TakingMove extracted = extractTakingMoveFromTSBuffer(tsForChosen, boardPos, 0);
+                        makeATakingMove(&game.situation, extracted);
+                        //renderBoard2(&game.situation.board, player, 0, 0, false);
+                        updateBoardRender(&game.situation.board);
+                        removeMarkedForDeath(&game.situation, negateColor(player));
+                        renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
+                        movesHaveBeenFound = false; moveHasBeenMade = true; flushBuffers();
+                        break;
+                    }
+                    case 3: {
+                        Move extracted = extractMoveFromMSBuffer(msForChosen, boardPos);
+                        makeAMove(&game.situation, extracted);
+                        updateBoardRender(&game.situation.board);
+                        renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
+                        movesHaveBeenFound = false; moveHasBeenMade = true; flushBuffers();
+                        break;
+                    }
+                    default: {
+                        flushBuffers();
+                        if (game.situation.tmsCount != 0) {
+                            for (int i = 0; i < game.situation.tmsCount; i++) {
+                                if (isCoordinatesEqual(game.situation.takingSequences[i].takingMoves[0].source, boardPos)) {
+                                    renderTakingSequence(game.situation.takingSequences[i], 0, handler);
+                                    addTSToBuffer(tsForChosen, game.situation.takingSequences[i]);
+                                }
+                            }
+                        }
+                        else {
+                            for (int i = 0; i < game.situation.mmsCount; i++) {
+                                if (isCoordinatesEqual(game.situation.mixedSequences[i].kingBecomingMove.source, boardPos)) {
+                                    renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
+                                    addMSToBuffer(msForChosen, game.situation.mixedSequences[i]);
+                                }
+                            }
+                            for (int i = 0; i < game.situation.rmsCount; i++) {
+                                if (isCoordinatesEqual(game.situation.regMoveSequences[i].regularMoves[0].source, boardPos)) {
+                                    renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
+                                    addRMSToBuffer(rmsForChosen, game.situation.regMoveSequences[i]);
+                                }
+                            }
+                        }
+                    }
+
+                }
+                if (moveHasBeenMade) {
+                    flushSequenceLists(&game.situation);
+                    SeqContainer bestMove = getBestMove(game.situation, negateColor(player), Normal);
+                    //while (bestMove.seqNumberToDo == -1) bestMove = getBestMove(test.situation, forWho, Hard);
+                    switch (bestMove.seqNumberToDo) {
+                        case 1: {
+                            makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence, moveMakingDelay, handler);
+                            break;
+                        }
+                        case 2: {
+                            makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence, moveMakingDelay, handler);
+                            //removeMarkedForDeath(&test.situation, forWho);
+                            break;
+                        }
+                        case 3: {
+                            makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence, moveMakingDelay, handler);
+                            //removeMarkedForDeath(&test.situation, forWho);
+                            break;
+                        }
+                    }
+                    removeMarkedForDeath(&game.situation, player);
+                    updateBoardRender(&game.situation.board);
+                    flushSequenceLists(&game.situation);
+                    moveHasBeenMade = false;
+                    renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
+                }
+                /*if (destinationInRMSBuffer(rmsForChosen, boardPos)) {
 
                     //int index = getAvailableIndex(coordinatesOfAvailableMoves, boardPos);
-                    Move extractedMove = extractMoveFromBuffer(rmsForChosen, boardPos);
+                    Move extractedMove = extractMoveFromRSBuffer(rmsForChosen, boardPos);
                     makeAMove(&game.situation, extractedMove);
                     updateBoardRender(&game.situation.board);
                     renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
@@ -164,6 +246,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                     renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
                 }
                 else {
+                    flushBuffers();
                     if (game.situation.tmsCount != 0) {
                         for (int i = 0; i < game.situation.tmsCount; i++) {
                             if (isCoordinatesEqual(game.situation.takingSequences[i].takingMoves[0].source, boardPos)) {
@@ -176,18 +259,17 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         for (int i = 0; i < game.situation.mmsCount; i++) {
                             if (isCoordinatesEqual(game.situation.mixedSequences[i].kingBecomingMove.source, boardPos)) {
                                 renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
-                                addRMSToBuffer(rmsForChosen, game.situation.regMoveSequences[i]);
+                                addMSToBuffer(msForChosen, game.situation.mixedSequences[i]);
                             }
                         }
                         for (int i = 0; i < game.situation.rmsCount; i++) {
                             if (isCoordinatesEqual(game.situation.regMoveSequences[i].regularMoves[0].source, boardPos)) {
                                 renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
-                                addMSToBuffer(msForChosen, game.situation.mixedSequences[i]);
+                                addRMSToBuffer(rmsForChosen, game.situation.regMoveSequences[i]);
                             }
                         }
                     }
-
-                }
+                }*/
                 ReleaseDC(window, handler);
             }
             break;
