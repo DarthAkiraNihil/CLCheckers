@@ -7,119 +7,27 @@
 #include "resources/resources.h"
 #include "defs.h"
 #include "gamemanager.h"
-HBITMAP boardTextures[11], boardBorder;
-HINSTANCE gInstance;
+#include "graphic_subsystem.h"
+
+
 Game game;
-//Coordinates b;
-Color playerSide1;
 HWND buttons[10];
-RegMoveSequence currentRMSForOne[20]; TakingSequence currentTMSForOne[20]; MixedSequence currentMSSForOne[20];
-int crmsSize = 0, ctmsSize = 0, cmssSize = 0;
-Coordinates arrayOfAvailableMoveDests[20]; int amc = 0;
 bool findMoves = false;
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
-Coordinates getPasteCoordinates() {
-    RECT screen;
-    GetWindowRect(GetDesktopWindow(), &screen);
-    return {(screen.right - WINDOW_SIZE_LENGTH) / 2, (screen.bottom - WINDOW_SIZE_HEIGHT) / 2};
-}
 
-void loadBoardTextures() {
-    char fPath[255], *fName;
-    for (int i = 0; i < 7; i++) {
-        GetFullPathNameA(textures[i], 255, fPath, &fName);
-        boardTextures[i] = (HBITMAP) LoadImage(gInstance, fPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-    }
-}
-
-HBITMAP loadImage(const char* path) {
-    char fPath[255], *fName;
-    GetFullPathNameA(path, 255, fPath, &fName);
-        return (HBITMAP) LoadImage(gInstance, fPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
-}
-
-void renderBoardTexture(int x, int y, int textureNumber, HDC handler) {
-    HDC handlerMemory;
-    BITMAP textureBitmap;
-    HGDIOBJ oldBitmap;
-    handlerMemory = CreateCompatibleDC(handler);
-    oldBitmap = SelectObject(handlerMemory, boardTextures[textureNumber]);
-    GetObject(boardTextures[textureNumber], sizeof(textureBitmap), &textureBitmap);
-    BitBlt(handler, x, y, textureBitmap.bmWidth, textureBitmap.bmHeight, handlerMemory, 0, 0, SRCCOPY);
-    SelectObject(handlerMemory, oldBitmap);
-    DeleteDC(handlerMemory);
-}
-
-void renderBoardBorder(int x, int y, HDC handler) {
-    HDC handlerMemory;
-    BITMAP textureBitmap;
-    HGDIOBJ oldBitmap;
-    handlerMemory = CreateCompatibleDC(handler);
-    oldBitmap = SelectObject(handlerMemory, boardBorder);
-    GetObject(boardBorder, sizeof(textureBitmap), &textureBitmap);
-    BitBlt(handler, x, y, textureBitmap.bmWidth, textureBitmap.bmHeight, handlerMemory, 0, 0, SRCCOPY);
-    SelectObject(handlerMemory, oldBitmap);
-    DeleteDC(handlerMemory);
-}
-
-void renderBoard(Board* board, Color playerSide, HDC handler, int x = 0, int y = 0) {
-    renderBoardBorder(x, y, handler);
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            short bStat = board->boardRender[j][i];
-            if (playerSide == Black) {
-                renderBoardTexture(33 + x + 56 * (7 - i), 33 + y + 56 * j, bStat, handler); //56 x 56
-            }
-            else if (playerSide == White) {
-                renderBoardTexture(33 + x + 56 * i, 33 + y + 56 * (7 - j), bStat, handler);
-            }
-        }
-    }
-}
-
-
-//tedt writing
-inline Coordinates transformXYToBoardXY(int x, int y, Color relativeSide) {
-    if (relativeSide == Black) {
-        return {7 - (x - 33 - boardPasteX) / 56, (y - 33 - boardPasteY) / 56};
-    }
-    else {
-        return { (x - 33 - boardPasteX) / 56, 7 - (y - 33 - boardPasteY) / 56};
-    }
-}
-
-inline Coordinates getPasteCoords(int x, int y, Color playerSide) {
-    if (playerSide == Black) {
-        return {33 + boardPasteX + 56 * (7 - x), 33 + boardPasteY + 56 * y};
-    }
-    else {
-        return {33 + boardPasteX + 56 * x, 33 + boardPasteY + 56 * (7 - y)};
-    }
-}
-
-inline Coordinates getNearestCorner(int x, int y) {
-    return {((x - 33 - boardPasteX) / 56) * 56 + 33 + boardPasteX, ((y - 33 - boardPasteY) / 56) * 56 + 33 + boardPasteY};
-}
 
 inline bool in(int var, int leftBorder, int rightBorder) {
     return (var > leftBorder) && (var < rightBorder);
 }
 
-bool isInAvailables(Coordinates coordinates) {
-    for (int i = 0; i < amc; i++) {
-        if (arrayOfAvailableMoveDests[i].x == coordinates.x && arrayOfAvailableMoveDests[i].y == coordinates.y) return true;
-    }
-    return false;
-}
-
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, int cmdShow) {
-    playerSide1 = Black;
-    game = createANewGame(playerSide1, White, RvsC);
+    player = Black;
+    game = createANewGame(player, White, RvsC);
     ascendChecker(&game.situation.board.checkers[White][8]);
     updateBoardRender(&game.situation.board);
     WNDCLASSEX mainClass = newWindowClass((HBRUSH) COLOR_WINDOW, LoadCursor(NULL, IDC_ARROW), instance, LoadIcon(NULL, IDI_APPLICATION), applicationProcessor);
-    Coordinates pasteCoordinates = getPasteCoordinates();
+    Coordinates pasteCoordinates = getPasteWindowCoordinates();
     mainClass.lpszClassName = _TEXT(APPLICATION_MAIN_CLASS_NAME);
     mainClass.hIcon = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_BIG_ICON), IMAGE_ICON, 128, 128, 0);
     mainClass.hIconSm = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_WIN_ICON), IMAGE_ICON, 16, 16, 0);
@@ -202,7 +110,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
         }
         case WM_PAINT: {
             handler = BeginPaint(window, &paintStructure);
-            renderBoard(&game.situation.board, playerSide1, handler, boardPasteX, boardPasteY);
+            renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
             EndPaint(window, &paintStructure);
             break;
         }
@@ -214,24 +122,24 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             if (in((int) p.x, boardPasteX + 33, boardPasteX + 8 * 56 + 33) && in((int) p.y, boardPasteY + 33, boardPasteY + 8*56 + 33)) {
 
                 //Coordinates b = transformXYToBoardXY(p.x, p.y, playerSide);
-                Coordinates placeToRender = getNearestCorner(p.x, p.y), boardPos = transformXYToBoardXY(p.x, p.y, playerSide1);
+                Coordinates placeToRender = getNearestCorner(p.x, p.y), boardPos = transformXYToBoardXY(p.x, p.y, player);
                 if (!movesHaveBeenFound) {
-                    findAllMoves(&game.situation, playerSide1);
+                    findAllMoves(&game.situation, player);
                     movesHaveBeenFound = true;
                 }
                 handler = GetDC(window);//BeginPaint(window, &paintStructure);
-                renderBoard(&game.situation.board, playerSide1, handler, boardPasteX, boardPasteY);
+                renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
                 if (destinationInRMSBuffer(rmsForChosen, boardPos)) {
 
                     //int index = getAvailableIndex(coordinatesOfAvailableMoves, boardPos);
                     Move extractedMove = extractMoveFromBuffer(rmsForChosen, boardPos);
                     makeAMove(&game.situation, extractedMove);
                     updateBoardRender(&game.situation.board);
-                    renderBoard(&game.situation.board, playerSide1, handler, boardPasteX, boardPasteY);
+                    renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
                     flushBuffers();
                     flushSequenceLists(&game.situation);
                     movesHaveBeenFound = false;
-                    SeqContainer bestMove = getBestMove(game.situation, negateColor(playerSide1), Normal);
+                    SeqContainer bestMove = getBestMove(game.situation, negateColor(player), Normal);
                     //while (bestMove.seqNumberToDo == -1) bestMove = getBestMove(test.situation, forWho, Hard);
                     switch (bestMove.seqNumberToDo) {
                         case 1: {
@@ -250,29 +158,35 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         }
                     }
                     updateBoardRender(&game.situation.board);
-                    removeMarkedForDeath(&game.situation, playerSide1);
-                    removeMarkedForDeath(&game.situation, negateColor(playerSide1));
+                    removeMarkedForDeath(&game.situation, player);
+                    removeMarkedForDeath(&game.situation, negateColor(player));
                     flushSequenceLists(&game.situation);
-                    renderBoard(&game.situation.board, playerSide1, handler, boardPasteX, boardPasteY);
+                    renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
                 }
                 else {
-                    //amc = 0;
-                    //renderBoard
-                    for (int i = 0; i < game.situation.board.checkersCount[playerSide1]; i++) {
-                        for (int j = 0; j < game.situation.rmsCount; j++) {
-                            if (game.situation.regMoveSequences[i].regularMoves[0].source.x == boardPos.x &&
-                                game.situation.regMoveSequences[i].regularMoves[0].source.y == boardPos.y) {
-                                Coordinates t = getPasteCoords(
-                                    game.situation.regMoveSequences[i].regularMoves[0].destination.x,
-                                    game.situation.regMoveSequences[i].regularMoves[0].destination.y, playerSide1);
-                                renderBoardTexture(t.x, t.y, 6, handler);
-                                addRMSToBuffer(rmsForChosen, game.situation.regMoveSequences[i]);
-                                //addAnAvailableCoordinate(coordinatesOfAvailableMoves, boardPos);
-                                // lastChosen = boardPos;
-                                //arrayOfAvailableMoveDests[amc++] = game.situation.regMoveSequences[i].regularMoves[0].destination;
+                    if (game.situation.tmsCount != 0) {
+                        for (int i = 0; i < game.situation.tmsCount; i++) {
+                            if (isCoordinatesEqual(game.situation.takingSequences[i].takingMoves[0].source, boardPos)) {
+                                renderTakingSequence(game.situation.takingSequences[i], 0, handler);
+                                addTSToBuffer(tsForChosen, game.situation.takingSequences[i]);
                             }
                         }
                     }
+                    else {
+                        for (int i = 0; i < game.situation.mmsCount; i++) {
+                            if (isCoordinatesEqual(game.situation.mixedSequences[i].kingBecomingMove.source, boardPos)) {
+                                renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
+                                addRMSToBuffer(rmsForChosen, game.situation.regMoveSequences[i]);
+                            }
+                        }
+                        for (int i = 0; i < game.situation.rmsCount; i++) {
+                            if (isCoordinatesEqual(game.situation.regMoveSequences[i].regularMoves[0].source, boardPos)) {
+                                renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
+                                addMSToBuffer(msForChosen, game.situation.mixedSequences[i]);
+                            }
+                        }
+                    }
+
                 }
                 ReleaseDC(window, handler);
             }
