@@ -7,8 +7,13 @@
 #ifndef CHECKERS_GRAPHIC_SUBSYSTEM_H
 #define CHECKERS_GRAPHIC_SUBSYSTEM_H
 
-HBITMAP boardTextures[11], boardBorder;
+HBITMAP boardTextures[18], boardBorder;
 HINSTANCE gInstance;
+
+Coordinates cursorToBoardCoord(Coordinates cursor, Color playerSide) {
+    if (playerSide == Black) return {7 - cursor.x, cursor.y};
+    else return {cursor.x, 7 - cursor.y};
+}
 
 Coordinates getPasteWindowCoordinates() {
     RECT screen;
@@ -40,7 +45,7 @@ inline Coordinates getNearestCorner(int x, int y) {
 
 void loadBoardTextures() {
     char fPath[255], *fName;
-    for (int i = 0; i < 11; i++) {
+    for (int i = 0; i < 18; i++) {
         GetFullPathNameA(textures[i], 255, fPath, &fName);
         boardTextures[i] = (HBITMAP) LoadImage(gInstance, fPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     }
@@ -76,16 +81,17 @@ void renderBoardBorder(int x, int y, HDC handler) {
     DeleteDC(handlerMemory);
 }
 
-void renderBoard(Board* board, Color playerSide, HDC handler, int x = 0, int y = 0) {
+void renderBoard(Board* board, Color playerSide, HDC handler, Coordinates cursor, int x = 0, int y = 0) {
     renderBoardBorder(x, y, handler);
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            short bStat = board->boardRender[j][i];
+            short bStat = board->boardRender[j][i]; short selectShift = 0;
+            if (isCoordinatesEqual(cursorToBoardCoord(cursor, playerSide), {i, j})) selectShift = 11;
             if (playerSide == Black) {
-                renderBoardTexture(33 + x + 56 * (7 - i), 33 + y + 56 * j, bStat, handler); //56 x 56
+                renderBoardTexture(33 + x + 56 * (7 - i), 33 + y + 56 * j, bStat + selectShift, handler); //56 x 56
             }
             else if (playerSide == White) {
-                renderBoardTexture(33 + x + 56 * i, 33 + y + 56 * (7 - j), bStat, handler);
+                renderBoardTexture(33 + x + 56 * i, 33 + y + 56 * (7 - j), bStat + selectShift, handler);
             }
         }
     }
@@ -112,7 +118,7 @@ void makeARegMoveSequenceWithDelay(GameSituation* situation, RegMoveSequence reg
     for (int i = 0; i < regMoveSequence.rmsCount; i++) {
         makeAMove(situation, regMoveSequence.regularMoves[i]);
         updateBoardRender(&(situation->board));
-        renderBoard(&(situation->board), player, handler, boardPasteX, boardPasteY);
+        renderBoard(&(situation->board), player, handler, {-1, -1}, boardPasteX, boardPasteY);
         Sleep(mSecDelay);
     }
 }
@@ -130,7 +136,7 @@ void makeATakingSequenceWithDelay(GameSituation* situation, TakingSequence takin
         makeATakingMove(situation, takingSequence.takingMoves[i]);
         removeMarkedForDeath(situation, player);
         updateBoardRender(&(situation->board));
-        renderBoard(&(situation->board), player, handler, boardPasteX, boardPasteY);
+        renderBoard(&(situation->board), player, handler, {-1, -1}, boardPasteX, boardPasteY);
         Sleep(mSecDelay);
     }
 }
@@ -138,7 +144,7 @@ void makeATakingSequenceWithDelay(GameSituation* situation, TakingSequence takin
 void makeAMixedSequenceWithDelay(GameSituation* situation, MixedSequence mixedSequence, int mSecDelay, HDC handler) {
     makeAMove(situation, mixedSequence.kingBecomingMove);
     updateBoardRender(&(situation->board));
-    renderBoard(&(situation->board), player, handler, boardPasteX, boardPasteY);
+    renderBoard(&(situation->board), player, handler, {-1, -1}, boardPasteX, boardPasteY);
     Sleep(mSecDelay);
     makeATakingSequenceWithDelay(situation, mixedSequence.takingSequence, mSecDelay, handler);
 }

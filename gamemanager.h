@@ -8,6 +8,7 @@
 #define CHECKERS_GAMEMANAGER_H
 
 Game currentGame; Color player; bool movesHaveBeenFound = false, moveHasBeenMade = false;
+int numberOfCurrentTSMove = 0;
 Coordinates lastChosen;
 
 RegMoveSequence rmsForChosen[20]; TakingSequence tsForChosen[20]; MixedSequence msForChosen[20];
@@ -80,9 +81,9 @@ bool destinationTSInMSBuffer(MixedSequence* buffer, Coordinates destination, int
     return false;
 }
 
-int inWhatBufferIsDestination(Coordinates destination) {
+int inWhatBufferIsDestination(Coordinates destination, int tsSeqMove) {
     if (destinationInRMSBuffer(rmsForChosen, destination)) return 1;
-    else if (destinationInTSBuffer(tsForChosen, destination, 0)) return 2;
+    else if (destinationInTSBuffer(tsForChosen, destination, tsSeqMove)) return 2;
     else if (destinationKBMInMSBuffer(msForChosen, destination)) return 3;
     //else if (destinationTSInMSBuffer())
     else return 0;
@@ -112,5 +113,14 @@ TakingMove extractTakingMoveFromTSBuffer(TakingSequence* buffer, Coordinates des
     for (int i = 0; i < sizeOfTSFC; i++) {
         if (isCoordinatesEqual(buffer[i].takingMoves[seqMove].destination, destination)) return buffer[i].takingMoves[seqMove];
     }
+}
+
+bool isThereAnyOtherTakingMoves(TakingSequence* buffer, Coordinates fromDest, int seqMove) {
+    for (int i = 0; i < sizeOfTSFC; i++) {
+        if (buffer[i].tmsCount < seqMove) {
+            if (isCoordinatesEqual(buffer[i].takingMoves[seqMove].destination, fromDest)) return true;
+        }
+    }
+    return false;
 }
 #endif //CHECKERS_GAMEMANAGER_H

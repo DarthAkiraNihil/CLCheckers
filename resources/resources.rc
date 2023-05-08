@@ -1,15 +1,27 @@
 #include "resources.h"
 IDI_APP_BIG_ICON ICON "appIconBig.ico"
 IDI_APP_WIN_ICON ICON "appIconSmall.ico"
+
 IDB_BC_EMPTY_BLACK BITMAP "emptyBlack.bmp"
 IDB_BC_EMPTY_WHITE BITMAP "emptyWhite.bmp"
 IDB_BC_REG_BLACK BITMAP "regBlack.bmp"
 IDB_BC_REG_WHITE BITMAP "regWhite.bmp"
 IDB_BC_KING_BLACK BITMAP "kingBlack.bmp"
 IDB_BC_KING_WHITE BITMAP "kingWhite.bmp"
+
 IDB_BOARD_BORDER BITMAP "border.bmp"
+
 IDB_BOARD_TO_MOVE BITMAP "emptyToMove.bmp"
+
 IDB_BC_REG_BLACK_VICTIM BITMAP "regBlackVictim.bmp"
 IDB_BC_REG_WHITE_VICTIM BITMAP "regWhiteVictim.bmp"
 IDB_BC_KING_BLACK_VICTIM BITMAP "kingBlackVictim.bmp"
 IDB_BC_KING_WHITE_VICTIM BITMAP "kingWhiteVictim.bmp"
+
+IDB_BC_EMPTY_BLACK_SELECTED BITMAP "emptyBlackSelected.bmp"
+IDB_BC_EMPTY_WHITE_SELECTED BITMAP "emptyWhiteSelected.bmp"
+IDB_BC_REG_BLACK_SELECTED BITMAP "regBlackSelected.bmp"
+IDB_BC_REG_WHITE_SELECTED BITMAP "regWhiteSelected.bmp"
+IDB_BC_KING_BLACK_SELECTED BITMAP "kingBlackSelected.bmp"
+IDB_BC_KING_WHITE_SELECTED BITMAP "kingWhiteSelected.bmp"
+IDB_BC_EMPTY_TO_MOVE_SELECTED BITMAP "emptyToMoveSelected.bmp"

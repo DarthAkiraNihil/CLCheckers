@@ -10,13 +10,13 @@ enum Color {Black, White};
 enum CheckerType {Regular, King};
 enum GameState {PlayerMove, EnemyMoveReal, EnemyMoveComputer, BlackWon, WhiteWon};
 enum GameType {RvsR, RvsC}; //RvsR = Real versus Real, RvsC = Real vs Computer
-enum Difficulty {Dumbass = 2, Easy, Normal, Hard = 6, Harder, Insane, Extreme, Diabolic};
+enum Difficulty {Dumbass = 2, Easy, Normal, Hard = 6, Insane, Extreme, Diabolic, Invincible = 11};
 // may delete last two
 
 
 const int regularCheckerCost = 100;
 const int kingCheckerCost = 250;
-bool ENABLED_EMULATION = true;
+const bool ENABLED_EMULATION = true;
 
 const float BLACK_VICTORY = 100000.0;
 const float WHITE_VICTORY = -100000.0;
