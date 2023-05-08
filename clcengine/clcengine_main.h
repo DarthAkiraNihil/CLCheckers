@@ -39,6 +39,14 @@ void initiateChecker(Checker* checker, int x, int y, Color color) {
     checker->markedForDeath = false;
 }
 
+void resetPathMap(Board* board) {
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            board->pathMap[j][i] = NoMove;
+        }
+    }
+}
+
 void updateBoardRender(Board* board) {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
@@ -65,6 +73,7 @@ Board createANewBoard() {
             initiateChecker(&newBoard.checkers[Black][valueOfInitedPairs++], k + 1 - (j % 2), 7 - j, Black);
         }
     }
+    resetPathMap(&newBoard);
     updateBoardRender(&newBoard);
     return newBoard;
 }

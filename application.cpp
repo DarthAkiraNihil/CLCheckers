@@ -12,7 +12,7 @@
 
 Game game;
 HWND buttons[10];
-Coordinates boardCursor = {0, 0};
+Coordinates boardCursor = {0, 5};
 
 bool findMoves = false;
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
@@ -114,6 +114,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
         }
         case WM_PAINT: {
             handler = BeginPaint(window, &paintStructure);
+            renderBoardBorder(boardPasteX, boardPasteY, handler);
             renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
             EndPaint(window, &paintStructure);
             break;
@@ -285,17 +286,6 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             }*/
             break;
         }
-        case WM_LBUTTONDOWN : {
-
-            break;
-        }
-        case WM_RBUTTONUP: {
-
-            break;
-        }
-        case WM_SETFONT : {
-            break;
-        }
         case WM_KEYDOWN : {
             switch (wParam) {
                 case VK_UP: {
@@ -323,7 +313,35 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                     break;
 
                 }case VK_RETURN: {
-                    MessageBox(window, "A S S", "J O P A", 0);
+                    Coordinates converted = cursorToBoardCoord(boardCursor, player);
+                    if (!movesHaveBeenFound) {
+                        findAllMoves(&game.situation, player);
+                        movesHaveBeenFound = true;
+                    }
+                    flushBuffers();
+                    if (game.situation.tmsCount != 0) {
+                        for (int i = 0; i < game.situation.tmsCount; i++) {
+                            if (isCoordinatesEqual(game.situation.takingSequences[i].takingMoves[0].source, converted)) {
+                                renderTakingSequence(game.situation.takingSequences[i], 0, handler);
+                                addTSToBuffer(tsForChosen, game.situation.takingSequences[i]);
+                            }
+                        }
+                    }
+                    else {
+                        for (int i = 0; i < game.situation.mmsCount; i++) {
+                            if (isCoordinatesEqual(game.situation.mixedSequences[i].kingBecomingMove.source, converted)) {
+                                renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
+                                addMSToBuffer(msForChosen, game.situation.mixedSequences[i]);
+                            }
+                        }
+                        for (int i = 0; i < game.situation.rmsCount; i++) {
+                            if (isCoordinatesEqual(game.situation.regMoveSequences[i].regularMoves[0].source, converted)) {
+                                renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
+                                addRMSToBuffer(rmsForChosen, game.situation.regMoveSequences[i]);
+                            }
+                        }
+                    }
+                    //MessageBox(window, "A S S", "J O P A", 0);
                     break;
                 }
             }
@@ -335,9 +353,6 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
         }
         case WM_CLOSE: {
             DestroyWindow(window);
-        }
-        case WM_QUIT: {
-            break;
         }
         default: {
             return DefWindowProc(window, message, wParam, lParam);

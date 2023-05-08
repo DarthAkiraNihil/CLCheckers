@@ -6,6 +6,7 @@
 #define CHECKERS_CLCENGINE_STRUCTS_H
 
 enum BoardCellState {EMPTY_BLACK, EMPTY_WHITE, REG_BLACK, REG_WHITE, KING_BLACK, KING_WHITE};
+enum PathMapMarkers {NoMove, Source, Destination, VictimRB, VictimRW, VictimKB, VictimKW};
 enum Color {Black, White};
 enum CheckerType {Regular, King};
 enum GameState {PlayerMove, EnemyMoveReal, EnemyMoveComputer, BlackWon, WhiteWon};
@@ -79,6 +80,7 @@ struct MixedSequence {
 
 struct Board {
     BoardCellState boardRender[8][8];
+    PathMapMarkers pathMap[8][8];
     Checker checkers[2][12];
     int checkersCount[2];
 };

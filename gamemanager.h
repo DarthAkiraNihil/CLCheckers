@@ -31,7 +31,7 @@ void addTSToBuffer(TakingSequence* buffer, TakingSequence sequence) {
 void addMSToBuffer(MixedSequence* buffer, MixedSequence sequence) {
     buffer[sizeOfMSFC++] = sequence;
 }
-
+//добавь карту путей как рендер доски но только с доступнымы для хода полями и жертвы
 void flushBuffers() {
     sizeOfRMSFC = 0;
     sizeOfTSFC = 0;

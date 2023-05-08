@@ -82,7 +82,7 @@ void renderBoardBorder(int x, int y, HDC handler) {
 }
 
 void renderBoard(Board* board, Color playerSide, HDC handler, Coordinates cursor, int x = 0, int y = 0) {
-    renderBoardBorder(x, y, handler);
+    //renderBoardBorder(x, y, handler);
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
             short bStat = board->boardRender[j][i]; short selectShift = 0;
