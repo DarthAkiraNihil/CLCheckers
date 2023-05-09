@@ -322,17 +322,33 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         movesHaveBeenFound = true;
                     }
                     if (marker == Destination) {
-                        selectedDestination = converted; Move extracted;
-                        for (int i = 0; i < game.situation.rmsCount; i++) {
-                            Coordinates src = game.situation.regMoveSequences[i].regularMoves[0].source,
-                            dest = game.situation.regMoveSequences[i].regularMoves[0].destination;
-                            if (isCoordinatesEqual(src, selectedSource) && isCoordinatesEqual(dest, selectedDestination)) {
-                                extracted = game.situation.regMoveSequences[i].regularMoves[0];
-                                break;
+                        selectedDestination = converted;
+                        if (game.situation.tmsCount != 0) {
+                            TakingMove takingMove;
+                            for (int i = 0; i < game.situation.tmsCount; i++) {
+                                Coordinates src = game.situation.takingSequences[i].takingMoves[0].source,
+                                    dest = game.situation.takingSequences[i].takingMoves[0].destination;
+                                if (isCoordinatesEqual(src, selectedSource) && isCoordinatesEqual(dest, selectedDestination)) {
+                                    takingMove = game.situation.takingSequences[i].takingMoves[0];
+                                    break;
+                                }
                             }
+                            makeATakingMove(&game.situation, takingMove);
                         }
+                        else {
+                            Move extracted;
+                            for (int i = 0; i < game.situation.rmsCount; i++) {
+                                Coordinates src = game.situation.regMoveSequences[i].regularMoves[0].source,
+                                    dest = game.situation.regMoveSequences[i].regularMoves[0].destination;
+                                if (isCoordinatesEqual(src, selectedSource) && isCoordinatesEqual(dest, selectedDestination)) {
+                                    extracted = game.situation.regMoveSequences[i].regularMoves[0];
+                                    break;
+                                }
+                            }
 
-                        makeAMove(&game.situation, extracted);
+                            makeAMove(&game.situation, extracted);
+                        }
+                        removeMarkedForDeath(&game.situation, negateColor(player));
                         updateBoardRender(&game.situation.board);
                         renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
                         resetPathMap(&game.situation.board);
@@ -346,10 +362,37 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         resetPathMap(&game.situation.board);
                         fillPathMap(&game.situation, converted);
                     }
-                    Board cpy = game.situation.board;
+                    //Board cpy = game.situation.board;
 
 
                     UPDATE_RENDER;
+                    if (moveHasBeenMade) {
+                        flushSequenceLists(&game.situation);
+                        SeqContainer bestMove = getBestMove(game.situation, negateColor(player), Normal);
+                        //while (bestMove.seqNumberToDo == -1) bestMove = getBestMove(test.situation, forWho, Hard);
+                        switch (bestMove.seqNumberToDo) {
+                            case 1: {
+                                makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence, moveMakingDelay, handler);
+                                break;
+                            }
+                            case 2: {
+                                makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence, moveMakingDelay, handler);
+                                //removeMarkedForDeath(&test.situation, forWho);
+                                break;
+                            }
+                            case 3: {
+                                makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence, moveMakingDelay, handler);
+                                //removeMarkedForDeath(&test.situation, forWho);
+                                break;
+                            }
+                        }
+                        removeMarkedForDeath(&game.situation, player);
+                        updateBoardRender(&game.situation.board);
+                        flushSequenceLists(&game.situation);
+                        flushBuffers();
+                        moveHasBeenMade = false;
+                        renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
+                    }
                     break;
                 }
             }
