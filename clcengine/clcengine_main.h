@@ -110,6 +110,10 @@ void fillPathMap(GameSituation* situation, Coordinates source) {
     }
 }
 
+void pathMapSetMovingLock(Board* board, Coordinates lock) {
+    board->pathMap[lock.y][lock.x] = MovingLock;
+}
+
 Board createANewBoard() {
     Board newBoard;
     newBoard.checkersCount[Black] = 12; newBoard.checkersCount[White] = 12;

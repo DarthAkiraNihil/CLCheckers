@@ -13,7 +13,8 @@
 Game game;
 HWND buttons[10];
 Coordinates boardCursor = {0, 5}, selectedSource, selectedDestination;
-
+int numberOfMoveInTakingSequence = 0;
+bool foundRegular = false, foundMixed = false, newKingAppeared = false;
 bool findMoves = false;
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
@@ -342,11 +343,24 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                     dest = game.situation.regMoveSequences[i].regularMoves[0].destination;
                                 if (isCoordinatesEqual(src, selectedSource) && isCoordinatesEqual(dest, selectedDestination)) {
                                     extracted = game.situation.regMoveSequences[i].regularMoves[0];
+                                    foundRegular = true;
                                     break;
+                                }
+                            }
+                            if (!foundRegular) {
+                                for (int i = 0; i < game.situation.mmsCount; i++) {
+                                    Coordinates src = game.situation.mixedSequences[i].kingBecomingMove.source,
+                                        dest = game.situation.mixedSequences[i].kingBecomingMove.destination;
+                                    if (isCoordinatesEqual(src, selectedSource) && isCoordinatesEqual(dest, selectedDestination)) {
+                                        extracted = game.situation.mixedSequences[i].kingBecomingMove;
+                                        //foundRegular = true;
+                                        break;
+                                    }
                                 }
                             }
 
                             makeAMove(&game.situation, extracted);
+                            foundRegular = false;
                         }
                         removeMarkedForDeath(&game.situation, negateColor(player));
                         updateBoardRender(&game.situation.board);
@@ -369,6 +383,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                     if (moveHasBeenMade) {
                         flushSequenceLists(&game.situation);
                         SeqContainer bestMove = getBestMove(game.situation, negateColor(player), Normal);
+                        Sleep(moveMakingDelay / 5);
                         //while (bestMove.seqNumberToDo == -1) bestMove = getBestMove(test.situation, forWho, Hard);
                         switch (bestMove.seqNumberToDo) {
                             case 1: {

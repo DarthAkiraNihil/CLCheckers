@@ -117,9 +117,9 @@ void renderKBMove(Move kingBecomingMove, HDC handler) {
 void renderPathMapMarkers(Board* board, Color playerSide, HDC handler, Coordinates cursor, int x = 0, int y = 0) {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
-            Coordinates renderPos = getPasteCoords(i, j, playerSide);
+            //Coordinates renderPos = getPasteCoords(i, j, playerSide);
             PathMapMarkers marker = board->pathMap[j][i]; short selectShift = 0;
-            if (marker != Source && marker != NoMove) {
+            if (marker != Source && marker != NoMove && marker != MovingLock) {
                 if (isCoordinatesEqual(cursorToBoardCoord(cursor, playerSide), {i, j})) selectShift = 11;
                 if (playerSide == Black) {
                     renderBoardTexture(33 + x + 56 * (7 - i), 33 + y + 56 * j, 4 + marker + selectShift, handler); //56 x 56
