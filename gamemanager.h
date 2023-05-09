@@ -16,9 +16,7 @@ int sizeOfRMSFC = 0, sizeOfTSFC = 0, sizeOfMSFC = 0;
 
 Coordinates coordinatesOfAvailableMoves[20]; int sizeOfCOAM = 0;
 
-bool isCoordinatesEqual(Coordinates arg1, Coordinates arg2) {
-    return arg1.x == arg2.x && arg1.y == arg2.y;
-}
+
 
 void addRMSToBuffer(RegMoveSequence* buffer, RegMoveSequence sequence) {
     buffer[sizeOfRMSFC++] = sequence;
@@ -123,4 +121,6 @@ bool isThereAnyOtherTakingMoves(TakingSequence* buffer, Coordinates fromDest, in
     }
     return false;
 }
+
+SeqContainer getMove(GameSituation* situation, Coordinates source, Coordinates destination);
 #endif //CHECKERS_GAMEMANAGER_H

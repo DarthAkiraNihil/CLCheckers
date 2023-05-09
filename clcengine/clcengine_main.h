@@ -8,7 +8,9 @@
 #ifndef CHECKERS_CLCHECKERS_H
 #define CHECKERS_CLCHECKERS_H
 
-
+bool isCoordinatesEqual(Coordinates arg1, Coordinates arg2) {
+    return arg1.x == arg2.x && arg1.y == arg2.y;
+}
 
 void appendToATakingSequence(TakingSequence* sequence, TakingMove move) {
     sequence->takingMoves[sequence->tmsCount++] = move;
@@ -47,6 +49,25 @@ void resetPathMap(Board* board) {
     }
 }
 
+PathMapMarkers getVictimMarker(Color victimColor, CheckerType victimType) {
+    if (victimColor == Black) {
+        if (victimType == Regular) {
+            return VictimRB;
+        }
+        else {
+            return VictimKB;
+        }
+    }
+    else {
+        if (victimType == Regular) {
+            return VictimRW;
+        }
+        else {
+            return VictimKW;
+        }
+    }
+}
+
 void updateBoardRender(Board* board) {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
@@ -60,6 +81,32 @@ void updateBoardRender(Board* board) {
     for (int i = 0; i < board->checkersCount[White]; i++) {
         int rcx = board->checkers[White][i].coordinates.x, rcy = board->checkers[White][i].coordinates.y;
         board->boardRender[rcy][rcx] = (board->checkers[White][i].type == King) ? KING_WHITE : REG_WHITE;
+    }
+}
+
+void fillPathMap(GameSituation* situation, Coordinates source) {
+    if (situation->tmsCount != 0) {
+        for (int i = 0; i < situation->tmsCount; i++) {
+            if (isCoordinatesEqual(situation->takingSequences[i].takingMoves[0].source, source)) {
+                Coordinates dest = situation->takingSequences[i].takingMoves[0].destination, vict = situation->takingSequences[i].takingMoves[0].victim;
+                situation->board.pathMap[dest.y][dest.x] = Destination;
+                situation->board.pathMap[vict.y][vict.x] = getVictimMarker(situation->takingSequences[i].takingMoves[0].takingSide, situation->takingSequences[i].takingMoves[0].victimType);
+            }
+        }
+    }
+    else {
+        for (int i = 0; i < situation->mmsCount; i++) {
+            if (isCoordinatesEqual(situation->mixedSequences[i].kingBecomingMove.source, source)) {
+                Coordinates dest = situation->mixedSequences[i].kingBecomingMove.destination;
+                situation->board.pathMap[dest.y][dest.x] = Destination;
+            }
+        }
+        for (int i = 0; i < situation->rmsCount; i++) {
+            if (isCoordinatesEqual(situation->regMoveSequences[i].regularMoves[0].source, source)) {
+                Coordinates dest = situation->regMoveSequences[i].regularMoves[0].destination;
+                situation->board.pathMap[dest.y][dest.x] = Destination;
+            }
+        }
     }
 }
 

@@ -7,7 +7,7 @@
 #ifndef CHECKERS_GRAPHIC_SUBSYSTEM_H
 #define CHECKERS_GRAPHIC_SUBSYSTEM_H
 
-HBITMAP boardTextures[18], boardBorder;
+HBITMAP boardTextures[22], boardBorder;
 HINSTANCE gInstance;
 
 Coordinates cursorToBoardCoord(Coordinates cursor, Color playerSide) {
@@ -45,7 +45,7 @@ inline Coordinates getNearestCorner(int x, int y) {
 
 void loadBoardTextures() {
     char fPath[255], *fName;
-    for (int i = 0; i < 18; i++) {
+    for (int i = 0; i < 22; i++) {
         GetFullPathNameA(textures[i], 255, fPath, &fName);
         boardTextures[i] = (HBITMAP) LoadImage(gInstance, fPath, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
     }
@@ -112,6 +112,23 @@ void renderTakingSequence(TakingSequence sequence, int moveNumber, HDC handler) 
 void renderKBMove(Move kingBecomingMove, HDC handler) {
     Coordinates renderPlace = getPasteCoords(kingBecomingMove.destination.x, kingBecomingMove.destination.y, player);
     renderBoardTexture(renderPlace.x, renderPlace.y, 6, handler);
+}
+//6
+void renderPathMapMarkers(Board* board, Color playerSide, HDC handler, Coordinates cursor, int x = 0, int y = 0) {
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            Coordinates renderPos = getPasteCoords(i, j, playerSide);
+            PathMapMarkers marker = board->pathMap[j][i]; short selectShift = 0;
+            if (marker != Source && marker != NoMove) {
+                if (isCoordinatesEqual(cursorToBoardCoord(cursor, playerSide), {i, j})) selectShift = 11;
+                if (playerSide == Black) {
+                    renderBoardTexture(33 + x + 56 * (7 - i), 33 + y + 56 * j, 4 + marker + selectShift, handler); //56 x 56
+                } else if (playerSide == White) {
+                    renderBoardTexture(33 + x + 56 * i, 33 + y + 56 * (7 - j), 4 + marker + selectShift, handler);
+                }
+            }
+        }
+    }
 }
 
 void makeARegMoveSequenceWithDelay(GameSituation* situation, RegMoveSequence regMoveSequence, int mSecDelay, HDC handler) {

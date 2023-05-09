@@ -12,12 +12,12 @@
 
 Game game;
 HWND buttons[10];
-Coordinates boardCursor = {0, 5};
+Coordinates boardCursor = {0, 5}, selectedSource, selectedDestination;
 
 bool findMoves = false;
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
-
+#define UPDATE_RENDER renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY); renderPathMapMarkers(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY)
 
 inline bool in(int var, int leftBorder, int rightBorder) {
     return (var > leftBorder) && (var < rightBorder);
@@ -120,6 +120,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             break;
         }
         case WM_LBUTTONUP: {
+            MessageBox(window, "FUCK YOU ALL!", "I don't care", 0);
             /*POINT p;
             GetCursorPos(&p);
             ScreenToClient(window, &p);
@@ -291,57 +292,64 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 case VK_UP: {
                     //MessageBox(window, "J O P A", "J O P A", 0);
                     if (boardCursor.y > 0) boardCursor.y--; else boardCursor.y = 7;
-                    renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
+                    UPDATE_RENDER;
                     break;
                 }
                 case VK_DOWN: {
                     //MessageBox(window, "Fcking task", "Holy shit", 0);
                     if (boardCursor.y < 7) boardCursor.y++; else boardCursor.y = 0;
-                    renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
+                    UPDATE_RENDER;
                     break;
                 }
                 case VK_LEFT: {
                     //MessageBox(window, "I AM NOW MESSAGEBOX CERTIFIED", "UR TOO LATE SONIC!", 0);
                     if (boardCursor.x > 0) boardCursor.x--; else boardCursor.x = 7;
-                    renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
+                    UPDATE_RENDER;
                     break;
                 }
                 case VK_RIGHT: {
                     //MessageBox(window, "I now am too message box certified", "HAHA, I TOO AM LATE", 0);
                     if (boardCursor.x < 7) boardCursor.x++; else boardCursor.x = 0;
-                    renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
+                    UPDATE_RENDER;
                     break;
 
                 }case VK_RETURN: {
                     Coordinates converted = cursorToBoardCoord(boardCursor, player);
+                    PathMapMarkers marker = game.situation.board.pathMap[converted.y][converted.x];
+
                     if (!movesHaveBeenFound) {
                         findAllMoves(&game.situation, player);
                         movesHaveBeenFound = true;
                     }
-                    flushBuffers();
-                    if (game.situation.tmsCount != 0) {
-                        for (int i = 0; i < game.situation.tmsCount; i++) {
-                            if (isCoordinatesEqual(game.situation.takingSequences[i].takingMoves[0].source, converted)) {
-                                renderTakingSequence(game.situation.takingSequences[i], 0, handler);
-                                addTSToBuffer(tsForChosen, game.situation.takingSequences[i]);
+                    if (marker == Destination) {
+                        selectedDestination = converted; Move extracted;
+                        for (int i = 0; i < game.situation.rmsCount; i++) {
+                            Coordinates src = game.situation.regMoveSequences[i].regularMoves[0].source,
+                            dest = game.situation.regMoveSequences[i].regularMoves[0].destination;
+                            if (isCoordinatesEqual(src, selectedSource) && isCoordinatesEqual(dest, selectedDestination)) {
+                                extracted = game.situation.regMoveSequences[i].regularMoves[0];
+                                break;
                             }
                         }
+
+                        makeAMove(&game.situation, extracted);
+                        updateBoardRender(&game.situation.board);
+                        renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
+                        resetPathMap(&game.situation.board);
+                        flushSequenceLists(&game.situation);//flushBuffers();
+                        movesHaveBeenFound = false; moveHasBeenMade = true;
+
+                        // make a move
                     }
                     else {
-                        for (int i = 0; i < game.situation.mmsCount; i++) {
-                            if (isCoordinatesEqual(game.situation.mixedSequences[i].kingBecomingMove.source, converted)) {
-                                renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
-                                addMSToBuffer(msForChosen, game.situation.mixedSequences[i]);
-                            }
-                        }
-                        for (int i = 0; i < game.situation.rmsCount; i++) {
-                            if (isCoordinatesEqual(game.situation.regMoveSequences[i].regularMoves[0].source, converted)) {
-                                renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
-                                addRMSToBuffer(rmsForChosen, game.situation.regMoveSequences[i]);
-                            }
-                        }
+                        selectedSource = converted;
+                        resetPathMap(&game.situation.board);
+                        fillPathMap(&game.situation, converted);
                     }
-                    //MessageBox(window, "A S S", "J O P A", 0);
+                    Board cpy = game.situation.board;
+
+
+                    UPDATE_RENDER;
                     break;
                 }
             }
@@ -358,4 +366,5 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             return DefWindowProc(window, message, wParam, lParam);
         }
     }
+    ReleaseDC(window, handler);
 }
