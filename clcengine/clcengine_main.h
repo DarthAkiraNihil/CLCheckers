@@ -695,6 +695,17 @@ inline void findAllMoves(GameSituation* situation, Color forWhichSide) {
     }
 }
 
+bool noMoreTakingMoves(GameSituation* situation, int currentSeqMove, Coordinates source) {
+    for (int i = 0; i < situation->tmsCount; i++) {
+        if (situation->takingSequences[i].tmsCount < currentSeqMove) {
+            if (isCoordinatesEqual(situation->takingSequences[i].takingMoves[currentSeqMove].source, source)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 void flushSequenceLists(GameSituation* situation) {
     situation->rmsCount = 0;
     situation->tmsCount = 0;

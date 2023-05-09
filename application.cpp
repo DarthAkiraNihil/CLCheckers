@@ -14,7 +14,7 @@ Game game;
 HWND buttons[10];
 Coordinates boardCursor = {0, 5}, selectedSource, selectedDestination;
 int numberOfMoveInTakingSequence = 0;
-bool foundRegular = false, foundMixed = false, newKingAppeared = false;
+bool foundRegular = false, foundMixed = false, newKingAppeared = false, lockIsSet = false;
 bool findMoves = false;
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
@@ -335,6 +335,13 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 }
                             }
                             makeATakingMove(&game.situation, takingMove);
+                            if (noMoreTakingMoves(&game.situation, ++numberOfMoveInTakingSequence, selectedDestination)) {
+                                moveHasBeenMade = true;
+                            }
+                            else {
+                                pathMapSetMovingLock(&game.situation.board, selectedDestination);
+                                lockIsSet = true;
+                            }
                         }
                         else {
                             Move extracted;
@@ -360,17 +367,18 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                             }
 
                             makeAMove(&game.situation, extracted);
-                            foundRegular = false;
+                            foundRegular = false; moveHasBeenMade = true;
                         }
                         removeMarkedForDeath(&game.situation, negateColor(player));
                         updateBoardRender(&game.situation.board);
                         renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
                         resetPathMap(&game.situation.board);
                         flushSequenceLists(&game.situation);//flushBuffers();
-                        movesHaveBeenFound = false; moveHasBeenMade = true;
+                        movesHaveBeenFound = false;
 
                         // make a move
                     }
+
                     else {
                         selectedSource = converted;
                         resetPathMap(&game.situation.board);
@@ -381,33 +389,38 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
 
                     UPDATE_RENDER;
                     if (moveHasBeenMade) {
-                        flushSequenceLists(&game.situation);
-                        SeqContainer bestMove = getBestMove(game.situation, negateColor(player), Normal);
-                        Sleep(moveMakingDelay / 5);
-                        //while (bestMove.seqNumberToDo == -1) bestMove = getBestMove(test.situation, forWho, Hard);
-                        switch (bestMove.seqNumberToDo) {
-                            case 1: {
-                                makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence, moveMakingDelay, handler);
-                                break;
+                       //if (game.type == RvsC) {
+                            flushSequenceLists(&game.situation);
+                            SeqContainer bestMove = getBestMove(game.situation, negateColor(player), Normal);
+                            Sleep(moveMakingDelay / 5);
+                            //while (bestMove.seqNumberToDo == -1) bestMove = getBestMove(test.situation, forWho, Hard);
+                            switch (bestMove.seqNumberToDo) {
+                                case 1: {
+                                    makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence, moveMakingDelay, handler);
+                                    break;
+                                }
+                                case 2: {
+                                    makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence, moveMakingDelay, handler);
+                                    //removeMarkedForDeath(&test.situation, forWho);
+                                    break;
+                                }
+                                case 3: {
+                                    makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence, moveMakingDelay, handler);
+                                    //removeMarkedForDeath(&test.situation, forWho);
+                                    break;
+                                }
                             }
-                            case 2: {
-                                makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence, moveMakingDelay, handler);
-                                //removeMarkedForDeath(&test.situation, forWho);
-                                break;
-                            }
-                            case 3: {
-                                makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence, moveMakingDelay, handler);
-                                //removeMarkedForDeath(&test.situation, forWho);
-                                break;
-                            }
+                            removeMarkedForDeath(&game.situation, player);
+                            updateBoardRender(&game.situation.board);
+                            flushSequenceLists(&game.situation);
+                            flushBuffers();
+                            moveHasBeenMade = false;
+                            renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
                         }
-                        removeMarkedForDeath(&game.situation, player);
-                        updateBoardRender(&game.situation.board);
-                        flushSequenceLists(&game.situation);
-                        flushBuffers();
-                        moveHasBeenMade = false;
-                        renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
-                    }
+                        //else {
+                        //    player = negateColor(player);
+                        //}
+
                     break;
                 }
             }
