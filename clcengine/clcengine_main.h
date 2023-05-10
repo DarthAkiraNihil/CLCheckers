@@ -110,6 +110,20 @@ void fillPathMap(GameSituation* situation, Coordinates source) {
     }
 }
 
+void fillPathMapTakingMoves(GameSituation* situation, Coordinates source, int seqMoveNumber) {
+    if (situation->tmsCount != 0) {
+        for (int i = 0; i < situation->tmsCount; i++) {
+            if (situation->takingSequences[i].tmsCount > seqMoveNumber) {
+                if (isCoordinatesEqual(situation->takingSequences[i].takingMoves[seqMoveNumber].source, source)) {
+                    Coordinates dest = situation->takingSequences[i].takingMoves[seqMoveNumber].destination, vict = situation->takingSequences[i].takingMoves[seqMoveNumber].victim;
+                    situation->board.pathMap[dest.y][dest.x] = Destination;
+                    situation->board.pathMap[vict.y][vict.x] = getVictimMarker(situation->takingSequences[i].takingMoves[seqMoveNumber].takingSide, situation->takingSequences[i].takingMoves[seqMoveNumber].victimType);
+                }
+            }
+        }
+    }
+}
+
 void pathMapSetMovingLock(Board* board, Coordinates lock) {
     board->pathMap[lock.y][lock.x] = MovingLock;
 }
@@ -697,7 +711,7 @@ inline void findAllMoves(GameSituation* situation, Color forWhichSide) {
 
 bool noMoreTakingMoves(GameSituation* situation, int currentSeqMove, Coordinates source) {
     for (int i = 0; i < situation->tmsCount; i++) {
-        if (situation->takingSequences[i].tmsCount < currentSeqMove) {
+        if (situation->takingSequences[i].tmsCount > currentSeqMove) {
             if (isCoordinatesEqual(situation->takingSequences[i].takingMoves[currentSeqMove].source, source)) {
                 return false;
             }

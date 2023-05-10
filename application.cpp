@@ -18,7 +18,7 @@ bool foundRegular = false, foundMixed = false, newKingAppeared = false, lockIsSe
 bool findMoves = false;
 #define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
 
-#define UPDATE_RENDER renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY); renderPathMapMarkers(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY)
+#define UPDATE_RENDER renderBoard(&game.situation.board, game.situation.playerSide, handler, boardCursor, boardPasteX, boardPasteY); renderPathMapMarkers(&game.situation.board, game.situation.playerSide, handler, boardCursor, boardPasteX, boardPasteY)
 
 inline bool in(int var, int leftBorder, int rightBorder) {
     return (var > leftBorder) && (var < rightBorder);
@@ -27,6 +27,7 @@ inline bool in(int var, int leftBorder, int rightBorder) {
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, int cmdShow) {
     player = Black;
     game = createANewGame(player, White, RvsC);
+    game.situation.playerSide = player;
     //ascendChecker(&game.situation.board.checkers[Black][8]);
     updateBoardRender(&game.situation.board);
     WNDCLASSEX mainClass = newWindowClass((HBRUSH) COLOR_WINDOW, LoadCursor(NULL, IDC_ARROW), instance, LoadIcon(NULL, IDI_APPLICATION), applicationProcessor);
@@ -120,174 +121,6 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             EndPaint(window, &paintStructure);
             break;
         }
-        case WM_LBUTTONUP: {
-            MessageBox(window, "FUCK YOU ALL!", "I don't care", 0);
-            /*POINT p;
-            GetCursorPos(&p);
-            ScreenToClient(window, &p);
-            //char pr[50];
-            if (in((int) p.x, boardPasteX + 33, boardPasteX + 8 * 56 + 33) && in((int) p.y, boardPasteY + 33, boardPasteY + 8*56 + 33)) {
-
-                //Coordinates b = transformXYToBoardXY(p.x, p.y, playerSide);
-                Coordinates placeToRender = getNearestCorner(p.x, p.y), boardPos = transformXYToBoardXY(p.x, p.y, player);
-                if (!movesHaveBeenFound) {
-                    findAllMoves(&game.situation, player);
-                    movesHaveBeenFound = true;
-                }
-                //BeginPaint(window, &paintStructure);
-                renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
-                switch (inWhatBufferIsDestination(boardPos, 0)) {
-                    case 1: {
-                        Move extracted = extractMoveFromRSBuffer(rmsForChosen, boardPos);
-                        makeAMove(&game.situation, extracted);
-                        updateBoardRender(&game.situation.board);
-                        renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
-                        flushBuffers();
-                        movesHaveBeenFound = false; moveHasBeenMade = true;
-                        break;
-                    }
-                    case 2: {
-                        //printf("ASS");
-                        TakingMove extracted = extractTakingMoveFromTSBuffer(tsForChosen, boardPos, 0);
-                        makeATakingMove(&game.situation, extracted);
-                        //renderBoard2(&game.situation.board, player, 0, 0, false);
-                        updateBoardRender(&game.situation.board);
-                        removeMarkedForDeath(&game.situation, negateColor(player));
-                        renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
-                        numberOfCurrentTSMove++;
-                        //if (!isThereAnyOtherTakingMoves(tsForChosen, boardPos, numberOfCurrentTSMove)) {
-                            flushBuffers();
-                            movesHaveBeenFound = false; moveHasBeenMade = true;
-                        //}
-                        //movesHaveBeenFound = false; moveHasBeenMade = true; flushBuffers();
-                        break;
-                    }
-                    case 3: {
-                        Move extracted = extractMoveFromMSBuffer(msForChosen, boardPos);
-                        makeAMove(&game.situation, extracted);
-                        updateBoardRender(&game.situation.board);
-                        renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
-                        movesHaveBeenFound = false; moveHasBeenMade = true; flushBuffers();
-                        break;
-                    }
-                    default: {
-                        flushBuffers();
-                        //if (numberOfCurrentTSMove == 0) flushBuffers();
-                        if (game.situation.tmsCount != 0) {
-                            for (int i = 0; i < game.situation.tmsCount; i++) {
-                                if (isCoordinatesEqual(game.situation.takingSequences[i].takingMoves[0].source, boardPos)) {
-                                    renderTakingSequence(game.situation.takingSequences[i], 0, handler);
-                                    addTSToBuffer(tsForChosen, game.situation.takingSequences[i]);
-                                }
-                            }
-                        }
-                        else {
-                            for (int i = 0; i < game.situation.mmsCount; i++) {
-                                if (isCoordinatesEqual(game.situation.mixedSequences[i].kingBecomingMove.source, boardPos)) {
-                                    renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
-                                    addMSToBuffer(msForChosen, game.situation.mixedSequences[i]);
-                                }
-                            }
-                            for (int i = 0; i < game.situation.rmsCount; i++) {
-                                if (isCoordinatesEqual(game.situation.regMoveSequences[i].regularMoves[0].source, boardPos)) {
-                                    renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
-                                    addRMSToBuffer(rmsForChosen, game.situation.regMoveSequences[i]);
-                                }
-                            }
-                        }
-                    }
-
-                }
-                if (moveHasBeenMade) {
-                    flushSequenceLists(&game.situation);
-                    SeqContainer bestMove = getBestMove(game.situation, negateColor(player), Invincible);
-                    //while (bestMove.seqNumberToDo == -1) bestMove = getBestMove(test.situation, forWho, Hard);
-                    switch (bestMove.seqNumberToDo) {
-                        case 1: {
-                            makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence, moveMakingDelay, handler);
-                            break;
-                        }
-                        case 2: {
-                            makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence, moveMakingDelay, handler);
-                            //removeMarkedForDeath(&test.situation, forWho);
-                            break;
-                        }
-                        case 3: {
-                            makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence, moveMakingDelay, handler);
-                            //removeMarkedForDeath(&test.situation, forWho);
-                            break;
-                        }
-                    }
-                    removeMarkedForDeath(&game.situation, player);
-                    updateBoardRender(&game.situation.board);
-                    flushSequenceLists(&game.situation);
-                    flushBuffers();
-                    moveHasBeenMade = false;
-                    renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
-                }
-                if (destinationInRMSBuffer(rmsForChosen, boardPos)) {
-
-                    //int index = getAvailableIndex(coordinatesOfAvailableMoves, boardPos);
-                    Move extractedMove = extractMoveFromRSBuffer(rmsForChosen, boardPos);
-                    makeAMove(&game.situation, extractedMove);
-                    updateBoardRender(&game.situation.board);
-                    renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
-                    flushBuffers();
-                    flushSequenceLists(&game.situation);
-                    movesHaveBeenFound = false;
-                    SeqContainer bestMove = getBestMove(game.situation, negateColor(player), Normal);
-                    //while (bestMove.seqNumberToDo == -1) bestMove = getBestMove(test.situation, forWho, Hard);
-                    switch (bestMove.seqNumberToDo) {
-                        case 1: {
-                            makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence, 2000);
-                            break;
-                        }
-                        case 2: {
-                            makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence, 2000);
-                            //removeMarkedForDeath(&test.situation, forWho);
-                            break;
-                        }
-                        case 3: {
-                            makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence, 2000);
-                            //removeMarkedForDeath(&test.situation, forWho);
-                            break;
-                        }
-                    }
-                    updateBoardRender(&game.situation.board);
-                    removeMarkedForDeath(&game.situation, player);
-                    removeMarkedForDeath(&game.situation, negateColor(player));
-                    flushSequenceLists(&game.situation);
-                    renderBoard(&game.situation.board, player, handler, boardPasteX, boardPasteY);
-                }
-                else {
-                    flushBuffers();
-                    if (game.situation.tmsCount != 0) {
-                        for (int i = 0; i < game.situation.tmsCount; i++) {
-                            if (isCoordinatesEqual(game.situation.takingSequences[i].takingMoves[0].source, boardPos)) {
-                                renderTakingSequence(game.situation.takingSequences[i], 0, handler);
-                                addTSToBuffer(tsForChosen, game.situation.takingSequences[i]);
-                            }
-                        }
-                    }
-                    else {
-                        for (int i = 0; i < game.situation.mmsCount; i++) {
-                            if (isCoordinatesEqual(game.situation.mixedSequences[i].kingBecomingMove.source, boardPos)) {
-                                renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
-                                addMSToBuffer(msForChosen, game.situation.mixedSequences[i]);
-                            }
-                        }
-                        for (int i = 0; i < game.situation.rmsCount; i++) {
-                            if (isCoordinatesEqual(game.situation.regMoveSequences[i].regularMoves[0].source, boardPos)) {
-                                renderRegularMoveSequence(game.situation.regMoveSequences[i], 0, handler);
-                                addRMSToBuffer(rmsForChosen, game.situation.regMoveSequences[i]);
-                            }
-                        }
-                    }
-                }
-                ReleaseDC(window, handler);
-            }*/
-            break;
-        }
         case WM_KEYDOWN : {
             switch (wParam) {
                 case VK_UP: {
@@ -315,80 +148,128 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                     break;
 
                 }case VK_RETURN: {
-                    Coordinates converted = cursorToBoardCoord(boardCursor, player);
+                    GameSituation cpy1 = game.situation;
+                    Coordinates converted = cursorToBoardCoord(boardCursor, game.situation.playerSide);
                     PathMapMarkers marker = game.situation.board.pathMap[converted.y][converted.x];
 
                     if (!movesHaveBeenFound) {
                         findAllMoves(&game.situation, player);
                         movesHaveBeenFound = true;
                     }
-                    if (marker == Destination) {
-                        selectedDestination = converted;
-                        if (game.situation.tmsCount != 0) {
+                    if (lockIsSet) {
+                        if (marker == MovingLock) {
+                            selectedSource = converted;
+                            resetPathMap(&game.situation.board);
+                            fillPathMapTakingMoves(&game.situation, converted, numberOfMoveInTakingSequence);
+                        }
+                        else if (marker == Destination) {
+                            selectedDestination = converted;
                             TakingMove takingMove;
                             for (int i = 0; i < game.situation.tmsCount; i++) {
-                                Coordinates src = game.situation.takingSequences[i].takingMoves[0].source,
-                                    dest = game.situation.takingSequences[i].takingMoves[0].destination;
+                                Coordinates src = game.situation.takingSequences[i].takingMoves[numberOfMoveInTakingSequence].source,
+                                    dest = game.situation.takingSequences[i].takingMoves[numberOfMoveInTakingSequence].destination;
                                 if (isCoordinatesEqual(src, selectedSource) && isCoordinatesEqual(dest, selectedDestination)) {
-                                    takingMove = game.situation.takingSequences[i].takingMoves[0];
+                                    takingMove = game.situation.takingSequences[i].takingMoves[numberOfMoveInTakingSequence];
                                     break;
                                 }
                             }
                             makeATakingMove(&game.situation, takingMove);
                             if (noMoreTakingMoves(&game.situation, ++numberOfMoveInTakingSequence, selectedDestination)) {
                                 moveHasBeenMade = true;
-                            }
-                            else {
-                                pathMapSetMovingLock(&game.situation.board, selectedDestination);
-                                lockIsSet = true;
+                                resetPathMap(&game.situation.board);
+                                numberOfMoveInTakingSequence = 0;
+                                removeMarkedForDeath(&game.situation, negateColor(player));
+                                //resetPathMap(&game.situation.board);
+                                flushSequenceLists(&game.situation);
+                                lockIsSet = false; movesHaveBeenFound = false;
                             }
                         }
                         else {
-                            Move extracted;
-                            for (int i = 0; i < game.situation.rmsCount; i++) {
-                                Coordinates src = game.situation.regMoveSequences[i].regularMoves[0].source,
-                                    dest = game.situation.regMoveSequences[i].regularMoves[0].destination;
-                                if (isCoordinatesEqual(src, selectedSource) && isCoordinatesEqual(dest, selectedDestination)) {
-                                    extracted = game.situation.regMoveSequences[i].regularMoves[0];
-                                    foundRegular = true;
-                                    break;
-                                }
-                            }
-                            if (!foundRegular) {
-                                for (int i = 0; i < game.situation.mmsCount; i++) {
-                                    Coordinates src = game.situation.mixedSequences[i].kingBecomingMove.source,
-                                        dest = game.situation.mixedSequences[i].kingBecomingMove.destination;
+                            selectedSource = converted;
+                            resetPathMap(&game.situation.board);
+                            fillPathMapTakingMoves(&game.situation, converted, numberOfMoveInTakingSequence + 1);
+                        }
+                    }
+                    else {
+                        if (marker == Destination) {
+                            selectedDestination = converted;
+                            if (game.situation.tmsCount != 0) {
+                                TakingMove takingMove;
+                                for (int i = 0; i < game.situation.tmsCount; i++) {
+                                    Coordinates src = game.situation.takingSequences[i].takingMoves[0].source,
+                                        dest = game.situation.takingSequences[i].takingMoves[0].destination;
                                     if (isCoordinatesEqual(src, selectedSource) && isCoordinatesEqual(dest, selectedDestination)) {
-                                        extracted = game.situation.mixedSequences[i].kingBecomingMove;
-                                        //foundRegular = true;
+                                        takingMove = game.situation.takingSequences[i].takingMoves[0];
                                         break;
                                     }
                                 }
+                                makeATakingMove(&game.situation, takingMove);
+                                if (noMoreTakingMoves(&game.situation, ++numberOfMoveInTakingSequence, selectedDestination)) {
+                                    moveHasBeenMade = true; movesHaveBeenFound = false;
+                                }
+                                else {
+                                    pathMapSetMovingLock(&game.situation.board, selectedDestination);
+                                    game.situation.board.pathMap[takingMove.victim.y][takingMove.victim.x] = NoMove;
+                                    lockIsSet = true;
+                                }
                             }
+                            else {
+                                Move extracted;
+                                for (int i = 0; i < game.situation.rmsCount; i++) {
+                                    Coordinates src = game.situation.regMoveSequences[i].regularMoves[0].source,
+                                        dest = game.situation.regMoveSequences[i].regularMoves[0].destination;
+                                    if (isCoordinatesEqual(src, selectedSource) && isCoordinatesEqual(dest, selectedDestination)) {
+                                        extracted = game.situation.regMoveSequences[i].regularMoves[0];
+                                        foundRegular = true;
+                                        break;
+                                    }
+                                }
+                                if (!foundRegular) {
+                                    for (int i = 0; i < game.situation.mmsCount; i++) {
+                                        Coordinates src = game.situation.mixedSequences[i].kingBecomingMove.source,
+                                            dest = game.situation.mixedSequences[i].kingBecomingMove.destination;
+                                        if (isCoordinatesEqual(src, selectedSource) && isCoordinatesEqual(dest, selectedDestination)) {
+                                            extracted = game.situation.mixedSequences[i].kingBecomingMove;
+                                            //foundRegular = true;
+                                            break;
+                                        }
+                                    }
 
-                            makeAMove(&game.situation, extracted);
-                            foundRegular = false; moveHasBeenMade = true;
+                                }
+                                movesHaveBeenFound = false;
+                                makeAMove(&game.situation, extracted);
+                                foundRegular = false; moveHasBeenMade = true;
+                            }
+                            if (!lockIsSet) {
+                                removeMarkedForDeath(&game.situation, negateColor(player));
+                                resetPathMap(&game.situation.board);
+                                flushSequenceLists(&game.situation);
+                            }
+                            updateBoardRender(&game.situation.board);
+                            renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
+                            //flushBuffers();
+
+
+                            // make a move
                         }
-                        removeMarkedForDeath(&game.situation, negateColor(player));
-                        updateBoardRender(&game.situation.board);
-                        renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
-                        resetPathMap(&game.situation.board);
-                        flushSequenceLists(&game.situation);//flushBuffers();
-                        movesHaveBeenFound = false;
 
-                        // make a move
+                        else {
+                            selectedSource = converted;
+                            resetPathMap(&game.situation.board);
+                            fillPathMap(&game.situation, converted);
+                        }
                     }
 
-                    else {
-                        selectedSource = converted;
-                        resetPathMap(&game.situation.board);
-                        fillPathMap(&game.situation, converted);
-                    }
                     //Board cpy = game.situation.board;
 
 
                     UPDATE_RENDER;
                     if (moveHasBeenMade) {
+                        player = negateColor(player);
+                        moveHasBeenMade = false;
+                    }
+                    GameSituation cpy2 = game.situation;
+                    /*if (moveHasBeenMade) {
                        //if (game.type == RvsC) {
                             flushSequenceLists(&game.situation);
                             SeqContainer bestMove = getBestMove(game.situation, negateColor(player), Normal);
@@ -420,7 +301,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         //else {
                         //    player = negateColor(player);
                         //}
-
+*/
                     break;
                 }
             }
