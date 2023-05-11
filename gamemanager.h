@@ -1,7 +1,7 @@
 //
 // Created by Егор on 04.05.2023.
 //
-#include "clcengine/clcengine_main.h"
+#include "clcengine/clcengine.h"
 
 
 #ifndef CHECKERS_GAMEMANAGER_H

@@ -1,8 +1,8 @@
 #include <cstring>
 #include <memory.h>
 //#include "conio2.h"
-#include "interface.h"
-#include "clcengine/clcengine_main.h"
+//#include "interface.h"
+#include "clcengine/clcengine.h"
 #include "appconsts.h"
 #include "resources/resources.h"
 #include "defs.h"

@@ -7,3 +7,5 @@ cmake-build-debug/
 /package.ico
 /resources/test.bmp
 /old.cpp
+/conio21/
+/interface.h
