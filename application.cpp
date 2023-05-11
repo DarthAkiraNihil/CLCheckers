@@ -65,13 +65,17 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     difficultySelect = CreateWindow(
         "combobox",
         "",
-        WS_VISIBLE | WS_CHILD | CBS_DROPDOWN | CBS_HASSTRINGS, 540, 300, 140, 50,  mainWindow, (HMENU) 60000, instance, nullptr
+        WS_VISIBLE | WS_CHILD | CBS_DROPDOWN | CBS_HASSTRINGS | CBS_AUTOHSCROLL, 540, 300, 140, 200,  mainWindow, (HMENU) 60000, instance, nullptr
     );
     //LPCSTR fuck = "Dumbass\0";
     //SendMessage(difficultySelect, CB_ADDSTRING, 0,  (LPARAM) fuck);
     //howWindow(difficultySelect, 60000);
     //SendMessage(difficultySelect, CB_ADDSTRING, (WPARAM) 0,  (LPARAM) "Easy");
-    SendMessage(difficultySelect, CB_ADDSTRING, 0,(LPARAM) (LPCSTR) "FUCK YOU");
+    for (int i = 0; i < 6; i++) {
+        SendMessage(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCSTR) difficultyNames[i]);
+    }
+    //SendMessage(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCSTR) difficultyNames[1]);
+    //SendMessage(difficultySelect, CB_ADDSTRING, 0,(LPARAM) (LPCSTR) "FUCK YOU");
     ShowWindow(mainWindow, SW_SHOWNORMAL);
     UpdateWindow(mainWindow);
     while (GetMessage(&applicationMSG, NULL, NULL, NULL)) {
@@ -99,7 +103,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
     switch (message) {
         case WM_INITDIALOG: {
             //TCHAR strToAdd[40]=_T("ABC");
-            SendMessage(difficultySelect, CB_ADDSTRING, 0,(LPARAM) (LPCSTR) "FUCK YOU");
+            //SendMessage(difficultySelect, CB_ADDSTRING, 0,(LPARAM) (LPCSTR) "FUCK YOU");
 
             break;
         }

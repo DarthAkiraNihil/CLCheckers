@@ -1,3 +1,5 @@
+
+
 #ifndef CHECKERS_APPCONSTS_H
 #define CHECKERS_APPCONSTS_H
 
@@ -65,6 +67,15 @@ const char* textures[22] = {
     "resources\\regWhiteVictimSelected.bmp",
     "resources\\kingBlackVictimSelected.bmp",
     "resources\\kingWhiteVictimSelected.bmp"
+};
+
+const char * difficultyNames[6] = {
+    "Dumbass",
+    "Easy",
+    "Normal",
+    "Hard",
+    "Insane",
+    "Extreme"
 };
 /*const char* texturePaths[50] = {
     "resource/emptyBlack.bmp",
