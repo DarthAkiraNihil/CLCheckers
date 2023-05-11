@@ -11,7 +11,7 @@
 
 
 Game game;
-HWND buttons[10];//, difficultySelect;
+HWND buttons[10], difficultySelect;
 Coordinates boardCursor = {0, 5}, selectedSource, selectedDestination;
 int numberOfMoveInTakingSequence = 0;
 bool foundRegular = false, foundMixed = false, newKingAppeared = false, lockIsSet = false;
@@ -62,15 +62,16 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     buttons[buttonTheDamn] = CreateWindowW(L"button", L"Сохранить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 200, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
     buttons[buttonTheIdiot] = CreateWindowW(L"button", L"О программе", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 260, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
 
-    HWND difficultySelect = CreateWindow(
+    difficultySelect = CreateWindow(
         "combobox",
         "",
-        WS_VISIBLE | WS_CHILD | CBS_DROPDOWN, 540, 300, 160, 10,  mainWindow, nullptr, instance, nullptr
+        WS_VISIBLE | WS_CHILD | CBS_DROPDOWN | CBS_HASSTRINGS, 540, 300, 140, 50,  mainWindow, (HMENU) 60000, instance, nullptr
     );
-
-    SendMessage(difficultySelect, CB_ADDSTRING, (WPARAM) 0,  (LPARAM) "Dumbass");
-    SendMessage(difficultySelect, CB_ADDSTRING, (WPARAM) 0,  (LPARAM) "Easy");
-
+    //LPCSTR fuck = "Dumbass\0";
+    //SendMessage(difficultySelect, CB_ADDSTRING, 0,  (LPARAM) fuck);
+    //howWindow(difficultySelect, 60000);
+    //SendMessage(difficultySelect, CB_ADDSTRING, (WPARAM) 0,  (LPARAM) "Easy");
+    SendMessage(difficultySelect, CB_ADDSTRING, 0,(LPARAM) (LPCSTR) "FUCK YOU");
     ShowWindow(mainWindow, SW_SHOWNORMAL);
     UpdateWindow(mainWindow);
     while (GetMessage(&applicationMSG, NULL, NULL, NULL)) {
@@ -96,6 +97,12 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
     HDC handler;
     handler = GetDC(window);
     switch (message) {
+        case WM_INITDIALOG: {
+            //TCHAR strToAdd[40]=_T("ABC");
+            SendMessage(difficultySelect, CB_ADDSTRING, 0,(LPARAM) (LPCSTR) "FUCK YOU");
+
+            break;
+        }
         case WM_CREATE: {
             loadBoardTextures();
             boardBorder = loadImage("resources\\border.bmp");
