@@ -85,7 +85,25 @@ void updateBoardRender(Board* board) {
 }
 
 void fillPathMap(GameSituation* situation, Coordinates source) {
-    if (situation->tmsCount != 0) {
+    if (situation->tmBufferLen != 0) {
+        for (int i = 0; i < situation->tmBufferLen; i++) {
+            if (isCoordinatesEqual(situation->takingMovesBuffer[i].source, source)) {
+                Coordinates dest = situation->takingMovesBuffer[i].destination,
+                            victim = situation->takingMovesBuffer[i].victim;
+                situation->board.pathMap[dest.y][dest.x] = Destination;
+                situation->board.pathMap[victim.y][victim.x] = getVictimMarker(situation->takingMovesBuffer[i].takingSide, situation->takingMovesBuffer[i].victimType);
+            }
+        }
+    }
+    else {
+        for (int i = 0; i < situation->rmBufferLen; i++) {
+            if (isCoordinatesEqual(situation->regularMovesBuffer[i].source, source)) {
+                Coordinates dest = situation->regularMovesBuffer[i].destination;
+                situation->board.pathMap[dest.y][dest.x] = Destination;
+            }
+        }
+    }
+    /*if (situation->tmsCount != 0) {
         for (int i = 0; i < situation->tmsCount; i++) {
             if (isCoordinatesEqual(situation->takingSequences[i].takingMoves[0].source, source)) {
                 Coordinates dest = situation->takingSequences[i].takingMoves[0].destination, vict = situation->takingSequences[i].takingMoves[0].victim;
@@ -107,7 +125,7 @@ void fillPathMap(GameSituation* situation, Coordinates source) {
                 situation->board.pathMap[dest.y][dest.x] = Destination;
             }
         }
-    }
+    }*/
 }
 
 void fillPathMapTakingMoves(GameSituation* situation, Coordinates source, int seqMoveNumber) {
@@ -161,6 +179,7 @@ Game createANewGame(Color playerSide, Color firstMove, GameType type) {
     Game newGame;
     newGame.situation = makeNullGameSituation(playerSide);
     newGame.state = (playerSide == firstMove) ? PlayerMove : ((type == RvsR) ? EnemyMoveReal : EnemyMoveComputer);
+    newGame.type = type;
     return newGame;
 }
 
@@ -718,6 +737,18 @@ bool noMoreTakingMoves(GameSituation* situation, int currentSeqMove, Coordinates
         }
     }
     return true;
+}
+
+void copyLevelOneMovesToBuffers(GameSituation* situation) {
+    for (int i = 0; i < situation->rmsCount; i++) {
+        situation->regularMovesBuffer[situation->rmBufferLen++] = situation->regMoveSequences[i].regularMoves[0];
+    }
+    for (int i = 0; i < situation->mmsCount; i++) {
+        situation->regularMovesBuffer[situation->rmBufferLen++] = situation->mixedSequences[i].kingBecomingMove;
+    }
+    for (int i = 0; i < situation->tmsCount; i++) {
+        situation->takingMovesBuffer[situation->tmBufferLen++] = situation->takingSequences[i].takingMoves[0];
+    }
 }
 
 void flushSequenceLists(GameSituation* situation) {
