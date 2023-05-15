@@ -159,7 +159,33 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
 
                 isGameBegun = true;
                 sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
-                MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
+                switch (computerDifficulty) {
+                    case Dumbass: {
+                        MessageBoxW(nullptr, L"Уга-буга? Буга-уга-уга-бука! Абуга!", L"Простак какой-то...", MB_ICONINFORMATION);//SendMessageW(window, WM_COMMAND, 0, 100);
+                        break;
+                    }
+                    case Easy: {
+                        MessageBoxW(nullptr, L"Я только начал играть в шашки. Пока плохо получается.", L"Новичок всего-то", MB_ICONINFORMATION);
+                        break;
+                    }
+                    case Normal: {
+                        MessageBoxW(nullptr, L"Ну давай, давай, нападай!", L"А вот он уже опаснее будет", MB_ICONINFORMATION);
+                        break;
+                    }
+                    case Hard: {
+                        MessageBoxW(nullptr, L"Наконец-то, достойный соперник. Наша схватка будет легендарной!", L"Чёрт, а он силён", MB_ICONWARNING);
+                        break;
+                    }
+                    case Insane: {
+                        MessageBoxW(nullptr, L"Я тебе покажу, как должен играть истинный шашист!", L"Опасный враг", MB_ICONWARNING);
+                        break;
+                    }
+                    case Extreme: {
+                        MessageBoxW(nullptr, L"ХА-ХА-ХА-ХА! ТЫ ОПОЗДАЛ СОНИК! ТЕПЕРЬ Я СЕРТИФИЦИРОВАННАЯ ПРОГРАММА ДЛЯ ИГРЫ В РУССКИЕ ШАШКИ! БУАХА-ХА-ХА-ХА!", L"О нет, доктор Эггман", MB_ICONSTOP);
+                        break;
+                    }
+                }
+                //MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
                 UPDATE_RENDER;
                 if (firstMove != player) {
                     flushSequenceLists(&game.situation);
@@ -229,7 +255,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
             }
             else if (lParam == (LPARAM) buttons[buttonAbout]) {
-                MessageBoxW(window, L"CLCheckers ver. 1.0.\nCLCheckers - Made in CLion\nАвтор: Егор \"TheSwagVader\" Зверев (github.com/TheSwagVader)\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\nПроект лицензирован Apache 2.0, License", L"О программе", 0);
+                MessageBoxW(window, L"CLCheckers ver. 1.0.\nCLCheckers - Made in CLion\nАвтор: Егор \"TheSwagVader\" Зверев (github.com/TheSwagVader)\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\nПроект лицензирован Apache 2.0, License", L"О программе", MB_ICONINFORMATION);
             }
             break;
         }
