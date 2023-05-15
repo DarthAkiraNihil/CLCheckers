@@ -97,6 +97,19 @@ void renderBoard(Board* board, Color playerSide, HDC handler, Coordinates cursor
     }
 }
 
+void renderEmptyBoard(HDC handler, int x, int y) {
+    for (int i = 0; i < 8; i++) {
+        for (int j = 0; j < 8; j++) {
+            if ((i + j) % 2 == 0) {
+                renderBoardTexture(33 + x + 56 * (7 - i), 33 + y + 56 * j, 0, handler);
+            }
+            else {
+                renderBoardTexture(33 + x + 56 * (7 - i), 33 + y + 56 * j, 1, handler);
+            }
+        }
+    }
+}
+
 void renderRegularMoveSequence(RegMoveSequence sequence, int moveNumber, HDC handler) {
     Coordinates renderPlace = getPasteCoords(sequence.regularMoves[moveNumber].destination.x, sequence.regularMoves[moveNumber].destination.y, player);
     renderBoardTexture(renderPlace.x, renderPlace.y, 6, handler);

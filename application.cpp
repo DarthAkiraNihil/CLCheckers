@@ -1,5 +1,12 @@
 #include <cstring>
 #include <memory.h>
+#include <tchar.h>
+#include <ctime>
+//#include <random>
+#include <cassert>
+#include <cstdlib>
+#include <cstdio>
+//#include <cstdio>
 //#include "conio2.h"
 //#include "interface.h"
 #include "clcengine/clcengine.h"
@@ -11,12 +18,10 @@
 
 
 Game game;
-HWND buttons[10], difficultySelect;
-Coordinates boardCursor = {0, 5}, selectedSource, selectedDestination;
-int numberOfMoveInTakingSequence = 0;
-bool foundRegular = false, foundMixed = false, newKingAppeared = false, lockIsSet = false;
-bool findMoves = false;
-#define enableCP1251 SetConsoleCP(1251); SetConsoleOutputCP(1251)
+HWND buttons[10], difficultySelect, sideSelectorBlack, sideSelectorWhite, sideSelectorCaption;
+bool isGameBegun = false; Difficulty computerDifficulty;
+HBRUSH brushBG = NULL;
+Coordinates boardCursor = {0, 0}, selectedSource, selectedDestination;
 
 #define UPDATE_RENDER renderBoard(&game.situation.board, game.situation.playerSide, handler, boardCursor, boardPasteX, boardPasteY); renderPathMapMarkers(&game.situation.board, game.situation.playerSide, handler, boardCursor, boardPasteX, boardPasteY)
 
@@ -25,9 +30,10 @@ inline bool in(int var, int leftBorder, int rightBorder) {
 }
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, int cmdShow) {
+    srand(time(nullptr));
     player = Black;
-    game = createANewGame(player, White, RvsC);
-    game.situation.playerSide = player;
+    //game = createANewGame(player, White, RvsC);
+    //game.situation.playerSide = player;
     //ascendChecker(&game.situation.board.checkers[Black][8]);
     updateBoardRender(&game.situation.board);
     WNDCLASSEX mainClass = newWindowClass((HBRUSH) COLOR_WINDOW, LoadCursor(NULL, IDC_ARROW), instance, LoadIcon(NULL, IDI_APPLICATION), applicationProcessor);
@@ -35,7 +41,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     mainClass.lpszClassName = _TEXT(APPLICATION_MAIN_CLASS_NAME);
     mainClass.hIcon = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_BIG_ICON), IMAGE_ICON, 128, 128, 0);
     mainClass.hIconSm = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_WIN_ICON), IMAGE_ICON, 16, 16, 0);
-    mainClass.hbrBackground = (HBRUSH) CreateSolidBrush(RGB(255, 255, 255));
+    //mainClass.hbrBackground = (HBRUSH) CreateSolidBrush(RGB(255, 255, 255));
     if (!RegisterClassEx(&mainClass)) {return -1;}
 
     MSG applicationMSG = {0};
@@ -56,28 +62,48 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
         NULL
     );
 
-    buttons[buttonTheFuck] = CreateWindowW(L"button", L"Играть против человека", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 20, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonTheHell] = CreateWindowW(L"button", L"Играть против компьютера", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 80, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonTheShit] = CreateWindowW(L"button", L"Загрузить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 140, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonTheDamn] = CreateWindowW(L"button", L"Сохранить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 200, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonTheIdiot] = CreateWindowW(L"button", L"О программе", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 260, 140, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonStartGameVsReal] = CreateWindowW(L"button", L"Играть против человека", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 20, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonStartGameVsComp] = CreateWindowW(L"button", L"Играть против компьютера", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 80, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonLoadGame] = CreateWindowW(L"button", L"Загрузить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 180, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonSaveGame] = CreateWindowW(L"button", L"Сохранить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 240, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonAbout] = CreateWindowW(L"button", L"О программе", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 300, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
 
-    difficultySelect = CreateWindow(
-        "combobox",
-        "",
-        WS_VISIBLE | WS_CHILD | CBS_DROPDOWN | CBS_HASSTRINGS | CBS_AUTOHSCROLL, 540, 300, 140, 200,  mainWindow, (HMENU) 60000, instance, nullptr
+    difficultySelect = CreateWindowW(
+        L"combobox",
+        L"",
+        WS_VISIBLE | WS_CHILD | CBS_DROPDOWN | CBS_HASSTRINGS | CBS_AUTOHSCROLL,
+        540,
+        140,
+        200,
+        200,
+        mainWindow,
+        (HMENU) 60000,
+        instance,
+        nullptr
     );
+
     //LPCSTR fuck = "Dumbass\0";
     //SendMessage(difficultySelect, CB_ADDSTRING, 0,  (LPARAM) fuck);
     //howWindow(difficultySelect, 60000);
     //SendMessage(difficultySelect, CB_ADDSTRING, (WPARAM) 0,  (LPARAM) "Easy");
-    for (int i = 0; i < 6; i++) {
-        SendMessage(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCSTR) difficultyNames[i]);
-    }
+    SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Придурок");
+    SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Легко");
+    SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Нормально");
+    SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Сложно");
+    SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Безумно");
+    SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Экстремально");
+    SendMessageW(difficultySelect, CB_SETCURSEL, 0, 0);
+    sideSelectorCaption = CreateWindowW(L"static", L"Ваша сторона", WS_CHILD | WS_VISIBLE, 540, 380, 200, 20, mainWindow, (HMENU) 10000, instance, nullptr);
+    sideSelectorBlack = CreateWindowW(L"button", L"Чёрные", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON, 540, 400, 200, 20, mainWindow, (HMENU) 12345, instance, NULL);
+    sideSelectorWhite = CreateWindowW(L"button", L"Белые", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON, 540, 420, 200, 20, mainWindow, (HMENU)10000, instance, NULL);
+    /*for (int i = 0; i < 6; i++) {
+        SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) difficultyNames[i]);
+    }*/
     //SendMessage(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCSTR) difficultyNames[1]);
     //SendMessage(difficultySelect, CB_ADDSTRING, 0,(LPARAM) (LPCSTR) "FUCK YOU");
     ShowWindow(mainWindow, SW_SHOWNORMAL);
     UpdateWindow(mainWindow);
+    //SendMessageW(fuck, WM_CTLCOLORBTN, (WPARAM) fuck2, 0);
     while (GetMessage(&applicationMSG, NULL, NULL, NULL)) {
         TranslateMessage(&applicationMSG);
         DispatchMessageA(&applicationMSG);
@@ -113,20 +139,70 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             break;
         }
         case WM_COMMAND: {
-            if (lParam == (LPARAM) buttons[buttonTheFuck]) {
-                MessageBox(window, "Chego ty zhdesh?", "govnuk", 0);
+            if (lParam == (LPARAM) buttons[buttonStartGameVsComp]) {
+                TCHAR buffer[256];
+                Color firstMove;
+                int selected = (int) SendMessageW(difficultySelect, CB_GETCURSEL, 0, 0);
+                float rsc = (float) rand() / (float) RAND_MAX;
+                bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
+                     whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                if (blackChosen) player = Black;
+                else if (whiteChosen) player = White;
+                else assert(blackChosen && whiteChosen);
+                if (rsc < 0.5) firstMove = Black; else firstMove = White;
+                //(TCHAR) SendMessageW(difficultySelect, CB_GETLBTEXT, (WPARAM) selected, (LPARAM) buffer);
+                //MessageBoxW(window, (LPCWSTR) buffer , L"govnuk", 0);
+                computerDifficulty = getDifficultyByNumber(selected);
+                //printf("%d", difficulty);
+                game = createANewGame(player, firstMove, RvsC);
+
+                isGameBegun = true;
+                sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
+                MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
+                UPDATE_RENDER;
+                if (firstMove != player) {
+                    flushSequenceLists(&game.situation);
+                    SeqContainer bestMove = getBestMove(game.situation, negateColor(player), computerDifficulty);
+                    Sleep(moveMakingDelay / 5);
+                    switch (bestMove.seqNumberToDo) {
+                        case 1: {
+                            makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence,
+                                                          moveMakingDelay, handler);
+                            break;
+                        }
+                        case 2: {
+                            makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence,
+                                                         moveMakingDelay, handler);
+                            break;
+                        }
+                        case 3: {
+                            makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence,
+                                                        moveMakingDelay, handler);
+                            break;
+                        }
+                    }
+                    removeMarkedForDeath(&game.situation, player);
+                    updateBoardRender(&game.situation.board);
+                    flushSequenceLists(&game.situation);
+                    flushBuffers();
+                    UPDATE_RENDER;
+                }
+                //UPDATE_RENDER;
                 //PostQuitMessage(3221225477);
             }
-            else if (lParam == (LPARAM) buttons[buttonTheHell]) {
-                MessageBox(window, "really", "do it if you want", 0);
+            else if (lParam == (LPARAM) buttons[buttonStartGameVsReal]) {
+                game = createANewGame(Black, Black, RvsR);
+                isGameBegun = true;
+                //SendMessageW(window, WM_COMMAND, 0, 100);
+                UPDATE_RENDER;
             }
-            else if (lParam == (LPARAM) buttons[buttonTheShit]) {
+            else if (lParam == (LPARAM) buttons[buttonLoadGame]) {
                 MessageBox(window, "And that's the fact!", "The truth", 0);
             }
-            else if (lParam == (LPARAM) buttons[buttonTheDamn]) {
+            else if (lParam == (LPARAM) buttons[buttonSaveGame]) {
                 MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
             }
-            else if (lParam == (LPARAM) buttons[buttonTheIdiot]) {
+            else if (lParam == (LPARAM) buttons[buttonAbout]) {
                 MessageBoxW(window, L"CLCheckers ver. 1.0.\nCLCheckers - Made in CLion\nАвтор: Егор \"TheSwagVader\" Зверев (github.com/TheSwagVader)\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\nПроект лицензирован Apache 2.0, License", L"О программе", 0);
             }
             break;
@@ -134,136 +210,147 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
         case WM_PAINT: {
             handler = BeginPaint(window, &paintStructure);
             renderBoardBorder(boardPasteX, boardPasteY, handler);
-            renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
+            renderEmptyBoard(handler, boardPasteX, boardPasteY);//renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
             EndPaint(window, &paintStructure);
             break;
         }
         case WM_KEYDOWN : {
-            switch (wParam) {
-                case VK_UP: {
-                    if (boardCursor.y > 0) {
-                        boardCursor.y--;
-                        UPDATE_RENDER;
-                    }
-                    break;
-                }
-                case VK_DOWN: {
-                    if (boardCursor.y < 7) {
-                        boardCursor.y++;
-                        UPDATE_RENDER;
-                    }
-                    break;
-                }
-                case VK_LEFT: {
-                    if (boardCursor.x > 0) {
-                        boardCursor.x--;
-                        UPDATE_RENDER;
-                    }
-                    break;
-                }
-                case VK_RIGHT: {
-                    if (boardCursor.x < 7) {
-                        boardCursor.x++;
-                        UPDATE_RENDER;
-                    }
-                    break;
-
-                }
-                case VK_RETURN: {
-                    Coordinates converted = cursorToBoardCoord(boardCursor, game.situation.playerSide);
-                    PathMapMarkers marker = game.situation.board.pathMap[converted.y][converted.x];
-
-                    if (!movesHaveBeenFound) {
-                        flushSequenceLists(&game.situation);
-                        findAllMoves(&game.situation, player);
-                        copyLevelOneMovesToBuffers(&game.situation);
-                        movesHaveBeenFound = true;
-                    }
-                    if (marker == Destination) {
-                        selectedDestination = converted;
-                        if (game.situation.tmBufferLen != 0) {
-                            TakingMove extracted;
-                            for (int i = 0; i < game.situation.tmBufferLen; i++) {
-                                Coordinates src = game.situation.takingMovesBuffer[i].source,
-                                        dest = game.situation.takingMovesBuffer[i].destination;
-                                if (isCoordinatesEqual(selectedSource, src) && isCoordinatesEqual(selectedDestination, dest)) {
-                                    extracted = game.situation.takingMovesBuffer[i];
-                                    break;
-                                }
-                            }
-                            resetPathMap(&game.situation.board);
-                            flushMoveBuffers(&game.situation);
-                            makeATakingMove(&game.situation, extracted);
-                            game.situation.board.pathMap[extracted.victim.y][extracted.victim.x] = NoMove;
-                            updateBoardRender(&game.situation.board);
+            //if (isGameBegun) {
+                switch (wParam) {
+                    case VK_UP: {
+                        if (boardCursor.y > 0 && isGameBegun) {
+                            boardCursor.y--;
+                            UPDATE_RENDER;
                         }
-                        else {
-                            Move extracted;
-                            for (int i = 0; i < game.situation.rmBufferLen; i++) {
-                                Coordinates src = game.situation.regularMovesBuffer[i].source,
+                        break;
+                    }
+                    case VK_DOWN: {
+                        if (boardCursor.y < 7 && isGameBegun) {
+                            boardCursor.y++;
+                            UPDATE_RENDER;
+                        }
+                        break;
+                    }
+                    case VK_LEFT: {
+                        if (boardCursor.x > 0 && isGameBegun) {
+                            boardCursor.x--;
+                            UPDATE_RENDER;
+                        }
+                        break;
+                    }
+                    case VK_RIGHT: {
+                        if (boardCursor.x < 7 && isGameBegun) {
+                            boardCursor.x++;
+                            UPDATE_RENDER;
+                        }
+                        break;
+
+                    }
+                    case VK_RETURN: {
+                        if (isGameBegun) {
+                            Coordinates converted = cursorToBoardCoord(boardCursor, game.situation.playerSide);
+                            PathMapMarkers marker = game.situation.board.pathMap[converted.y][converted.x];
+
+                            if (!movesHaveBeenFound) {
+                                flushSequenceLists(&game.situation);
+                                findAllMoves(&game.situation, player);
+                                copyLevelOneMovesToBuffers(&game.situation);
+                                movesHaveBeenFound = true;
+                            }
+                            if (marker == Destination) {
+                                selectedDestination = converted;
+                                if (game.situation.tmBufferLen != 0) {
+                                    TakingMove extracted;
+                                    for (int i = 0; i < game.situation.tmBufferLen; i++) {
+                                        Coordinates src = game.situation.takingMovesBuffer[i].source,
+                                            dest = game.situation.takingMovesBuffer[i].destination;
+                                        if (isCoordinatesEqual(selectedSource, src) &&
+                                            isCoordinatesEqual(selectedDestination, dest)) {
+                                            extracted = game.situation.takingMovesBuffer[i];
+                                            break;
+                                        }
+                                    }
+                                    resetPathMap(&game.situation.board);
+                                    flushMoveBuffers(&game.situation);
+                                    makeATakingMove(&game.situation, extracted);
+                                    game.situation.board.pathMap[extracted.victim.y][extracted.victim.x] = NoMove;
+                                    updateBoardRender(&game.situation.board);
+                                } else {
+                                    Move extracted;
+                                    for (int i = 0; i < game.situation.rmBufferLen; i++) {
+                                        Coordinates src = game.situation.regularMovesBuffer[i].source,
                                             dest = game.situation.regularMovesBuffer[i].destination;
-                                if (isCoordinatesEqual(selectedSource, src) && isCoordinatesEqual(selectedDestination, dest)) {
-                                    extracted = game.situation.regularMovesBuffer[i];
-                                    break;
+                                        if (isCoordinatesEqual(selectedSource, src) &&
+                                            isCoordinatesEqual(selectedDestination, dest)) {
+                                            extracted = game.situation.regularMovesBuffer[i];
+                                            break;
+                                        }
+                                    }
+                                    resetPathMap(&game.situation.board);
+                                    flushMoveBuffers(&game.situation);
+                                    makeAMove(&game.situation, extracted);
+                                    updateBoardRender(&game.situation.board);
                                 }
+                                if (game.situation.rmBufferLen + game.situation.tmBufferLen == 0) {
+                                    moveHasBeenMade = true;
+                                    movesHaveBeenFound = false;
+                                    removeMarkedForDeath(&game.situation, negateColor(player));
+                                    updateBoardRender(&game.situation.board);
+                                    resetPathMap(&game.situation.board);
+                                }
+                            } else {
+                                selectedSource = converted;
+                                resetPathMap(&game.situation.board);
+                                fillPathMap(&game.situation, converted);
+
                             }
-                            resetPathMap(&game.situation.board);
-                            flushMoveBuffers(&game.situation);
-                            makeAMove(&game.situation, extracted);
-                            updateBoardRender(&game.situation.board);
-                        }
-                        if (game.situation.rmBufferLen + game.situation.tmBufferLen == 0) {
-                            moveHasBeenMade = true;
-                            movesHaveBeenFound = false;
-                            removeMarkedForDeath(&game.situation, negateColor(player));
-                            updateBoardRender(&game.situation.board);
-                            resetPathMap(&game.situation.board);
-                        }
-                    }
-                    else {
-                        selectedSource = converted;
-                        resetPathMap(&game.situation.board);
-                        fillPathMap(&game.situation, converted);
 
-                    }
-
-                    UPDATE_RENDER;
-                    if (moveHasBeenMade) {
-                        if (game.type == RvsC) {
-                            flushSequenceLists(&game.situation);
-                            SeqContainer bestMove = getBestMove(game.situation, negateColor(player), Normal);
-                            Sleep(moveMakingDelay / 5);
-                            switch (bestMove.seqNumberToDo) {
-                                case 1: {
-                                    makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence, moveMakingDelay, handler);
-                                    break;
+                            UPDATE_RENDER;
+                            if (moveHasBeenMade) {
+                                if (game.type == RvsC) {
+                                    flushSequenceLists(&game.situation);
+                                    SeqContainer bestMove = getBestMove(game.situation, negateColor(player), computerDifficulty);
+                                    Sleep(moveMakingDelay / 5);
+                                    switch (bestMove.seqNumberToDo) {
+                                        case 1: {
+                                            makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence,
+                                                                          moveMakingDelay, handler);
+                                            break;
+                                        }
+                                        case 2: {
+                                            makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence,
+                                                                         moveMakingDelay, handler);
+                                            break;
+                                        }
+                                        case 3: {
+                                            makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence,
+                                                                        moveMakingDelay, handler);
+                                            break;
+                                        }
+                                    }
+                                    removeMarkedForDeath(&game.situation, player);
+                                    updateBoardRender(&game.situation.board);
+                                    flushSequenceLists(&game.situation);
+                                    flushBuffers();
+                                    moveHasBeenMade = false;
+                                    renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX,
+                                                boardPasteY);
+                                } else {
+                                    player = negateColor(player);
+                                    moveHasBeenMade = false;
                                 }
-                                case 2: {
-                                    makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence, moveMakingDelay, handler);
-                                    break;
-                                }
-                                case 3: {
-                                    makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence, moveMakingDelay, handler);
-                                    break;
-                                }
+                                break;
                             }
-                            removeMarkedForDeath(&game.situation, player);
-                            updateBoardRender(&game.situation.board);
-                            flushSequenceLists(&game.situation);
-                            flushBuffers();
-                            moveHasBeenMade = false;
-                            renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
                         }
-                        else {
-                            player = negateColor(player);
-                            moveHasBeenMade = false;
-                        }
-
                     }
-                    break;
                 }
-            }
             break;
+        }
+        case WM_CTLCOLORBTN: {
+            HDC staticHDC = (HDC) wParam;
+            SetBkColor(staticHDC, RGB(255, 255, 255));
+            if (brushBG == nullptr) brushBG = CreateSolidBrush((RGB(255, 255, 255)));
+            return (INT_PTR) brushBG;
         }
         case WM_DESTROY : {
             PostQuitMessage(0);
@@ -277,4 +364,18 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
         }
     }
     ReleaseDC(window, handler);
+}
+
+Difficulty getDifficultyByNumber(int number) {
+    switch (number) {
+        case 0: return Dumbass;
+        case 1: return Easy;
+        case 2: return Normal;
+        case 3: return Hard;
+        case 4: return Insane;
+        case 5: return Extreme;
+        case 6: return Diabolic;
+        case 7: return Invincible;
+        default: return Dumbass;
+    }
 }

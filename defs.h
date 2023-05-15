@@ -11,6 +11,8 @@
 
 WNDCLASSEX newWindowClass(HBRUSH backgroundColor, HCURSOR cursor, HINSTANCE instance, HICON icon/*, TCHAR name*/, WNDPROC procedureToCall);
 LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
+Difficulty getDifficultyByNumber(int number);
+
 void renderBoard(); //todo define args
 
 #endif //CHECKERS_DEFS_H

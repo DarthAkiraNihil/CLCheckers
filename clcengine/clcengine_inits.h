@@ -74,6 +74,7 @@ Game createANewGame(Color playerSide, Color firstMove, GameType type) {
     newGame.situation = makeNullGameSituation(playerSide);
     newGame.state = (playerSide == firstMove) ? PlayerMove : ((type == RvsR) ? EnemyMoveReal : EnemyMoveComputer);
     newGame.type = type;
+    newGame.situation.playerSide = playerSide;
     return newGame;
 }
 

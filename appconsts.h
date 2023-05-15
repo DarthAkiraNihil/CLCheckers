@@ -1,16 +1,16 @@
-
+#include <windows.h>
 
 #ifndef CHECKERS_APPCONSTS_H
 #define CHECKERS_APPCONSTS_H
 
-const int WINDOW_SIZE_LENGTH = 700;
+const int WINDOW_SIZE_LENGTH = 800;
 const int WINDOW_SIZE_HEIGHT = 700;
 
-const int buttonTheFuck = 0;
-const int buttonTheHell = 1;
-const int buttonTheShit = 2;
-const int buttonTheDamn = 3;
-const int buttonTheIdiot = 4;
+const int buttonStartGameVsReal = 0;
+const int buttonStartGameVsComp = 1;
+const int buttonLoadGame = 2;
+const int buttonSaveGame= 3;
+const int buttonAbout = 4;
 
 const int boardPasteX = 20;
 const int boardPasteY = 20;
@@ -69,14 +69,7 @@ const char* textures[22] = {
     "resources\\kingWhiteVictimSelected.bmp"
 };
 
-const char * difficultyNames[6] = {
-    "Dumbass",
-    "Easy",
-    "Normal",
-    "Hard",
-    "Insane",
-    "Extreme"
-};
+
 /*const char* texturePaths[50] = {
     "resource/emptyBlack.bmp",
     "resource/emptyWhite.bmp",
