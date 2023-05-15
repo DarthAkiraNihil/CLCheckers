@@ -136,6 +136,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
         case WM_CREATE: {
             loadBoardTextures();
             boardBorder = loadImage("resources\\border.bmp");
+            defineOpenFile(window);
             break;
         }
         case WM_COMMAND: {
@@ -249,6 +250,8 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 //UPDATE_RENDER;
             }
             else if (lParam == (LPARAM) buttons[buttonLoadGame]) {
+                //OPENFILENAME test;
+                GetOpenFileNameW(&openFile);
                 MessageBox(window, "And that's the fact!", "The truth", 0);
             }
             else if (lParam == (LPARAM) buttons[buttonSaveGame]) {
@@ -430,4 +433,12 @@ Difficulty getDifficultyByNumber(int number) {
         case 7: return Invincible;
         default: return Dumbass;
     }
+}
+
+void defineOpenFile(HWND ofWindow) {
+    memset(&openFile, 0, sizeof(openFile));
+    openFile.lStructSize = sizeof(openFile);
+    openFile.hwndOwner = ofWindow;
+    openFile.nMaxFile = sizeof(fileName);
+    openFile.lpstrFile = fileName;
 }
