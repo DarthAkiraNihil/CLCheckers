@@ -252,7 +252,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             else if (lParam == (LPARAM) buttons[buttonLoadGame]) {
                 //OPENFILENAME test;
                 GetOpenFileNameW(&openFile);
-                MessageBox(window, "And that's the fact!", "The truth", 0);
+                MessageBoxW(window, fileName, L"The truth", 0);
             }
             else if (lParam == (LPARAM) buttons[buttonSaveGame]) {
                 MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
