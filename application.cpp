@@ -148,7 +148,8 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                      whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
                 if (blackChosen) player = Black;
                 else if (whiteChosen) player = White;
-                else assert(blackChosen && whiteChosen);
+                //else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", 0);
+                if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
                 if (rsc < 0.5) firstMove = Black; else firstMove = White;
                 //(TCHAR) SendMessageW(difficultySelect, CB_GETLBTEXT, (WPARAM) selected, (LPARAM) buffer);
                 //MessageBoxW(window, (LPCWSTR) buffer , L"govnuk", 0);
@@ -187,14 +188,39 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                     flushBuffers();
                     UPDATE_RENDER;
                 }
+                }
+                else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
                 //UPDATE_RENDER;
                 //PostQuitMessage(3221225477);
             }
             else if (lParam == (LPARAM) buttons[buttonStartGameVsReal]) {
-                game = createANewGame(Black, Black, RvsR);
-                isGameBegun = true;
+                TCHAR buffer[256];
+                Color firstMove;
+                //int selected = (int) SendMessageW(difficultySelect, CB_GETCURSEL, 0, 0);
+                float rsc = (float) rand() / (float) RAND_MAX;
+                bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
+                    whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                if (blackChosen) player = Black;
+                else if (whiteChosen) player = White;
+                //else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", 0);
+                if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
+                    if (rsc < 0.5) firstMove = Black; else firstMove = White;
+                    //(TCHAR) SendMessageW(difficultySelect, CB_GETLBTEXT, (WPARAM) selected, (LPARAM) buffer);
+                    //MessageBoxW(window, (LPCWSTR) buffer , L"govnuk", 0);
+                    //computerDifficulty = getDifficultyByNumber(selected);
+                    //printf("%d", difficulty);
+                    game = createANewGame(player, firstMove, RvsR);
+
+                    isGameBegun = true;
+                    sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
+                    MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
+                    UPDATE_RENDER;
+                }
+                else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
+                //game = createANewGame(Black, Black, RvsR);
+                //isGameBegun = true;
                 //SendMessageW(window, WM_COMMAND, 0, 100);
-                UPDATE_RENDER;
+                //UPDATE_RENDER;
             }
             else if (lParam == (LPARAM) buttons[buttonLoadGame]) {
                 MessageBox(window, "And that's the fact!", "The truth", 0);

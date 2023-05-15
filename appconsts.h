@@ -69,7 +69,6 @@ const char* textures[22] = {
     "resources\\kingWhiteVictimSelected.bmp"
 };
 
-
 /*const char* texturePaths[50] = {
     "resource/emptyBlack.bmp",
     "resource/emptyWhite.bmp",
