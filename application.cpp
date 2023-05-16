@@ -316,6 +316,9 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 copyLevelOneMovesToBuffers(&game.situation);
                                 movesHaveBeenFound = true;
                             }
+                            if (lostByMoves(&game.situation)) {
+                                MessageBoxW(window, L"YOU SUCK", L"Лошара ёбаный", MB_ICONINFORMATION);
+                            }
                             if (marker == Destination) {
                                 selectedDestination = converted;
                                 if (game.situation.tmBufferLen != 0) {
@@ -367,6 +370,11 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                             UPDATE_RENDER;
                             if (moveHasBeenMade) {
                                 if (game.type == RvsC) {
+                                    flushSequenceLists(&game.situation);
+                                    findAllMoves(&game.situation, negateColor(player));
+                                    if (lostByMoves(&game.situation)) {
+                                        MessageBoxW(window, L"YOU ROCK", L"Победитель долбанный", MB_ICONINFORMATION);
+                                    }
                                     flushSequenceLists(&game.situation);
                                     SeqContainer bestMove = getBestMove(game.situation, negateColor(player), computerDifficulty);
                                     Sleep(moveMakingDelay / 5);

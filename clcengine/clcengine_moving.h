@@ -17,15 +17,19 @@ int makeAMove(GameSituation* situation, Move move) {
     updateBoardRender(&(situation->board));
     flushMoveBuffers(situation);
     if (move.isKingBecomingMove) {
-        /*findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
+        findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
         if (situation->tmBufferLen == 0) {
             findAllKingMovesForOne(situation, movedColor, movedIndex);
             return 2;
-        }*/
+        }
+        else {
+            situation->tmBufferLen = 0;
+            return 1;
+        }
         //return 1;
-        findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
-        findAllKingMovesForOne(situation, movedColor, movedIndex);
-        return 2;
+        //findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
+        //findAllKingMovesForOne(situation, movedColor, movedIndex);
+        //return 2;
     } else return 0;
 }
 
