@@ -35,6 +35,13 @@ void findRegularMoveSequenceForOne(GameSituation* situation, Color checkerColor,
                         situation->rmsCount++;
                     }
                 }
+                else {
+                    insertIndex = situation->rmsCount;
+                    situation->regMoveSequences[insertIndex].regularMoves[0] = extracted;
+                    //situation->regMoveSequences[insertIndex].regularMoves[1] = situation->regularMovesBuffer[j];
+                    situation->regMoveSequences[insertIndex].rmsCount = 1;
+                    situation->rmsCount++;
+                }
                 cancelAMove(situation, extracted);
             }
             else {

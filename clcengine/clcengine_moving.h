@@ -23,6 +23,7 @@ int makeAMove(GameSituation* situation, Move move) {
             return 2;
         }*/
         //return 1;
+        findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
         findAllKingMovesForOne(situation, movedColor, movedIndex);
         return 2;
     } else return 0;
