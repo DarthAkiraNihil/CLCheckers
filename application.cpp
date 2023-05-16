@@ -316,9 +316,12 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 copyLevelOneMovesToBuffers(&game.situation);
                                 movesHaveBeenFound = true;
                             }
-                            if (lostByMoves(&game.situation)) {
+                            /*if (lostByMoves(&game.situation)) {
                                 MessageBoxW(window, L"YOU SUCK", L"Лошара ёбаный", MB_ICONINFORMATION);
                             }
+                            else {
+
+                            }*/
                             if (marker == Destination) {
                                 selectedDestination = converted;
                                 if (game.situation.tmBufferLen != 0) {
@@ -369,69 +372,85 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
 
                             UPDATE_RENDER;
                             if (moveHasBeenMade) {
-                                if (game.type == RvsC) {
-                                    flushSequenceLists(&game.situation);
-                                    findAllMoves(&game.situation, negateColor(player));
-                                    if (lostByMoves(&game.situation)) {
-                                        MessageBoxW(window, L"YOU ROCK", L"Победитель долбанный", MB_ICONINFORMATION);
-                                    }
-                                    flushSequenceLists(&game.situation);
-                                    SeqContainer bestMove = getBestMove(game.situation, negateColor(player), computerDifficulty);
-                                    Sleep(moveMakingDelay / 5);
-                                    switch (bestMove.seqNumberToDo) {
-                                        case 1: {
-                                            makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence,
-                                                                          moveMakingDelay, handler);
-                                            break;
-                                        }
-                                        case 2: {
-                                            makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence,
-                                                                         moveMakingDelay, handler);
-                                            break;
-                                        }
-                                        default: {
-                                            flushSequenceLists(&game.situation);
-                                            findAllMoves(&game.situation, negateColor(player));
-                                            float moveSector = (float) rand() / (float) RAND_MAX;
-                                            if (game.situation.tmsCount != 0) {
-                                                if (moveSector < 0.5) {
+                                flushSequenceLists(&game.situation);
+                                findAllMoves(&game.situation, negateColor(player));
+                                if (lostByMoves(&game.situation)) {
+                                    MessageBoxW(window, L"YOU ROCK", L"Победитель долбанный", MB_ICONINFORMATION);
+                                }
+                                else {
+                                    if (game.type == RvsC) {
+                                        flushSequenceLists(&game.situation);
+                                        findAllMoves(&game.situation, negateColor(player));
+
+                                        flushSequenceLists(&game.situation);
+                                        SeqContainer bestMove = getBestMove(game.situation, negateColor(player), computerDifficulty);
+                                        Sleep(moveMakingDelay / 5);
+                                        switch (bestMove.seqNumberToDo) {
+                                            case 1: {
+                                                makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence,
+                                                                              moveMakingDelay, handler);
+                                                break;
+                                            }
+                                            case 2: {
+                                                makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence,
+                                                                             moveMakingDelay, handler);
+                                                break;
+                                            }
+                                            default: {
+                                                flushSequenceLists(&game.situation);
+                                                findAllMoves(&game.situation, negateColor(player));
+                                                float moveSector = (float) rand() / (float) RAND_MAX;
+                                                if (game.situation.tmsCount != 0) {
+                                                    if (moveSector < 0.5) {
+                                                        int moveIndex = (int) ((float) rand() / (float) RAND_MAX) * game.situation.rmsCount;
+                                                        makeARegMoveSequenceWithDelay(&game.situation, game.situation.regMoveSequences[moveIndex],
+                                                                                      moveMakingDelay, handler);
+                                                    }
+                                                    else {
+                                                        int moveIndex = (int) ((float) rand() / (float) RAND_MAX) * game.situation.tmsCount;
+                                                        makeATakingSequenceWithDelay(&game.situation, game.situation.takingSequences[moveIndex],
+                                                                                     moveMakingDelay, handler);
+                                                    }
+                                                }
+                                                else {
                                                     int moveIndex = (int) ((float) rand() / (float) RAND_MAX) * game.situation.rmsCount;
                                                     makeARegMoveSequenceWithDelay(&game.situation, game.situation.regMoveSequences[moveIndex],
                                                                                   moveMakingDelay, handler);
                                                 }
-                                                else {
-                                                    int moveIndex = (int) ((float) rand() / (float) RAND_MAX) * game.situation.tmsCount;
-                                                    makeATakingSequenceWithDelay(&game.situation, game.situation.takingSequences[moveIndex],
-                                                                                 moveMakingDelay, handler);
-                                                }
+                                                break;
                                             }
-                                            else {
-                                                int moveIndex = (int) ((float) rand() / (float) RAND_MAX) * game.situation.rmsCount;
-                                                makeARegMoveSequenceWithDelay(&game.situation, game.situation.regMoveSequences[moveIndex],
-                                                                              moveMakingDelay, handler);
-                                            }
-                                            break;
+                                                /*case 3: {
+                                                    makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence,
+                                                                                moveMakingDelay, handler);
+                                                    break;
+                                                }*/
                                         }
-                                        /*case 3: {
-                                            makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence,
-                                                                        moveMakingDelay, handler);
-                                            break;
-                                        }*/
+                                        removeMarkedForDeath(&game.situation, player);
+                                        updateBoardRender(&game.situation.board);
+                                        flushSequenceLists(&game.situation);
+                                        flushBuffers();
+                                        moveHasBeenMade = false;
+                                        renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX,
+                                                    boardPasteY);
+                                        findAllMoves(&game.situation, player);
+                                        if (lostByMoves(&game.situation)) {
+                                            MessageBoxW(window, L"YOU SUCK", L"Лошара ёбаный", MB_ICONINFORMATION);
+                                        }
+                                        flushSequenceLists(&game.situation);
+                                    } else {
+                                        player = negateColor(player);
+                                        moveHasBeenMade = false;
+                                        flushSequenceLists(&game.situation);
+                                        findAllMoves(&game.situation, player);
+                                        if (lostByMoves(&game.situation)) {
+                                            MessageBoxW(window, L"YOU SUCK", L"Лошара ёбаный", MB_ICONINFORMATION);
+                                        }
+                                        flushSequenceLists(&game.situation);
                                     }
-                                    removeMarkedForDeath(&game.situation, player);
-                                    updateBoardRender(&game.situation.board);
-                                    flushSequenceLists(&game.situation);
-                                    flushBuffers();
-                                    moveHasBeenMade = false;
-                                    renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX,
-                                                boardPasteY);
-                                } else {
-                                    player = negateColor(player);
-                                    moveHasBeenMade = false;
                                 }
-                                break;
                             }
                         }
+                        break;
                     }
                 }
             break;
