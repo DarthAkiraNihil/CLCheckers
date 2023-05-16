@@ -38,9 +38,9 @@ void copyLevelOneMovesToBuffers(GameSituation* situation) {
     for (int i = 0; i < situation->rmsCount; i++) {
         situation->regularMovesBuffer[situation->rmBufferLen++] = situation->regMoveSequences[i].regularMoves[0];
     }
-    for (int i = 0; i < situation->mmsCount; i++) {
+    /*for (int i = 0; i < situation->mmsCount; i++) {
         situation->regularMovesBuffer[situation->rmBufferLen++] = situation->mixedSequences[i].kingBecomingMove;
-    }
+    }*/
     for (int i = 0; i < situation->tmsCount; i++) {
         situation->takingMovesBuffer[situation->tmBufferLen++] = situation->takingSequences[i].takingMoves[0];
     }

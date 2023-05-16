@@ -22,7 +22,7 @@ SeqContainer analyze(GameSituation* situation, Color side, int currentDepth, Dif
         return toReturn;
     }
     if (situation->tmsCount == 0) {
-        MixedSequence* msBackup = new MixedSequence[situation->mmsCount];
+        /*MixedSequence* msBackup = new MixedSequence[situation->mmsCount];
         for (int i = 0; i < situation->mmsCount; i++) msBackup[i] = situation->mixedSequences[i];
         int savedMSS = situation->mmsCount;
         RegMoveSequence* rmsBackup = new RegMoveSequence[situation->rmsCount];
@@ -42,7 +42,10 @@ SeqContainer analyze(GameSituation* situation, Color side, int currentDepth, Dif
                 toReturn.seqNumberToDo = 3;
             }
         }
-        delete [] msBackup;
+        delete [] msBackup;*/
+        RegMoveSequence* rmsBackup = new RegMoveSequence[situation->rmsCount];
+        for (int i = 0; i < situation->rmsCount; i++) rmsBackup[i] = situation->regMoveSequences[i];
+        int savedRMSS = situation->rmsCount;
         for (int i = 0; i < savedRMSS; i++) {
             makeARegMoveSequence(situation, rmsBackup[i]);
             flushSequenceLists(situation);

@@ -157,6 +157,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 computerDifficulty = getDifficultyByNumber(selected);
                 //printf("%d", difficulty);
                 game = createANewGame(player, firstMove, RvsC);
+                //for (int i = 0; i < 10; i++) removeChecker(&game.situation.board, 0, negateColor(player));
 
                 isGameBegun = true;
                 sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
@@ -203,11 +204,11 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                                          moveMakingDelay, handler);
                             break;
                         }
-                        case 3: {
+                        /*case 3: {
                             makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence,
                                                         moveMakingDelay, handler);
                             break;
-                        }
+                        }*/
                     }
                     removeMarkedForDeath(&game.situation, player);
                     updateBoardRender(&game.situation.board);
@@ -255,6 +256,8 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 MessageBoxW(window, fileName, L"The truth", 0);
             }
             else if (lParam == (LPARAM) buttons[buttonSaveGame]) {
+                GetSaveFileNameW(&openFile);
+                MessageBoxW(window, fileName, L"The truth", 0);
                 MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
             }
             else if (lParam == (LPARAM) buttons[buttonAbout]) {
@@ -377,11 +380,11 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                                                          moveMakingDelay, handler);
                                             break;
                                         }
-                                        case 3: {
+                                        /*case 3: {
                                             makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence,
                                                                         moveMakingDelay, handler);
                                             break;
-                                        }
+                                        }*/
                                     }
                                     removeMarkedForDeath(&game.situation, player);
                                     updateBoardRender(&game.situation.board);

@@ -73,10 +73,12 @@ struct TakingSequence {
     int tmsCount;
 };
 
+/*
 struct MixedSequence {
     Move kingBecomingMove;
     TakingSequence takingSequence;
 };
+*/
 
 struct Board {
     BoardCellState boardRender[8][8];
@@ -93,14 +95,14 @@ struct GameSituation {
     TakingMove takingMovesBuffer[24];
     int tmBufferLen, rmBufferLen;
     TakingSequence takingSequences[16];
-    MixedSequence mixedSequences[16];
+    //MixedSequence mixedSequences[16];
     RegMoveSequence regMoveSequences[32];
 };
 
 struct SeqContainer {
     RegMoveSequence regMoveSequence;
     TakingSequence takingSequence;
-    MixedSequence mixedSequence;
+    //MixedSequence mixedSequence;
     int seqNumberToDo;
     float eval;
 };

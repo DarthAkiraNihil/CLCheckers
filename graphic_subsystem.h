@@ -170,7 +170,7 @@ void makeATakingSequenceWithDelay(GameSituation* situation, TakingSequence takin
         Sleep(mSecDelay);
     }
 }
-
+/*
 void makeAMixedSequenceWithDelay(GameSituation* situation, MixedSequence mixedSequence, int mSecDelay, HDC handler) {
     makeAMove(situation, mixedSequence.kingBecomingMove);
     updateBoardRender(&(situation->board));
@@ -178,6 +178,6 @@ void makeAMixedSequenceWithDelay(GameSituation* situation, MixedSequence mixedSe
     Sleep(mSecDelay);
     makeATakingSequenceWithDelay(situation, mixedSequence.takingSequence, mSecDelay, handler);
 }
-
+*/
 
 #endif //CHECKERS_GRAPHIC_SUBSYSTEM_H

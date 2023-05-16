@@ -14,7 +14,7 @@ SeqContainer getNullContainer(Color side) {
     container.seqNumberToDo = -1;
     container.takingSequence.tmsCount = 0;
     container.regMoveSequence.rmsCount = 0;
-    container.mixedSequence.takingSequence.tmsCount = 0;
+    //container.mixedSequence.takingSequence.tmsCount = 0;
     return container;
 }
 

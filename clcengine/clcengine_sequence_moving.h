@@ -18,6 +18,7 @@ void cancelATakingMoveSequence(GameSituation* situation, TakingSequence takingSe
     for (int i = takingSequence.tmsCount - 1; i > -1; i--) cancelATakingMove(situation, takingSequence.takingMoves[i]);
 }
 
+/*
 void makeAMixedSequence(GameSituation* situation, MixedSequence mixedSequence) {
     makeAMove(situation, mixedSequence.kingBecomingMove);
     makeATakingMoveSequence(situation, mixedSequence.takingSequence);
@@ -27,5 +28,6 @@ void cancelAMixedSequence(GameSituation* situation, MixedSequence mixedSequence)
     cancelATakingMoveSequence(situation, mixedSequence.takingSequence);
     cancelAMove(situation, mixedSequence.kingBecomingMove);
 }
+*/
 
 #endif //CHECKERS_CLCENGINE_SEQUENCE_MOVING_H

@@ -97,6 +97,7 @@ void findAllTakingMoveSequences(GameSituation* situation, Color forWhichSide) {
     }
 }
 
+/*
 void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, int checkerIndex, TakingSequence* currentPath, Move kingBecomingMoveToInsert, bool afterMove = false) {
     if (!afterMove) {
         findAllKingTakingMovesForOne(situation, checkerColor, checkerIndex);
@@ -121,8 +122,9 @@ void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, 
     }
     delete [] buffer;
 }
+*/
 
-void findAllMixedSequencesForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
+/*void findAllMixedSequencesForOne(GameSituation* situation, Color checkerColor, int checkerIndex) {
     findAllKBMovesForOne(situation, checkerColor, checkerIndex);
     int savedTMs = 0;
     if (situation->rmBufferLen != 0) {
@@ -147,18 +149,21 @@ void findAllMixedSequencesForOne(GameSituation* situation, Color checkerColor, i
         delete [] buffer;
     }
 }
+*/
 
+/*
 void findAllMixedSequences(GameSituation* situation, Color forWhichSide) {
     for (int i = 0; i < situation->board.checkersCount[forWhichSide]; i++) {
         findAllMixedSequencesForOne(situation, forWhichSide, i);
         flushMoveBuffers(situation);
     }
 }
+*/
 
 inline void findAllMoves(GameSituation* situation, Color forWhichSide) {
     findAllTakingMoveSequences(situation, forWhichSide);
     if (situation->tmsCount == 0) {
-        findAllMixedSequences(situation, forWhichSide);
+        //findAllMixedSequences(situation, forWhichSide);
         findAllRegularMoveSequences(situation, forWhichSide);
     }
 }

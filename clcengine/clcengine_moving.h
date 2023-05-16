@@ -17,12 +17,14 @@ int makeAMove(GameSituation* situation, Move move) {
     updateBoardRender(&(situation->board));
     flushMoveBuffers(situation);
     if (move.isKingBecomingMove) {
-        findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
+        /*findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
         if (situation->tmBufferLen == 0) {
             findAllKingMovesForOne(situation, movedColor, movedIndex);
             return 2;
-        }
-        return 1;
+        }*/
+        //return 1;
+        findAllKingMovesForOne(situation, movedColor, movedIndex);
+        return 2;
     } else return 0;
 }
 
@@ -37,7 +39,8 @@ int makeATakingMove(GameSituation* situation, TakingMove move) {
     flushMoveBuffers(situation);
     updateBoardRender(&(situation->board));
     if (situation->board.checkers[movedColor][movedIndex].type == King) {
-        findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
+        return 0;
+        //findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
     }
     else {
         findAllTakingMovesForOne(situation, movedColor, movedIndex);
