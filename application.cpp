@@ -380,6 +380,29 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                                                          moveMakingDelay, handler);
                                             break;
                                         }
+                                        default: {
+                                            flushSequenceLists(&game.situation);
+                                            findAllMoves(&game.situation, negateColor(player));
+                                            float moveSector = (float) rand() / (float) RAND_MAX;
+                                            if (game.situation.tmsCount != 0) {
+                                                if (moveSector < 0.5) {
+                                                    int moveIndex = (int) ((float) rand() / (float) RAND_MAX) * game.situation.rmsCount;
+                                                    makeARegMoveSequenceWithDelay(&game.situation, game.situation.regMoveSequences[moveIndex],
+                                                                                  moveMakingDelay, handler);
+                                                }
+                                                else {
+                                                    int moveIndex = (int) ((float) rand() / (float) RAND_MAX) * game.situation.tmsCount;
+                                                    makeATakingSequenceWithDelay(&game.situation, game.situation.takingSequences[moveIndex],
+                                                                                 moveMakingDelay, handler);
+                                                }
+                                            }
+                                            else {
+                                                int moveIndex = (int) ((float) rand() / (float) RAND_MAX) * game.situation.rmsCount;
+                                                makeARegMoveSequenceWithDelay(&game.situation, game.situation.regMoveSequences[moveIndex],
+                                                                              moveMakingDelay, handler);
+                                            }
+                                            break;
+                                        }
                                         /*case 3: {
                                             makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence,
                                                                         moveMakingDelay, handler);

@@ -38,12 +38,15 @@ int makeATakingMove(GameSituation* situation, TakingMove move) {
     situation->board.checkers[victimColor][victimIndex].markedForDeath = true;
     flushMoveBuffers(situation);
     updateBoardRender(&(situation->board));
-    if (situation->board.checkers[movedColor][movedIndex].type == King) {
-        return 0;
-        //findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
+    if (situation->board.checkers[movedColor][movedIndex].type == King && !move.isASpecialMove) {
+        //return 0;
+        findAllKingTakingMovesForOne(situation, movedColor, movedIndex);
+    }
+    else if (!move.isASpecialMove) {
+        findAllTakingMovesForOne(situation, movedColor, movedIndex);
     }
     else {
-        findAllTakingMovesForOne(situation, movedColor, movedIndex);
+        return 0;
     }
     return situation->tmBufferLen;
 }
