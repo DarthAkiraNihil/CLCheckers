@@ -93,6 +93,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Безумно");
     SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Экстремально");
     SendMessageW(difficultySelect, CB_SETCURSEL, 0, 0);
+
     sideSelectorCaption = CreateWindowW(L"static", L"Уровень сложности", WS_CHILD | WS_VISIBLE, 540, 120, 200, 20, mainWindow, (HMENU) 10000, instance, nullptr);
     sideSelectorCaption = CreateWindowW(L"static", L"Ваша сторона", WS_CHILD | WS_VISIBLE, 540, 170, 200, 20, mainWindow, (HMENU) 10000, instance, nullptr);
     sideSelectorBlack = CreateWindowW(L"button", L"Чёрные", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON, 540, 190, 80, 20, mainWindow, (HMENU) 12345, instance, NULL);
@@ -142,114 +143,126 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
         }
         case WM_COMMAND: {
             if (lParam == (LPARAM) buttons[buttonStartGameVsComp]) {
-                TCHAR buffer[256];
-                Color firstMove;
-                int selected = (int) SendMessageW(difficultySelect, CB_GETCURSEL, 0, 0);
-                float rsc = (float) rand() / (float) RAND_MAX;
-                bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
-                     whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
-                if (blackChosen) player = Black;
-                else if (whiteChosen) player = White;
-                //else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", 0);
-                if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
-                if (rsc < 0.5) firstMove = Black; else firstMove = White;
-                //(TCHAR) SendMessageW(difficultySelect, CB_GETLBTEXT, (WPARAM) selected, (LPARAM) buffer);
-                //MessageBoxW(window, (LPCWSTR) buffer , L"govnuk", 0);
-                computerDifficulty = getDifficultyByNumber(selected);
-                //printf("%d", difficulty);
-                game = createANewGame(player, firstMove, RvsC);
-                //for (int i = 0; i < 10; i++) removeChecker(&game.situation.board, 0, negateColor(player));
+                if (!isGameBegun) {
+                    TCHAR buffer[256];
+                    Color firstMove;
+                    int selected = (int) SendMessageW(difficultySelect, CB_GETCURSEL, 0, 0);
+                    float rsc = (float) rand() / (float) RAND_MAX;
+                    bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
+                        whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                    if (blackChosen) player = Black;
+                    else if (whiteChosen) player = White;
+                    //else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", 0);
+                    if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
+                        if (rsc < 0.5) firstMove = Black; else firstMove = White;
+                        //(TCHAR) SendMessageW(difficultySelect, CB_GETLBTEXT, (WPARAM) selected, (LPARAM) buffer);
+                        //MessageBoxW(window, (LPCWSTR) buffer , L"govnuk", 0);
+                        computerDifficulty = getDifficultyByNumber(selected);
+                        //printf("%d", difficulty);
+                        game = createANewGame(player, firstMove, RvsC);
+                        //for (int i = 0; i < 10; i++) removeChecker(&game.situation.board, 0, negateColor(player));
 
-                isGameBegun = true;
-                sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
-                switch (computerDifficulty) {
-                    case Dumbass: {
-                        MessageBoxW(nullptr, L"\"Уга-буга? Буга-уга-уга-бука! Абуга!\"\n\nПохоже, вы решили сразиться с самым неумелым игроком в шашки, что есть на белом свете. Что ж, ничего не могу сказать. Должно быть просто. Удачи :)\n\nНо всё же не недооценивайте его, порой его ходы довольно опасны.", L"Противник: неандерталец Абуган Бунганов Уганович", MB_ICONINFORMATION);//SendMessageW(window, WM_COMMAND, 0, 100);
-                        break;
-                    }
-                    case Easy: {
-                        MessageBoxW(nullptr, L"\"Я только начал играть в шашки. Пока плохо получается.\"\n\nВы  выбрали не самого умелого игрока, однако он уже дальше смотрит на игровую ситуацию, потому его ходы немного опаснее, чем у предыдущего.\n\nОднако уверен, его просто одолеть. Удачи :)", L"Противник: Третьеклассник Немагнус Карлсен", MB_ICONINFORMATION);
-                        break;
-                    }
-                    case Normal: {
-                        MessageBoxW(nullptr, L"\"Откуда ты? Из обычной школы? Хм, да ты никто по сравнению со мной. Я играй в шашки с -1 года, а потому уверен, что ты проиграешь\"\n\nХм, а вот это уже из категории умелых. Довольно зазнавшийся, однако его слова полностью подтверждаются его умением играть. Его ходы могут сыграть свою роль очень нескоро, однако его комбинаторное зрение развито значительно лучше.\n\nЕго непросто будет одолеть. И всё же, удачи! :)", L"Противник: Лицеист Титов Дмитро Полковников", MB_ICONINFORMATION);
-                        break;
-                    }
-                    case Hard: {
-                        MessageBoxW(nullptr, L"\"Наконец-то, достойный соперник. Наша схватка будет легендарной!\"\n\nОн просидел в темнице более 10 лет, оттачивая мастерство игры в шашки. Потому он способен просчитывать всё далеко вперёд, дальше, чем предыдущий противник.\n\nБудьте начеку, когда делаете ходы, ведь они могут с лёгкостью подставить вас в критическое положение.\n\nБудьте осторожны! Удачи!", L"Противник: Тайлунг", MB_ICONWARNING);
-                        break;
-                    }
-                    case Insane: {
-                        MessageBoxW(nullptr, L"\"Ставлю душу своей матери на то, что я одолею тебя\"\n\nКрайне опасный противник, который настолько уверен в себе, что вводит своих оппонентов в ступор. Поистине великолепно играет в шашки, и умеет смотреть далеко вперёд, просчитывая миллионы ходов за несколько секунд.\n\nНе поддайтесь его невозмутимости, так как он этим воспользуется и одолеет вас в считанные минуты.\n\nУдачи!", L"Противник: Джотаро Куджо", MB_ICONWARNING);
-                        break;
-                    }
-                    case Extreme: {
-                        MessageBoxW(nullptr, L"\"ХА-ХА-ХА-ХА! ТЫ ОПОЗДАЛ СОНИК! ТЕПЕРЬ Я СЕРТИФИЦИРОВАННАЯ ПРОГРАММА ДЛЯ ИГРЫ В РУССКИЕ ШАШКИ! БУАХА-ХА-ХА-ХА!\"\n\n Вы выбрали самого опасного врага, хотя, говорят, есть и опаснее...\n\nВ любом случае, IQ Доктора равен 300 баллам, потому его ходы настолько гениальны, что вы ни за что их не просчитаете. Его комбинаторное зрение совершенно, оно не знает изъянов. Хотя сам доктор долго думает.\n\nОн уже давно хотел вызвать кого-нибудь на поединок в шашки, потому ваша задача - одолеть его, ведь иначе он всех зверей превратит в бандиков.\n\nПокажите ему, кто здесь истинный мастер игры в русские шашки!", L"Противник: Доктор Айво \"Эггман\" Роботник", MB_ICONSTOP);
-                        break;
-                    }
-                }
-                //MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
-                UPDATE_RENDER;
-                if (firstMove != player) {
-                    flushSequenceLists(&game.situation);
-                    SeqContainer bestMove = getBestMove(game.situation, negateColor(player), computerDifficulty);
-                    Sleep(moveMakingDelay / 5);
-                    switch (bestMove.seqNumberToDo) {
-                        case 1: {
-                            makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence,
-                                                          moveMakingDelay, handler);
-                            break;
+                        isGameBegun = true;
+                        sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
+                        switch (computerDifficulty) {
+                            case Dumbass: {
+                                MessageBoxW(nullptr, L"\"Уга-буга? Буга-уга-уга-бука! Абуга!\"\n\nПохоже, вы решили сразиться с самым неумелым игроком в шашки, что есть на белом свете. Что ж, ничего не могу сказать. Должно быть просто. Удачи :)\n\nНо всё же не недооценивайте его, порой его ходы довольно опасны.", L"Противник: неандерталец Абуган Бунганов Уганович", MB_ICONINFORMATION);//SendMessageW(window, WM_COMMAND, 0, 100);
+                                break;
+                            }
+                            case Easy: {
+                                MessageBoxW(nullptr, L"\"Я только начал играть в шашки. Пока плохо получается.\"\n\nВы  выбрали не самого умелого игрока, однако он уже дальше смотрит на игровую ситуацию, потому его ходы немного опаснее, чем у предыдущего.\n\nОднако уверен, его просто одолеть. Удачи :)", L"Противник: Третьеклассник Немагнус Карлсен", MB_ICONINFORMATION);
+                                break;
+                            }
+                            case Normal: {
+                                MessageBoxW(nullptr, L"\"Откуда ты? Из обычной школы? Хм, да ты никто по сравнению со мной. Я играй в шашки с -1 года, а потому уверен, что ты проиграешь\"\n\nХм, а вот это уже из категории умелых. Довольно зазнавшийся, однако его слова полностью подтверждаются его умением играть. Его ходы могут сыграть свою роль очень нескоро, однако его комбинаторное зрение развито значительно лучше.\n\nЕго непросто будет одолеть. И всё же, удачи! :)", L"Противник: Лицеист Титов Дмитро Полковников", MB_ICONINFORMATION);
+                                break;
+                            }
+                            case Hard: {
+                                MessageBoxW(nullptr, L"\"Наконец-то, достойный соперник. Наша схватка будет легендарной!\"\n\nОн просидел в темнице более 10 лет, оттачивая мастерство игры в шашки. Потому он способен просчитывать всё далеко вперёд, дальше, чем предыдущий противник.\n\nБудьте начеку, когда делаете ходы, ведь они могут с лёгкостью подставить вас в критическое положение.\n\nБудьте осторожны! Удачи!", L"Противник: Тайлунг", MB_ICONWARNING);
+                                break;
+                            }
+                            case Insane: {
+                                MessageBoxW(nullptr, L"\"Ставлю душу своей матери на то, что я одолею тебя\"\n\nКрайне опасный противник, который настолько уверен в себе, что вводит своих оппонентов в ступор. Поистине великолепно играет в шашки, и умеет смотреть далеко вперёд, просчитывая миллионы ходов за несколько секунд.\n\nНе поддайтесь его невозмутимости, так как он этим воспользуется и одолеет вас в считанные минуты.\n\nУдачи!", L"Противник: Джотаро Куджо", MB_ICONWARNING);
+                                break;
+                            }
+                            case Extreme: {
+                                MessageBoxW(nullptr, L"\"ХА-ХА-ХА-ХА! ТЫ ОПОЗДАЛ СОНИК! ТЕПЕРЬ Я СЕРТИФИЦИРОВАННАЯ ПРОГРАММА ДЛЯ ИГРЫ В РУССКИЕ ШАШКИ! БУАХА-ХА-ХА-ХА!\"\n\n Вы выбрали самого опасного врага, хотя, говорят, есть и опаснее...\n\nВ любом случае, IQ Доктора равен 300 баллам, потому его ходы настолько гениальны, что вы ни за что их не просчитаете. Его комбинаторное зрение совершенно, оно не знает изъянов. Хотя сам доктор долго думает.\n\nОн уже давно хотел вызвать кого-нибудь на поединок в шашки, потому ваша задача - одолеть его, ведь иначе он всех зверей превратит в бандиков.\n\nПокажите ему, кто здесь истинный мастер игры в русские шашки!", L"Противник: Доктор Айво \"Эггман\" Роботник", MB_ICONSTOP);
+                                break;
+                            }
                         }
-                        case 2: {
-                            makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence,
-                                                         moveMakingDelay, handler);
-                            break;
+                        //MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
+                        UPDATE_RENDER;
+                        if (firstMove != player) {
+                            flushSequenceLists(&game.situation);
+                            SeqContainer bestMove = getBestMove(game.situation, negateColor(player), computerDifficulty);
+                            Sleep(moveMakingDelay / 5);
+                            switch (bestMove.seqNumberToDo) {
+                                case 1: {
+                                    makeARegMoveSequenceWithDelay(&game.situation, bestMove.regMoveSequence,
+                                                                  moveMakingDelay, handler);
+                                    break;
+                                }
+                                case 2: {
+                                    makeATakingSequenceWithDelay(&game.situation, bestMove.takingSequence,
+                                                                 moveMakingDelay, handler);
+                                    break;
+                                }
+                                    /*case 3: {
+                                        makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence,
+                                                                    moveMakingDelay, handler);
+                                        break;
+                                    }*/
+                            }
+                            removeMarkedForDeath(&game.situation, player);
+                            updateBoardRender(&game.situation.board);
+                            flushSequenceLists(&game.situation);
+                            flushBuffers();
+                            UPDATE_RENDER;
                         }
-                        /*case 3: {
-                            makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence,
-                                                        moveMakingDelay, handler);
-                            break;
-                        }*/
                     }
-                    removeMarkedForDeath(&game.situation, player);
-                    updateBoardRender(&game.situation.board);
-                    flushSequenceLists(&game.situation);
-                    flushBuffers();
-                    UPDATE_RENDER;
+                    else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
                 }
+                else {
+                    MessageBoxW(nullptr, L"Вы не можете начать новую игру, пока не закончите текущую!", L"Saatana vittu perkele", MB_ICONERROR);
                 }
-                else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
+
                 //UPDATE_RENDER;
                 //PostQuitMessage(3221225477);
             }
             else if (lParam == (LPARAM) buttons[buttonStartGameVsReal]) {
-                TCHAR buffer[256];
-                Color firstMove;
-                //int selected = (int) SendMessageW(difficultySelect, CB_GETCURSEL, 0, 0);
-                float rsc = (float) rand() / (float) RAND_MAX;
-                bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
-                    whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
-                if (blackChosen) player = Black;
-                else if (whiteChosen) player = White;
-                //else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", 0);
-                if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
-                    if (rsc < 0.5) firstMove = Black; else firstMove = White;
-                    //(TCHAR) SendMessageW(difficultySelect, CB_GETLBTEXT, (WPARAM) selected, (LPARAM) buffer);
-                    //MessageBoxW(window, (LPCWSTR) buffer , L"govnuk", 0);
-                    //computerDifficulty = getDifficultyByNumber(selected);
-                    //printf("%d", difficulty);
-                    game = createANewGame(player, firstMove, RvsR);
+                if (!isGameBegun) {
+                    TCHAR buffer[256];
+                    Color firstMove;
+                    //int selected = (int) SendMessageW(difficultySelect, CB_GETCURSEL, 0, 0);
+                    float rsc = (float) rand() / (float) RAND_MAX;
+                    bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
+                        whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                    if (blackChosen) player = Black;
+                    else if (whiteChosen) player = White;
+                    //else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", 0);
+                    if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
+                        if (rsc < 0.5) firstMove = Black; else firstMove = White;
+                        //(TCHAR) SendMessageW(difficultySelect, CB_GETLBTEXT, (WPARAM) selected, (LPARAM) buffer);
+                        //MessageBoxW(window, (LPCWSTR) buffer , L"govnuk", 0);
+                        //computerDifficulty = getDifficultyByNumber(selected);
+                        //printf("%d", difficulty);
+                        game = createANewGame(player, firstMove, RvsR);
 
-                    isGameBegun = true;
-                    sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
-                    MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
-                    UPDATE_RENDER;
+                        isGameBegun = true;
+                        sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
+                        MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
+                        UPDATE_RENDER;
+                    }
+                    else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
+                    //game = createANewGame(Black, Black, RvsR);
+                    //isGameBegun = true;
+                    //SendMessageW(window, WM_COMMAND, 0, 100);
+                    //UPDATE_RENDER;
                 }
-                else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
-                //game = createANewGame(Black, Black, RvsR);
-                //isGameBegun = true;
-                //SendMessageW(window, WM_COMMAND, 0, 100);
-                //UPDATE_RENDER;
+                else {
+                    MessageBoxW(nullptr, L"Вы не можете начать новую игру, пока не закончите текущую!", L"Saatana vittu perkele", MB_ICONERROR);
+                }
+
             }
             else if (lParam == (LPARAM) buttons[buttonLoadGame]) {
                 //OPENFILENAME test;
