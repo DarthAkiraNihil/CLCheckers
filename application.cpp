@@ -184,7 +184,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         break;
                     }
                     case Extreme: {
-                        MessageBoxW(nullptr, L"\"ХА-ХА-ХА-ХА! ТЫ ОПОЗДАЛ СОНИК! ТЕПЕРЬ Я СЕРТИФИЦИРОВАННАЯ ПРОГРАММА ДЛЯ ИГРЫ В РУССКИЕ ШАШКИ! БУАХА-ХА-ХА-ХА!\"\n\n Вы выбрали самого опасного врага, хотя, говорят, есть и опаснее...\n\nВ любом случае, IQ Доктора равен 300 баллам, потому его ходы настолько гениальны, что вы ни за что их не просчитаете. Его комбинаторное зрение совершенно, оно не знает изъянов. Хотя сам доктор долго думает.\n\nОн уже давно хотел вызвать кого-нибудь на поединок в шашки, потому ваша задача - одолеть его, ведь иначе он всех зверей превратит в бандиков.\n\nПокажите ему, кто здесь батька!", L"Противник: Доктор Айво \"Эггман\" Роботник", MB_ICONSTOP);
+                        MessageBoxW(nullptr, L"\"ХА-ХА-ХА-ХА! ТЫ ОПОЗДАЛ СОНИК! ТЕПЕРЬ Я СЕРТИФИЦИРОВАННАЯ ПРОГРАММА ДЛЯ ИГРЫ В РУССКИЕ ШАШКИ! БУАХА-ХА-ХА-ХА!\"\n\n Вы выбрали самого опасного врага, хотя, говорят, есть и опаснее...\n\nВ любом случае, IQ Доктора равен 300 баллам, потому его ходы настолько гениальны, что вы ни за что их не просчитаете. Его комбинаторное зрение совершенно, оно не знает изъянов. Хотя сам доктор долго думает.\n\nОн уже давно хотел вызвать кого-нибудь на поединок в шашки, потому ваша задача - одолеть его, ведь иначе он всех зверей превратит в бандиков.\n\nПокажите ему, кто здесь истинный мастер игры в русские шашки!", L"Противник: Доктор Айво \"Эггман\" Роботник", MB_ICONSTOP);
                         break;
                     }
                 }
@@ -376,6 +376,10 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 findAllMoves(&game.situation, negateColor(player));
                                 if (lostByMoves(&game.situation)) {
                                     MessageBoxW(window, L"YOU ROCK", L"Победитель долбанный", MB_ICONINFORMATION);
+                                    renderEmptyBoard(handler, boardPasteX, boardPasteY);
+                                    isGameBegun = false;
+                                    moveHasBeenMade = false;
+                                    movesHaveBeenFound = false;
                                 }
                                 else {
                                     if (game.type == RvsC) {
@@ -435,6 +439,10 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                         findAllMoves(&game.situation, player);
                                         if (lostByMoves(&game.situation)) {
                                             MessageBoxW(window, L"YOU SUCK", L"Лошара ёбаный", MB_ICONINFORMATION);
+                                            renderEmptyBoard(handler, boardPasteX, boardPasteY);
+                                            isGameBegun = false;
+                                            moveHasBeenMade = false;
+                                            movesHaveBeenFound = false;
                                         }
                                         flushSequenceLists(&game.situation);
                                     } else {
@@ -444,6 +452,10 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                         findAllMoves(&game.situation, player);
                                         if (lostByMoves(&game.situation)) {
                                             MessageBoxW(window, L"YOU SUCK", L"Лошара ёбаный", MB_ICONINFORMATION);
+                                            renderEmptyBoard(handler, boardPasteX, boardPasteY);
+                                            isGameBegun = false;
+                                            moveHasBeenMade = false;
+                                            movesHaveBeenFound = false;
                                         }
                                         flushSequenceLists(&game.situation);
                                     }
