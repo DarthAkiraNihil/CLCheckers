@@ -225,9 +225,6 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 else {
                     MessageBoxW(nullptr, L"Вы не можете начать новую игру, пока не закончите текущую!", L"Saatana vittu perkele", MB_ICONERROR);
                 }
-
-                //UPDATE_RENDER;
-                //PostQuitMessage(3221225477);
             }
             else if (lParam == (LPARAM) buttons[buttonStartGameVsReal]) {
                 if (!isGameBegun) {
@@ -268,11 +265,28 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 //OPENFILENAME test;
                 GetOpenFileNameW(&openFile);
                 MessageBoxW(window, fileName, L"The truth", 0);
+                FILE* load = _wfopen(openFile.lpstrFile, L"rb");
+                if (load != nullptr) {
+                    fread(&computerDifficulty, sizeof(Difficulty), 1, load);
+                    fread(&player, sizeof(Color), 1, load);
+                    fread(&game, sizeof(Game), 1, load);
+                    fclose(load);
+                    isGameBegun = true;
+                    UPDATE_RENDER;
+                }
+
+                else MessageBoxW(nullptr, L"Нет такого файла, дурачок", L"Saatana vittu perkele", MB_ICONERROR);
             }
             else if (lParam == (LPARAM) buttons[buttonSaveGame]) {
                 GetSaveFileNameW(&openFile);
                 MessageBoxW(window, fileName, L"The truth", 0);
-                MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
+                FILE* save = _wfopen(openFile.lpstrFile, L"wb+");
+
+                fwrite(&computerDifficulty, sizeof(Difficulty), 1, save);
+                fwrite(&player, sizeof(Color), 1, save);
+                fwrite(&game, sizeof(Game), 1, save);
+                fclose(save);
+                //MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
             }
             else if (lParam == (LPARAM) buttons[buttonAbout]) {
                 MessageBoxW(window, L"CLCheckers ver. 1.0.\nCLCheckers - Made in CLion\nАвтор: Егор \"TheSwagVader\" Зверев (github.com/TheSwagVader)\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\nПроект лицензирован Apache 2.0, License", L"О программе", MB_ICONINFORMATION);
@@ -520,4 +534,7 @@ void defineOpenFile(HWND ofWindow) {
     openFile.hwndOwner = ofWindow;
     openFile.nMaxFile = sizeof(fileName);
     openFile.lpstrFile = fileName;
+    openFile.lpstrDefExt = L"sav";
+    openFile.lpstrFilter = L"Файлы сохранений (.sav)\0*.sav\0";
+    //openFile.nFilterIndex = 1;
 }
