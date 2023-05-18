@@ -430,7 +430,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                             MessageBoxW(nullptr, L"Судьба решила, что белые ходят первыми", L"Так кто первый?", MB_ICONINFORMATION);
 
                         }
-                        //MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
+
                         UPDATE_RENDER;
                         setWhoMovesCaption(whoMovesCaption, firstMove);
                     }
@@ -454,6 +454,8 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                             fclose(load);
                             isGameBegun = true;
                             UPDATE_RENDER;
+                            setWhoMovesCaption(whoMovesCaption, player);
+                            MessageBoxW(nullptr, L"Игра была успешно загружена!", L"Menestys", MB_ICONINFORMATION);
                         } else
                             MessageBoxW(nullptr, L"Нет такого файла, дурачок", L"Saatana vittu perkele", MB_ICONERROR);
                     }
@@ -464,13 +466,16 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 if (isGameBegun) {
                     BOOL success = GetSaveFileNameW(&openFile);
                     if (success) {
-                        MessageBoxW(window, fileName, L"The truth", 0);
+                        wchar_t buffer[512];
+                        wsprintfW(buffer, L"Игра была успешно сохранена в файл %s", fileName);
+                        //MessageBoxW(window, buffer, L"The truth", 0);
                         FILE *save = _wfopen(openFile.lpstrFile, L"wb+");
 
                         fwrite(&computerDifficulty, sizeof(Difficulty), 1, save);
                         fwrite(&player, sizeof(Color), 1, save);
                         fwrite(&game, sizeof(Game), 1, save);
                         fclose(save);
+                        MessageBoxW(window, buffer, L"Menestys", 0);
                     }
                 }
                 else MessageBoxW(nullptr, L"Как ты сохранишь игру, которой нет, а?!", L"Saatana vittu perkele", MB_ICONERROR);
