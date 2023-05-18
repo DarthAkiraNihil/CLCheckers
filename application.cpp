@@ -3,6 +3,8 @@
 #include <ctime>
 #include <cstdlib>
 #include <cstdio>
+#include <random>
+
 #include "clcengine/clcengine.h"
 #include "appconsts.h"
 #include "resources/resources.h"
@@ -19,6 +21,10 @@ bool isGameBegun = false; Difficulty computerDifficulty;
 HBRUSH brushBG = NULL;
 bool movesHaveBeenFound = false, moveHasBeenMade = false;
 Coordinates boardCursor = {0, 0}, selectedSource, selectedDestination;
+
+std::random_device randomDevice;
+std::mt19937 gen(randomDevice());
+std::uniform_int_distribution<> distribution(1, 1000);
 
 #define UPDATE_RENDER renderBoard(&game.situation.board, game.situation.playerSide, handler, boardCursor, boardPasteX, boardPasteY); renderPathMapMarkers(&game.situation.board, game.situation.playerSide, handler, boardCursor, boardPasteX, boardPasteY)
 
@@ -311,14 +317,15 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                     TCHAR buffer[256];
                     Color firstMove;
                     int selected = (int) SendMessageW(difficultySelect, CB_GETCURSEL, 0, 0);
-                    float rsc = (float) rand() / (float) RAND_MAX;
+                    int rsc = distribution(gen);
+                    //float rsc = (float) rand() / (float) RAND_MAX;
                     bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
                         whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     if (blackChosen) player = Black;
                     else if (whiteChosen) player = White;
 
                     if (blackChosen || whiteChosen) {
-                        if (rsc < 0.5) firstMove = Black; else firstMove = White;
+                        if (rsc < 500) firstMove = Black; else firstMove = White;
                         computerDifficulty = getDifficultyByNumber(selected);
                         game = createANewGame(player, firstMove, RvsC);
 
@@ -401,21 +408,29 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             }
             else if (lParam == (LPARAM) buttons[buttonStartGameVsReal]) {
                 if (!isGameBegun) {
-                    TCHAR buffer[256];
+                    //TCHAR buffer[256];
                     Color firstMove;
-                    float rsc = (float) rand() / (float) RAND_MAX;
+                    int rsc = distribution(gen);
+                    //float rsc = (float) rand() / (float) RAND_MAX;
                     bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
                         whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     if (blackChosen) player = Black;
                     else if (whiteChosen) player = White;
                     if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
-                        if (rsc < 0.5) firstMove = Black; else firstMove = White;
+                        if (rsc < 500) firstMove = Black; else firstMove = White;
                         game = createANewGame(player, firstMove, RvsR);
 
                         isGameBegun = true;
                         player = firstMove;
-                        sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
-                        MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
+                        //sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
+                        if (firstMove == Black) {
+                            MessageBoxW(nullptr, L"Судьба решила, что чёрные ходят первыми", L"Так кто первый?", MB_ICONINFORMATION);
+                        }
+                        else {
+                            MessageBoxW(nullptr, L"Судьба решила, что белые ходят первыми", L"Так кто первый?", MB_ICONINFORMATION);
+
+                        }
+                        //MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
                         UPDATE_RENDER;
                         setWhoMovesCaption(whoMovesCaption, firstMove);
                     }
@@ -658,21 +673,25 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                             default: {
                                                 flushSequenceLists(&game.situation);
                                                 findAllMoves(&game.situation, negateColor(player));
-                                                float moveSector = (float) rand() / (float) RAND_MAX;
+                                                int moveSector = distribution(gen);
+                                                //float moveSector = (float) rand() / (float) RAND_MAX;
                                                 if (game.situation.tmsCount != 0) {
-                                                    if (moveSector < 0.5) {
-                                                        int moveIndex = (int) ((float) rand() / (float) RAND_MAX) * game.situation.rmsCount;
+                                                    if (moveSector < 500) {
+                                                        std::uniform_int_distribution<> moveDist(0, game.situation.rmsCount);
+                                                        int moveIndex = moveDist(gen);
                                                         makeARegMoveSequenceWithDelay(&game.situation, game.situation.regMoveSequences[moveIndex],
                                                                                       moveMakingDelay, handler);
                                                     }
                                                     else {
-                                                        int moveIndex = (int) ((float) rand() / (float) RAND_MAX) * game.situation.tmsCount;
+                                                        std::uniform_int_distribution<> moveDist(0, game.situation.tmsCount);
+                                                        int moveIndex = moveDist(gen);
                                                         makeATakingSequenceWithDelay(&game.situation, game.situation.takingSequences[moveIndex],
                                                                                      moveMakingDelay, handler);
                                                     }
                                                 }
                                                 else {
-                                                    int moveIndex = (int) ((float) rand() / (float) RAND_MAX) * game.situation.rmsCount;
+                                                    std::uniform_int_distribution<> moveDist(0, game.situation.rmsCount);
+                                                    int moveIndex = moveDist(gen);
                                                     makeARegMoveSequenceWithDelay(&game.situation, game.situation.regMoveSequences[moveIndex],
                                                                                   moveMakingDelay, handler);
                                                 }
