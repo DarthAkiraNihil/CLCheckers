@@ -445,7 +445,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 if (!isGameBegun) {
                     BOOL success = GetOpenFileNameW(&openFile);
                     if (success) {
-                        MessageBoxW(window, fileName, L"The truth", 0);
+                        //MessageBoxW(window, fileName, L"The truth", 0);
                         FILE *load = _wfopen(openFile.lpstrFile, L"rb");
                         if (load != nullptr) {
                             fread(&computerDifficulty, sizeof(Difficulty), 1, load);
@@ -458,7 +458,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                             MessageBoxW(nullptr, L"Нет такого файла, дурачок", L"Saatana vittu perkele", MB_ICONERROR);
                     }
                 }
-                else MessageBoxW(nullptr, L"Вы что, решили просто взять, ливнуть из этой игры в другую?! Ну уж нет, я вам не позволю! Закончите сначала текущую игру.", L"Saatana vittu perkele", MB_ICONERROR);
+                else MessageBoxW(nullptr, L"Вы что, решили просто взять, уйти из этой игры в другую?! Ну уж нет, я вам не позволю! Закончите сначала текущую игру.", L"Saatana vittu perkele", MB_ICONERROR);
             }
             else if (lParam == (LPARAM) buttons[buttonSaveGame]) {
                 if (isGameBegun) {
@@ -476,16 +476,20 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 else MessageBoxW(nullptr, L"Как ты сохранишь игру, которой нет, а?!", L"Saatana vittu perkele", MB_ICONERROR);
             }
             else if (lParam == (LPARAM) buttons[buttonAbout]) {
-                MessageBoxW(window, L"CLCheckers ver. 1.0.\nCLCheckers - Made in CLion\nАвтор: Егор \"TheSwagVader\" Зверев (github.com/TheSwagVader)\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\nПроект лицензирован Apache 2.0, License", L"О программе", MB_ICONINFORMATION);
+                MessageBoxW(window, L"CLCheckers ver. b0.87\n\n"
+                                    "CLCheckers - Made in CLion\n\n"
+                                    "Автор: Егор \"TheSwagVader\" Зверев (github.com/TheSwagVader)\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\n\n"
+                                    "Курсовой проект для ИГЭУ, который буквально является очередной версией игры в русские шашки\n\n"
+                                    "Проект лицензирован на основе лицензии Apache 2.0 License", L"О программе", MB_ICONINFORMATION);
             }
             else if (lParam == (LPARAM) buttons[buttonGiveUp]) {
                 if (isGameBegun) {
                     if (MessageBoxW(nullptr, L"Вы действительно хотите сдаться?", L"Одумайтесь!", MB_ICONQUESTION | MB_YESNO) == IDYES) {
                         if (player == game.situation.playerSide) {
-                            MessageBoxW(window, L"YOU SUCK", L"Лошара ёбаный", MB_ICONINFORMATION);
+                            MessageBoxW(window, L"Похоже, кто-то мощно не справился со своим противником", L"Вы проиграли", MB_ICONINFORMATION);
                         }
                         else {
-                            MessageBoxW(window, L"YOU ROCK", L"Победитель долбанный", MB_ICONINFORMATION);
+                            MessageBoxW(window, L"ВЫ КРУТЫ! Молодцы, что одолели своего оппонента! Надеюсь, это не единственная ваша победа...", L"Вы выиграли", MB_ICONINFORMATION);
                         }
 
                         renderEmptyBoard(handler, boardPasteX, boardPasteY);
@@ -645,7 +649,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 flushSequenceLists(&game.situation);
                                 findAllMoves(&game.situation, negateColor(player));
                                 if (lostByMoves(&game.situation)) {
-                                    MessageBoxW(window, L"YOU ROCK", L"Победитель долбанный", MB_ICONINFORMATION);
+                                    MessageBoxW(window, L"ВЫ КРУТЫ! Молодцы, что одолели своего оппонента! Надеюсь, это не единственная ваша победа...", L"Вы выиграли", MB_ICONINFORMATION);
                                     renderEmptyBoard(handler, boardPasteX, boardPasteY);
                                     isGameBegun = false;
                                     moveHasBeenMade = false;
@@ -712,7 +716,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                                     boardPasteY);
                                         findAllMoves(&game.situation, player);
                                         if (lostByMoves(&game.situation)) {
-                                            MessageBoxW(window, L"YOU SUCK", L"Лошара ёбаный", MB_ICONINFORMATION);
+                                            MessageBoxW(window, L"Похоже, кто-то мощно не справился со своим противником", L"Вы проиграли", MB_ICONINFORMATION);
                                             renderEmptyBoard(handler, boardPasteX, boardPasteY);
                                             isGameBegun = false;
                                             moveHasBeenMade = false;
@@ -726,7 +730,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                         flushSequenceLists(&game.situation);
                                         findAllMoves(&game.situation, player);
                                         if (lostByMoves(&game.situation)) {
-                                            MessageBoxW(window, L"YOU SUCK", L"Лошара ёбаный", MB_ICONINFORMATION);
+                                            MessageBoxW(window, L"Похоже, кто-то мощно не справился со своим противником", L"Вы проиграли", MB_ICONINFORMATION);
                                             renderEmptyBoard(handler, boardPasteX, boardPasteY);
                                             isGameBegun = false;
                                             moveHasBeenMade = false;
