@@ -18,6 +18,7 @@ Difficulty getDifficultyByNumber(int number);
 int getNumberByDifficulty(Difficulty difficulty);
 void defineOpenFile(HWND ofWindow);
 void setWhoMovesCaption(HWND caption, Color color);
+void setCGameTypeCaption(HWND caption, GameType gameType, Difficulty difficulty = Dumbass);
 void renderBoard(); //todo define args
 
 #endif //CHECKERS_DEFS_H

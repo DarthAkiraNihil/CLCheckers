@@ -16,7 +16,7 @@ Color player;
 #include "graphic_subsystem.h"
 
 Game game;// Color player;
-HWND buttons[10], difficultySelect, sideSelectorBlack, sideSelectorWhite, sideSelectorCaption, difficultySelectCaption, whoMovesCaption;
+HWND buttons[10], difficultySelect, sideSelectorBlack, sideSelectorWhite, sideSelectorCaption, difficultySelectCaption, whoMovesCaption, cGameType;
 bool isGameBegun = false; Difficulty computerDifficulty;
 HBRUSH brushBG = NULL;
 bool movesHaveBeenFound = false, moveHasBeenMade = false, drawHasBeenOffered = false;
@@ -271,12 +271,26 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
         WS_CHILD | WS_VISIBLE,
         20,
         540,
-        400,
+        250,
         20,
         mainWindow,
         (HMENU)10000,
         instance,
         NULL
+    );
+
+    cGameType = CreateWindowW(
+            L"static",
+            L"Игры нет",
+            WS_CHILD | WS_VISIBLE | SS_RIGHT,
+            260,
+            540,
+            270,
+            20,
+            mainWindow,
+            (HMENU)10000,
+            instance,
+            NULL
     );
 
     ShowWindow(mainWindow, SW_SHOWNORMAL);
@@ -376,6 +390,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
 
                         UPDATE_RENDER;
                         setWhoMovesCaption(whoMovesCaption, firstMove);
+                        setCGameTypeCaption(cGameType, RvsC, computerDifficulty);
                         if (firstMove != player) {
                             flushSequenceLists(&game.situation);
                             SeqContainer bestMove = getBestMove(game.situation, negateColor(player), computerDifficulty);
@@ -433,6 +448,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
 
                         UPDATE_RENDER;
                         setWhoMovesCaption(whoMovesCaption, firstMove);
+                        setCGameTypeCaption(cGameType, RvsR);
                     }
                     else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
                 }
@@ -501,6 +517,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         isGameBegun = false;
                         moveHasBeenMade = false;
                         movesHaveBeenFound = false;
+                        SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                     }
                 }
                 else {
@@ -519,6 +536,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 isGameBegun = false;
                                 moveHasBeenMade = false;
                                 movesHaveBeenFound = false;
+                                SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                             }
                             else {
                                 MessageBoxW(nullptr, L"Ваш оппонент не принял предложение ничьи :(", L"Предложение ничьи", MB_ICONWARNING);
@@ -532,6 +550,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 isGameBegun = false;
                                 moveHasBeenMade = false;
                                 movesHaveBeenFound = false;
+                                SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                             }
                             else {
                                 MessageBoxW(nullptr, L"Ваш оппонент не принял предложение ничьи :(", L"Предложение ничьи", MB_ICONWARNING);
@@ -684,6 +703,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                     isGameBegun = false;
                                     moveHasBeenMade = false;
                                     movesHaveBeenFound = false;
+                                    SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                                 }
                                 else {
                                     if (game.type == RvsC) {
@@ -751,6 +771,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                             isGameBegun = false;
                                             moveHasBeenMade = false;
                                             movesHaveBeenFound = false;
+                                            SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                                         }
                                         flushSequenceLists(&game.situation);
                                         setWhoMovesCaption(whoMovesCaption, player);
@@ -765,6 +786,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                             isGameBegun = false;
                                             moveHasBeenMade = false;
                                             movesHaveBeenFound = false;
+                                            SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                                         }
                                         flushSequenceLists(&game.situation);
                                         setWhoMovesCaption(whoMovesCaption, player);
@@ -838,5 +860,23 @@ void setWhoMovesCaption(HWND caption, Color color) {
         SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Ход чёрных");
     } else {
         SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Ход белых");
+    }
+}
+
+void setCGameTypeCaption(HWND caption, GameType gameType, Difficulty difficulty) {
+    if (gameType == RvsR) {
+        SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Играет человек против человека");
+    }
+    else if (gameType == RvsC) {
+        switch (difficulty) {
+            case Dumbass: {SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Уровень сложности: придурок"); break;}
+            case Easy: {SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Уровень сложности: лекго"); break;}
+            case Normal: {SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Уровень сложности: нормально"); break;}
+            case Hard: {SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Уровень сложности: сложно"); break;}
+            case Insane: {SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Уровень сложности: безумно"); break;}
+            case Extreme: {SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Уровень сложности: экстремально"); break;}
+            case Diabolic: {SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Уровень сложности: дьявольский"); break;}
+            case Invincible: {SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Уровень сложности: неуязвимый"); break;}
+        }
     }
 }
