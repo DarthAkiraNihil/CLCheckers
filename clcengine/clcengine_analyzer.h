@@ -1,6 +1,7 @@
 //
 // Created by EgrZver on 11.05.2023.
 //
+#include <random>
 #include "clcengine_types.h"
 #include "clcengine_inits.h"
 #include "clcengine_sequence_searching.h"
@@ -9,7 +10,12 @@
 #ifndef CHECKERS_CLCENGINE_ANALYZER_H
 #define CHECKERS_CLCENGINE_ANALYZER_H
 
+std::random_device analyzerRD;
+std::mt19937 agen(analyzerRD());
+std::uniform_int_distribution<> analyzerDistribution(1, 1000);
+
 SeqContainer analyze(GameSituation* situation, Color side, int currentDepth, Difficulty maxDepth) {
+
     SeqContainer toReturn = getNullContainer(side);
     float topBorder = getVictoryEvalFor(negateColor(side)), soFuckingDeepEval;//container->eval = getVictoryEvalFor(negateColor(side));
     findAllMoves(situation, side);
@@ -57,6 +63,14 @@ SeqContainer analyze(GameSituation* situation, Color side, int currentDepth, Dif
                 toReturn.regMoveSequence = rmsBackup[i];
                 toReturn.seqNumberToDo = 1;
             }
+            else if (deepMoveAnalyzed.eval == topBorder) {
+                if (analyzerDistribution(agen) < 500) {
+                    //topBorder = deepMoveAnalyzed.eval;
+                    //toReturn.eval = topBorder;
+                    toReturn.regMoveSequence = rmsBackup[i];
+                    toReturn.seqNumberToDo = 1;
+                }
+            }
         }
         delete [] rmsBackup;
         return toReturn;
@@ -76,6 +90,14 @@ SeqContainer analyze(GameSituation* situation, Color side, int currentDepth, Dif
                 toReturn.eval = topBorder;
                 toReturn.takingSequence = tsBackup[i];
                 toReturn.seqNumberToDo = 2;
+            }
+            else if (deepMoveAnalyzed.eval == topBorder) {
+                if (analyzerDistribution(agen) < 500) {
+                    //topBorder = deepMoveAnalyzed.eval;
+                    //toReturn.eval = topBorder;
+                    toReturn.takingSequence = tsBackup[i];
+                    toReturn.seqNumberToDo = 2;
+                }
             }
         }
         delete [] tsBackup;
