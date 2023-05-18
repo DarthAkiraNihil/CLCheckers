@@ -103,7 +103,8 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     sideSelectorCaption = CreateWindowW(L"static", L"Ваша сторона", WS_CHILD | WS_VISIBLE, 540, 170, 200, 20, mainWindow, (HMENU) 10000, instance, nullptr);
     sideSelectorBlack = CreateWindowW(L"button", L"Чёрные", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON, 540, 190, 80, 20, mainWindow, (HMENU) 12345, instance, NULL);
     sideSelectorWhite = CreateWindowW(L"button", L"Белые", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON, 620, 190, 100, 20, mainWindow, (HMENU)10000, instance, NULL);
-    whoMovesCaption = CreateWindowW(L"static", L"Никто не ходит", WS_CHILD | WS_VISIBLE, 20, 600, 400, 20, mainWindow, (HMENU)10000, instance, NULL);
+    whoMovesCaption = CreateWindowW(L"static", L"Никто не ходит", WS_CHILD | WS_VISIBLE, 20, 540, 400, 20, mainWindow, (HMENU)10000, instance, NULL);
+    //SendMessageW(whoMovesCaption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"P E N I S");
     /*for (int i = 0; i < 6; i++) {
         SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) difficultyNames[i]);
     }*/
@@ -214,6 +215,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         }
                         //MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
                         UPDATE_RENDER;
+                        setWhoMovesCaption(whoMovesCaption, firstMove);
                         if (firstMove != player) {
                             flushSequenceLists(&game.situation);
                             SeqContainer bestMove = getBestMove(game.situation, negateColor(player), computerDifficulty);
@@ -240,6 +242,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                             flushSequenceLists(&game.situation);
                             flushBuffers();
                             UPDATE_RENDER;
+                            setWhoMovesCaption(whoMovesCaption, player);
                         }
                     }
                     else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
@@ -271,6 +274,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
                         MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
                         UPDATE_RENDER;
+                        setWhoMovesCaption(whoMovesCaption, firstMove);
                     }
                     else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
                     //game = createANewGame(Black, Black, RvsR);
@@ -300,14 +304,17 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 else MessageBoxW(nullptr, L"Нет такого файла, дурачок", L"Saatana vittu perkele", MB_ICONERROR);
             }
             else if (lParam == (LPARAM) buttons[buttonSaveGame]) {
-                GetSaveFileNameW(&openFile);
-                MessageBoxW(window, fileName, L"The truth", 0);
-                FILE* save = _wfopen(openFile.lpstrFile, L"wb+");
+                if (isGameBegun) {
+                    GetSaveFileNameW(&openFile);
+                    MessageBoxW(window, fileName, L"The truth", 0);
+                    FILE *save = _wfopen(openFile.lpstrFile, L"wb+");
 
-                fwrite(&computerDifficulty, sizeof(Difficulty), 1, save);
-                fwrite(&player, sizeof(Color), 1, save);
-                fwrite(&game, sizeof(Game), 1, save);
-                fclose(save);
+                    fwrite(&computerDifficulty, sizeof(Difficulty), 1, save);
+                    fwrite(&player, sizeof(Color), 1, save);
+                    fwrite(&game, sizeof(Game), 1, save);
+                    fclose(save);
+                }
+                else MessageBoxW(nullptr, L"Как ты сохранишь игру, которой нет, а?!", L"Saatana vittu perkele", MB_ICONERROR);
                 //MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
             }
             else if (lParam == (LPARAM) buttons[buttonAbout]) {
@@ -483,6 +490,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
 
                             UPDATE_RENDER;
                             if (moveHasBeenMade) {
+                                setWhoMovesCaption(whoMovesCaption, negateColor(player));
                                 flushSequenceLists(&game.situation);
                                 findAllMoves(&game.situation, negateColor(player));
                                 if (lostByMoves(&game.situation)) {
@@ -556,6 +564,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                             movesHaveBeenFound = false;
                                         }
                                         flushSequenceLists(&game.situation);
+                                        setWhoMovesCaption(whoMovesCaption, player);
                                     } else {
                                         player = negateColor(player);
                                         moveHasBeenMade = false;
@@ -569,6 +578,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                             movesHaveBeenFound = false;
                                         }
                                         flushSequenceLists(&game.situation);
+                                        setWhoMovesCaption(whoMovesCaption, player);
                                     }
                                 }
                             }
@@ -621,4 +631,11 @@ void defineOpenFile(HWND ofWindow) {
     openFile.lpstrDefExt = L"sav";
     openFile.lpstrFilter = L"Файлы сохранений (.sav)\0*.sav\0";
     //openFile.nFilterIndex = 1;
+}
+void setWhoMovesCaption(HWND caption, Color color) {
+    if (color == Black) {
+        SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Ход чёрных");
+    } else {
+        SendMessageW(caption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Ход белых");
+    }
 }

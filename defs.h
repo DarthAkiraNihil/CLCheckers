@@ -16,7 +16,7 @@ WNDCLASSEX newWindowClass(HBRUSH backgroundColor, HCURSOR cursor, HINSTANCE inst
 LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, LPARAM lParam);
 Difficulty getDifficultyByNumber(int number);
 void defineOpenFile(HWND ofWindow);
-
+void setWhoMovesCaption(HWND caption, Color color);
 void renderBoard(); //todo define args
 
 #endif //CHECKERS_DEFS_H
