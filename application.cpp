@@ -413,6 +413,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         game = createANewGame(player, firstMove, RvsR);
 
                         isGameBegun = true;
+                        player = firstMove;
                         sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
                         MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
                         UPDATE_RENDER;
