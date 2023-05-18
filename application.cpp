@@ -507,7 +507,38 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 if (isGameBegun) {
                     if (MessageBoxW(nullptr, L"Вы действительно хотите сдаться?", L"Одумайтесь!", MB_ICONQUESTION | MB_YESNO) == IDYES) {
                         if (player == game.situation.playerSide) {
-                            MessageBoxW(window, L"Похоже, кто-то мощно не справился со своим противником", L"Вы проиграли", MB_ICONINFORMATION);
+                            if (game.type == RvsR) {
+                                MessageBoxW(window, L"Похоже, кто-то мощно не справился со своим противником", L"Вы проиграли", MB_ICONERROR);
+                            }
+                            else if (game.type == RvsC) {
+                                switch (computerDifficulty) {
+                                    case Dumbass: {
+                                        MessageBoxW(nullptr, L"\"Хахаку! Нуука куба бука нуса!\"\n\nВы сдались... серьёзно?", L"Вы проиграли", MB_ICONERROR);
+                                        break;
+                                    }
+                                    case Easy: {
+                                        MessageBoxW(nullptr, L"\"Хм... может я... слишком силён для вас, раз вы сдались?\"\n\nВы сдались", L"Вы проиграли", MB_ICONERROR);
+                                        break;
+                                    }
+                                    case Normal: {
+                                        MessageBoxW(nullptr, L"\"Знай своё место, мусор! Тебе никогда не сравниться со мной!\"\n\nВы сдались, но это не удивително", L"Вы проиграли", MB_ICONERROR);
+                                        break;
+                                    }
+                                    case Hard: {
+                                        MessageBoxW(nullptr, L"\"Ты слаб!\"\n\nВы сдались", L"Вы проиграли", MB_ICONERROR);
+                                        break;
+                                    }
+                                    case Insane: {
+                                        MessageBoxW(nullptr, L"\"Ты проиграл только по одной причине - ты не очень хорошо играешь в русские шашки!\"\n\nВы сдались", L"Вы проиграли", MB_ICONERROR);
+                                        break;
+                                    }
+                                    case Extreme: {
+                                        MessageBoxW(nullptr, L"\"АААААХАХАХАХА! Я ДАЖЕ НЕ ДУМАЛ, ЧТО ТЫ ТАК БЫСТРО СДАШЬСЯ! ТЕПЕРЬ-ТО МОЙ ПЛАН ОСУЩЕСТВИТСЯ! ТЫ ДЕЙСТВИТЕЛЬНО ОПОЗДАЛ, СОНИК! БАУХА-ХА-ХА-ХА!\"\n\nВы сдались... вам необходимо вызвать его на матч реванш, иначе нам всем несдобровать. Вы наша последняя надежда!", L"Вы проиграли", MB_ICONERROR);
+                                        break;
+                                    }
+                                }
+                            }
+
                         }
                         else {
                             MessageBoxW(window, L"ВЫ КРУТЫ! Молодцы, что одолели своего оппонента! Надеюсь, это не единственная ваша победа...", L"Вы выиграли", MB_ICONINFORMATION);
@@ -517,6 +548,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         isGameBegun = false;
                         moveHasBeenMade = false;
                         movesHaveBeenFound = false;
+                        drawHasBeenOffered = false;
                         SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                     }
                 }
@@ -531,15 +563,64 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                             std::uniform_int_distribution<> drawDist(1, 1000);
                             int prob = drawDist(gen);
                             if (prob < probsOfDrawOfCPU[getNumberByDifficulty(computerDifficulty)]) {
-                                MessageBoxW(nullptr, L"Хм, оппонент принял предложение ничьи. Победила дружба.", L"Ничьи", MB_ICONINFORMATION);
+                                switch (computerDifficulty) {
+                                    case Dumbass: {
+                                        MessageBoxW(nullptr, L"\"Хумука... Бука-дука кука! Нуука!\"\n\nХм, оппонент принял ваше предложение ничьи. Победила дружба.", L"Ничья", MB_ICONINFORMATION);
+                                        break;
+                                    }
+                                    case Easy: {
+                                        MessageBoxW(nullptr, L"\"Хм, если вам так хочется, то... я принимаю предложение ничьи!\"\n\nХм, оппонент принял предложение ничьи. Победила дружба.", L"Ничья", MB_ICONINFORMATION);
+                                        break;
+                                    }
+                                    case Normal: {
+                                        MessageBoxW(nullptr, L"\"Гм, я согласен на ничью... чтобы потом усилить свой навык и прикончить тебя в следующей партии\"\n\nХм, зазнайка принял предложение ничьи. Победила дружба.", L"Ничья", MB_ICONINFORMATION);
+                                        break;
+                                    }
+                                    case Hard: {
+                                        MessageBoxW(nullptr, L"\"Передай мастеру Шиыу, что это не последняя наша встреча!\"\n\nХм, странно, но оппонент принял предложение ничьи. Победила дружба.", L"Ничья", MB_ICONINFORMATION);
+                                        break;
+                                    }
+                                    case Insane: {
+                                        MessageBoxW(nullptr, L"\"Я потом выбью из тебя всё де...о, если в следующий рад подойдёшь ближе к победе надо мной\"\n\nХм, удивительно, но Джотаро Куджо принял предложение ничьи. Победила дружба.", L"Ничья", MB_ICONINFORMATION);
+                                        break;
+                                    }
+                                }
+                                //MessageBoxW(nullptr, L"Хм, оппонент принял предложение ничьи. Победила дружба.", L"Ничьи", MB_ICONINFORMATION);
                                 renderEmptyBoard(handler, boardPasteX, boardPasteY);
                                 isGameBegun = false;
                                 moveHasBeenMade = false;
                                 movesHaveBeenFound = false;
+                                drawHasBeenOffered = false;
                                 SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                             }
                             else {
-                                MessageBoxW(nullptr, L"Ваш оппонент не принял предложение ничьи :(", L"Предложение ничьи", MB_ICONWARNING);
+                                switch (computerDifficulty) {
+                                    case Dumbass: {
+                                        MessageBoxW(nullptr, L"\"Нуука? Нону бука гуга суда лукака!\"\n\nЭто удивительно, но неандерталец не принял ваше предложение ничьи :(", L"Не получилось", MB_ICONINFORMATION);
+                                        break;
+                                    }
+                                    case Easy: {
+                                        MessageBoxW(nullptr, L"\"Хм, не принимаю предложение.\"\n\nВаш оппонент не принял ваше предложение ничьи :(", L"Не получилось", MB_ICONINFORMATION);
+                                        break;
+                                    }
+                                    case Normal: {
+                                        MessageBoxW(nullptr, L"\"Ещё чего! Я уже почти победил, и я не буду уступать какому-то отбросу!\"\n\nЗазнайка не принял ваше предложение ничьи :(", L"Не получилось", MB_ICONINFORMATION);
+                                        break;
+                                    }
+                                    case Hard: {
+                                        MessageBoxW(nullptr, L"\"Я знаю, что ты не воин дракона, но отступить я не имею право.\"\n\nВаш оппонент не принял ваше предложение ничьи :(", L"Не получилось", MB_ICONINFORMATION);
+                                        break;
+                                    }
+                                    case Insane: {
+                                        MessageBoxW(nullptr, L"\"Ты что, смеёшься надо мной? Я поставил душу своей матери! Я должен одолеть тебя!\"\n\nВаш оппонент не принял ваше предложение ничьи :(", L"Не получилось", MB_ICONINFORMATION);
+                                        break;
+                                    }
+                                    case Extreme: {
+                                        MessageBoxW(nullptr, L"\"ААААА! ЧТО? ТЫ СЕРЬЁЗНО ДУМАЛ, ЧТО Я СОГЛАШУСЬ НА НИЧЬЮ?!!! НУ УЖ НЕТ! МОЙ ПЛАН ОСУЩЕСТВИТСЯ И Я ОКОНЧАТЕЛЬНО СЕРТИФИЦИРУЮСЬ КАК ПРОГРАММА ДЛЯ ИГРЫ В РУССКИЕ ШАШКИ! БАУХА-ХА-ХА-ХА!\"\n\nА чего вы хотели? Доктор Айво \"Эггман\" Роботник непреклонен, потому и не принял ваше предложение ничьи :(", L"Не получилось", MB_ICONINFORMATION);
+                                        break;
+                                    }
+                                }
+                                //MessageBoxW(nullptr, L"Ваш оппонент не принял предложение ничьи :(", L"Предложение ничьи", MB_ICONWARNING);
                             }
 
                         }
@@ -550,6 +631,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 isGameBegun = false;
                                 moveHasBeenMade = false;
                                 movesHaveBeenFound = false;
+                                drawHasBeenOffered = false;
                                 SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                             }
                             else {
@@ -699,7 +781,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 findAllMoves(&game.situation, negateColor(player));
                                 if (lostByMoves(&game.situation)) {
                                     if (game.type == RvsR) {
-                                        MessageBoxW(window, L"ВЫ КРУТЫ! Молодцы, что одолели своего оппонента! Надеюсь, это не единственная ваша победа...", L"Вы выиграли", MB_ICONINFORMATION);
+                                        MessageBoxW(window, L"ВЫ КРУТЫ! Вы блестяще одолели своего оппонента! Надеюсь, это не единственная ваша победа...", L"Вы выиграли", MB_ICONINFORMATION);
                                     }
                                     else if (game.type == RvsC) {
                                         switch (computerDifficulty) {
@@ -734,6 +816,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                     isGameBegun = false;
                                     moveHasBeenMade = false;
                                     movesHaveBeenFound = false;
+                                    drawHasBeenOffered = false;
                                     SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                                 }
                                 else {
@@ -798,7 +881,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                         findAllMoves(&game.situation, player);
                                         if (lostByMoves(&game.situation)) {
                                             if (game.type == RvsR) {
-                                                MessageBoxW(window, L"Похоже, кто-то мощно не справился со своим противником", L"Вы проиграли", MB_ICONINFORMATION);
+                                                MessageBoxW(window, L"Похоже, кто-то мощно не справился со своим противником. Попробуйте вызвать его на реванш", L"Вы проиграли", MB_ICONINFORMATION);
                                             }
                                             else if (game.type == RvsC) {
                                                 switch (computerDifficulty) {
@@ -807,15 +890,15 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                                         break;
                                                     }
                                                     case Easy: {
-                                                        MessageBoxW(nullptr, L"\"Ого?! Я победил!? ДА! НАКОНЕЦ-ТО, Я СТАЛ СИЛЬНЕЕ!\"\n\nВы проиграли обычному школьнику...? Серьёзно? Что ж, вам всё ещё необходимо совершенстовать своё умение играть в шашки. Рано или поздно вы одолеете его, не сомневайтесь", L"Вы проиграли", MB_ICONERROR);
+                                                        MessageBoxW(nullptr, L"\"Ого?! Я победил!? ДА! НАКОНЕЦ-ТО, Я СТАЛ СИЛЬНЕЕ!\"\n\nВы проиграли обычному школьнику...? Серьёзно? Что ж, вам всё ещё необходимо совершенствовать своё умение играть в шашки. Рано или поздно вы одолеете его, не сомневайтесь", L"Вы проиграли", MB_ICONERROR);
                                                         break;
                                                     }
                                                     case Normal: {
-                                                        MessageBoxW(nullptr, L"\"Видишь? Я лучше тебя во всём, а ты всего лишь мелкий кусок мусора, который недостоин моего уважения!\"\n\nВы проиграли лицеисту, который не самый слабый противник, потому вам не стоит отчаиваться. Вам надо обязятельно утереть нос этому зазнайке, а не то он морально раздавит всех!", L"Вы проиграли", MB_ICONERROR);
+                                                        MessageBoxW(nullptr, L"\"Видишь? Я лучше тебя во всём, а ты всего лишь мелкий кусок мусора, который недостоин моего уважения!\"\n\nВы проиграли лицеисту, который не самый слабый противник, потому вам не стоит отчаиваться. Вам надо обязательно утереть нос этому зазнайке, а не то он морально раздавит всех!", L"Вы проиграли", MB_ICONERROR);
                                                         break;
                                                     }
                                                     case Hard: {
-                                                        MessageBoxW(nullptr, L"\"Ну и что ты сделаешь? Плюхнешься на меняиз-за пройгрыша? Хе-хе\"\n\nК сожалению, вы проиграли Тайлунгу. Могу сказать только одно - совершенствуйте своё мастерство игры в шашки, вам нужно показать ему, кто здесь - воин дракона!", L"Вы проиграли", MB_ICONERROR);
+                                                        MessageBoxW(nullptr, L"\"Ну и что ты сделаешь? Плюхнешься на меня из-за проигрыша? Хе-хе\"\n\nК сожалению, вы проиграли Тайлунгу. Могу сказать только одно - совершенствуйте своё мастерство игры в шашки, вам нужно показать ему, кто здесь - воин дракона!", L"Вы проиграли", MB_ICONERROR);
                                                         break;
                                                     }
                                                     case Insane: {
@@ -823,7 +906,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                                         break;
                                                     }
                                                     case Extreme: {
-                                                        MessageBoxW(nullptr, L"\"АААААХАХАХАХА! ТА ОПОЗДАЛ СОНИК! Я ТЕПЕРЬ ОКОНЧАТЕЛЬНО СЕРТИФИЦИРОВАЛСЯ КАК ПРОГРАММА ДЛЯ ИГРЫ В РУССКИЕ ШАШКИ! ТЕПЕРЬ ТЫ МЕНЯ НЕ ОСТАНОВИШЬ!\"\n\nО НЕТ! Вы проиграли доктору Эггману, и теперь он превратит всех в бандиков! СРОЧНО, улучшайте своё мастрество игры в шашки и вызывайте доктора на матч-реванш!", L"Вы проиграли", MB_ICONERROR);
+                                                        MessageBoxW(nullptr, L"\"АААААХАХАХАХА! ТА ОПОЗДАЛ СОНИК! Я ТЕПЕРЬ ОКОНЧАТЕЛЬНО СЕРТИФИЦИРОВАЛСЯ КАК ПРОГРАММА ДЛЯ ИГРЫ В РУССКИЕ ШАШКИ! ТЕПЕРЬ ТЫ МЕНЯ НЕ ОСТАНОВИШЬ!\"\n\nО НЕТ! Вы проиграли доктору Эггману, и теперь он превратит всех в бандиков! СРОЧНО, улучшайте своё мастерство игры в шашки и вызывайте доктора на матч-реванш!", L"Вы проиграли", MB_ICONERROR);
                                                         break;
                                                     }
                                                 }
@@ -833,6 +916,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                             isGameBegun = false;
                                             moveHasBeenMade = false;
                                             movesHaveBeenFound = false;
+                                            drawHasBeenOffered = false;
                                             SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                                         }
                                         flushSequenceLists(&game.situation);
@@ -854,15 +938,15 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                                         break;
                                                     }
                                                     case Easy: {
-                                                        MessageBoxW(nullptr, L"\"Ого?! Я победил!? ДА! НАКОНЕЦ-ТО, Я СТАЛ СИЛЬНЕЕ!\"\n\nВы проиграли обычному школьнику...? Серьёзно? Что ж, вам всё ещё необходимо совершенстовать своё умение играть в шашки. Рано или поздно вы одолеете его, не сомневайтесь", L"Вы проиграли", MB_ICONERROR);
+                                                        MessageBoxW(nullptr, L"\"Ого?! Я победил!? ДА! НАКОНЕЦ-ТО, Я СТАЛ СИЛЬНЕЕ!\"\n\nВы проиграли обычному школьнику...? Серьёзно? Что ж, вам всё ещё необходимо совершенствовать своё умение играть в шашки. Рано или поздно вы одолеете его, не сомневайтесь", L"Вы проиграли", MB_ICONERROR);
                                                         break;
                                                     }
                                                     case Normal: {
-                                                        MessageBoxW(nullptr, L"\"Видишь? Я лучше тебя во всём, а ты всего лишь мелкий кусок мусора, который недостоин моего уважения!\"\n\nВы проиграли лицеисту, который не самый слабый противник, потому вам не стоит отчаиваться. Вам надо обязятельно утереть нос этому зазнайке, а не то он морально раздавит всех!", L"Вы проиграли", MB_ICONERROR);
+                                                        MessageBoxW(nullptr, L"\"Видишь? Я лучше тебя во всём, а ты всего лишь мелкий кусок мусора, который недостоин моего уважения!\"\n\nВы проиграли лицеисту, который не самый слабый противник, потому вам не стоит отчаиваться. Вам надо обязательно утереть нос этому зазнайке, а не то он морально раздавит всех!", L"Вы проиграли", MB_ICONERROR);
                                                         break;
                                                     }
                                                     case Hard: {
-                                                        MessageBoxW(nullptr, L"\"Ну и что ты сделаешь? Плюхнешься на меняиз-за пройгрыша? Хе-хе\"\n\nК сожалению, вы проиграли Тайлунгу. Могу сказать только одно - совершенствуйте своё мастерство игры в шашки, вам нужно показать ему, кто здесь - воин дракона!", L"Вы проиграли", MB_ICONERROR);
+                                                        MessageBoxW(nullptr, L"\"Ну и что ты сделаешь? Плюхнешься на меня из-за проигрыша? Хе-хе\"\n\nК сожалению, вы проиграли Тайлунгу. Могу сказать только одно - совершенствуйте своё мастерство игры в шашки, вам нужно показать ему, кто здесь - воин дракона!", L"Вы проиграли", MB_ICONERROR);
                                                         break;
                                                     }
                                                     case Insane: {
@@ -879,6 +963,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                             isGameBegun = false;
                                             moveHasBeenMade = false;
                                             movesHaveBeenFound = false;
+                                            drawHasBeenOffered = false;
                                             SendMessageW(cGameType, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"Игры нет");
                                         }
                                         flushSequenceLists(&game.situation);
