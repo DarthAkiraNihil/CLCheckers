@@ -11,6 +11,10 @@ const int buttonStartGameVsComp = 1;
 const int buttonLoadGame = 2;
 const int buttonSaveGame= 3;
 const int buttonAbout = 4;
+const int buttonGiveUp = 5;
+const int buttonGameDraw = 6;
+const int buttonHelp = 7;
+const int buttonRules = 8;
 
 const int boardPasteX = 20;
 const int boardPasteY = 20;

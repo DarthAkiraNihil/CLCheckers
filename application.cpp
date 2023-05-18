@@ -18,7 +18,7 @@
 
 
 Game game;
-HWND buttons[10], difficultySelect, sideSelectorBlack, sideSelectorWhite, sideSelectorCaption, difficultySelectCaption;
+HWND buttons[10], difficultySelect, sideSelectorBlack, sideSelectorWhite, sideSelectorCaption, difficultySelectCaption, whoMovesCaption;
 bool isGameBegun = false; Difficulty computerDifficulty;
 HBRUSH brushBG = NULL;
 Coordinates boardCursor = {0, 0}, selectedSource, selectedDestination;
@@ -67,6 +67,11 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     buttons[buttonLoadGame] = CreateWindowW(L"button", L"Загрузить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 220, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
     buttons[buttonSaveGame] = CreateWindowW(L"button", L"Сохранить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 270, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
     buttons[buttonAbout] = CreateWindowW(L"button", L"О программе", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 320, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonGiveUp] = CreateWindowW(L"button", L"Сдаться", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 370, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonGameDraw] = CreateWindowW(L"button", L"Предложить ничью", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 420, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonHelp] = CreateWindowW(L"button", L"Как ходить?", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 470, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonRules] = CreateWindowW(L"button", L"Правила игры", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 520, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    //buttons[buttonAbout] = CreateWindowW(L"button", L"О программе", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 320, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
 
     difficultySelect = CreateWindowW(
         L"combobox",
@@ -98,6 +103,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     sideSelectorCaption = CreateWindowW(L"static", L"Ваша сторона", WS_CHILD | WS_VISIBLE, 540, 170, 200, 20, mainWindow, (HMENU) 10000, instance, nullptr);
     sideSelectorBlack = CreateWindowW(L"button", L"Чёрные", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON, 540, 190, 80, 20, mainWindow, (HMENU) 12345, instance, NULL);
     sideSelectorWhite = CreateWindowW(L"button", L"Белые", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON, 620, 190, 100, 20, mainWindow, (HMENU)10000, instance, NULL);
+    whoMovesCaption = CreateWindowW(L"static", L"Никто не ходит", WS_CHILD | WS_VISIBLE, 20, 600, 400, 20, mainWindow, (HMENU)10000, instance, NULL);
     /*for (int i = 0; i < 6; i++) {
         SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) difficultyNames[i]);
     }*/
@@ -289,6 +295,49 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 //MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
             }
             else if (lParam == (LPARAM) buttons[buttonAbout]) {
+                MessageBoxW(window, L"CLCheckers ver. 1.0.\nCLCheckers - Made in CLion\nАвтор: Егор \"TheSwagVader\" Зверев (github.com/TheSwagVader)\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\nПроект лицензирован Apache 2.0, License", L"О программе", MB_ICONINFORMATION);
+            }
+            else if (lParam == (LPARAM) buttons[buttonGiveUp]) {
+                if (isGameBegun) {
+                    if (MessageBoxW(nullptr, L"Вы действительно хотите сдаться?", L"Одумайтесь!", MB_ICONQUESTION | MB_YESNO) == IDYES) {
+                        if (player == game.situation.playerSide) {
+                            MessageBoxW(window, L"YOU SUCK", L"Лошара ёбаный", MB_ICONINFORMATION);
+                        }
+                        else {
+                            MessageBoxW(window, L"YOU ROCK", L"Победитель долбанный", MB_ICONINFORMATION);
+                        }
+
+                        renderEmptyBoard(handler, boardPasteX, boardPasteY);
+                        isGameBegun = false;
+                        moveHasBeenMade = false;
+                        movesHaveBeenFound = false;
+                    }
+                }
+                else {
+                    MessageBoxW(nullptr, L"Ай-яй! Вы не можете сдаться, ведь у вас нет игры!", L"Saatana vittu perkele", MB_ICONERROR);
+                }
+            }
+            else if (lParam == (LPARAM) buttons[buttonGameDraw]) {
+                if (isGameBegun) {
+                    if (MessageBoxW(nullptr, L"Вы предлагаете ничью. Ваш оппонент согласен на неё?", L"Предложение ничьи", MB_ICONQUESTION | MB_YESNO) == IDYES) {
+                        MessageBoxW(nullptr, L"Партия закончилась ничьей! Победила дружба.", L"Ничьи", MB_ICONINFORMATION);
+                        renderEmptyBoard(handler, boardPasteX, boardPasteY);
+                        isGameBegun = false;
+                        moveHasBeenMade = false;
+                        movesHaveBeenFound = false;
+                    }
+                    else {
+                        MessageBoxW(nullptr, L"Ваш оппонент не принял предложение ничьи :(", L"Предложение ничьи", MB_ICONWARNING);
+                    }
+                }
+                else {
+                    MessageBoxW(nullptr, L"Ай-яй! Вы не можете предложить ничью, ведь у вас нет игры!", L"Saatana vittu perkele", MB_ICONERROR);
+                }
+            }
+            else if (lParam == (LPARAM) buttons[buttonHelp]) {
+                MessageBoxW(window, L"CLCheckers ver. 1.0.\nCLCheckers - Made in CLion\nАвтор: Егор \"TheSwagVader\" Зверев (github.com/TheSwagVader)\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\nПроект лицензирован Apache 2.0, License", L"О программе", MB_ICONINFORMATION);
+            }
+            else if (lParam == (LPARAM) buttons[buttonRules]) {
                 MessageBoxW(window, L"CLCheckers ver. 1.0.\nCLCheckers - Made in CLion\nАвтор: Егор \"TheSwagVader\" Зверев (github.com/TheSwagVader)\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\nПроект лицензирован Apache 2.0, License", L"О программе", MB_ICONINFORMATION);
             }
             break;
