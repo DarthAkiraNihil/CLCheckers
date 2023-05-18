@@ -289,30 +289,36 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             }
             else if (lParam == (LPARAM) buttons[buttonLoadGame]) {
                 //OPENFILENAME test;
-                GetOpenFileNameW(&openFile);
-                MessageBoxW(window, fileName, L"The truth", 0);
-                FILE* load = _wfopen(openFile.lpstrFile, L"rb");
-                if (load != nullptr) {
-                    fread(&computerDifficulty, sizeof(Difficulty), 1, load);
-                    fread(&player, sizeof(Color), 1, load);
-                    fread(&game, sizeof(Game), 1, load);
-                    fclose(load);
-                    isGameBegun = true;
-                    UPDATE_RENDER;
+                if (!isGameBegun) {
+                    BOOL success = GetOpenFileNameW(&openFile);
+                    if (success) {
+                        MessageBoxW(window, fileName, L"The truth", 0);
+                        FILE *load = _wfopen(openFile.lpstrFile, L"rb");
+                        if (load != nullptr) {
+                            fread(&computerDifficulty, sizeof(Difficulty), 1, load);
+                            fread(&player, sizeof(Color), 1, load);
+                            fread(&game, sizeof(Game), 1, load);
+                            fclose(load);
+                            isGameBegun = true;
+                            UPDATE_RENDER;
+                        } else
+                            MessageBoxW(nullptr, L"Нет такого файла, дурачок", L"Saatana vittu perkele", MB_ICONERROR);
+                    }
                 }
-
-                else MessageBoxW(nullptr, L"Нет такого файла, дурачок", L"Saatana vittu perkele", MB_ICONERROR);
+                else MessageBoxW(nullptr, L"Вы что, решили просто взять, ливнуть из этой игры в другую?! Ну уж нет, я вам не позволю! Закончите сначала текущую игру.", L"Saatana vittu perkele", MB_ICONERROR);
             }
             else if (lParam == (LPARAM) buttons[buttonSaveGame]) {
                 if (isGameBegun) {
-                    GetSaveFileNameW(&openFile);
-                    MessageBoxW(window, fileName, L"The truth", 0);
-                    FILE *save = _wfopen(openFile.lpstrFile, L"wb+");
+                    BOOL success = GetSaveFileNameW(&openFile);
+                    if (success) {
+                        MessageBoxW(window, fileName, L"The truth", 0);
+                        FILE *save = _wfopen(openFile.lpstrFile, L"wb+");
 
-                    fwrite(&computerDifficulty, sizeof(Difficulty), 1, save);
-                    fwrite(&player, sizeof(Color), 1, save);
-                    fwrite(&game, sizeof(Game), 1, save);
-                    fclose(save);
+                        fwrite(&computerDifficulty, sizeof(Difficulty), 1, save);
+                        fwrite(&player, sizeof(Color), 1, save);
+                        fwrite(&game, sizeof(Game), 1, save);
+                        fclose(save);
+                    }
                 }
                 else MessageBoxW(nullptr, L"Как ты сохранишь игру, которой нет, а?!", L"Saatana vittu perkele", MB_ICONERROR);
                 //MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
