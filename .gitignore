@@ -9,3 +9,5 @@ cmake-build-debug/
 /old.cpp
 /conio21/
 /interface.h
+/old_appconsts.h
+/old_gamemanager.h

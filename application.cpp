@@ -1,26 +1,23 @@
-#include <cstring>
 #include <memory.h>
 #include <tchar.h>
 #include <ctime>
-//#include <random>
-#include <cassert>
 #include <cstdlib>
 #include <cstdio>
-//#include <cstdio>
-//#include "conio2.h"
-//#include "interface.h"
 #include "clcengine/clcengine.h"
 #include "appconsts.h"
 #include "resources/resources.h"
 #include "defs.h"
-#include "gamemanager.h"
+//#include "gamemanager.h"
+
+Color player;
+
 #include "graphic_subsystem.h"
 
-
-Game game;
+Game game;// Color player;
 HWND buttons[10], difficultySelect, sideSelectorBlack, sideSelectorWhite, sideSelectorCaption, difficultySelectCaption, whoMovesCaption;
 bool isGameBegun = false; Difficulty computerDifficulty;
 HBRUSH brushBG = NULL;
+bool movesHaveBeenFound = false, moveHasBeenMade = false;
 Coordinates boardCursor = {0, 0}, selectedSource, selectedDestination;
 
 #define UPDATE_RENDER renderBoard(&game.situation.board, game.situation.playerSide, handler, boardCursor, boardPasteX, boardPasteY); renderPathMapMarkers(&game.situation.board, game.situation.playerSide, handler, boardCursor, boardPasteX, boardPasteY)
@@ -31,17 +28,13 @@ inline bool in(int var, int leftBorder, int rightBorder) {
 
 int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, int cmdShow) {
     srand(time(nullptr));
-    player = Black;
-    //game = createANewGame(player, White, RvsC);
-    //game.situation.playerSide = player;
-    //ascendChecker(&game.situation.board.checkers[Black][8]);
+
     updateBoardRender(&game.situation.board);
     WNDCLASSEX mainClass = newWindowClass((HBRUSH) COLOR_WINDOW, LoadCursor(NULL, IDC_ARROW), instance, LoadIcon(NULL, IDI_APPLICATION), applicationProcessor);
     Coordinates pasteCoordinates = getPasteWindowCoordinates();
     mainClass.lpszClassName = _TEXT(APPLICATION_MAIN_CLASS_NAME);
     mainClass.hIcon = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_BIG_ICON), IMAGE_ICON, 128, 128, 0);
     mainClass.hIconSm = (HICON) LoadImage(instance, MAKEINTRESOURCE(IDI_APP_WIN_ICON), IMAGE_ICON, 16, 16, 0);
-    //mainClass.hbrBackground = (HBRUSH) CreateSolidBrush(RGB(255, 255, 255));
     if (!RegisterClassEx(&mainClass)) {return -1;}
 
     MSG applicationMSG = {0};
@@ -62,16 +55,131 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
         NULL
     );
 
-    buttons[buttonStartGameVsReal] = CreateWindowW(L"button", L"Играть против человека", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 20, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonStartGameVsComp] = CreateWindowW(L"button", L"Играть против компьютера", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 70, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonLoadGame] = CreateWindowW(L"button", L"Загрузить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 370, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonSaveGame] = CreateWindowW(L"button", L"Сохранить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 420, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonAbout] = CreateWindowW(L"button", L"О программе", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 520, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonGiveUp] = CreateWindowW(L"button", L"Сдаться", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 220, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonGameDraw] = CreateWindowW(L"button", L"Предложить ничью", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 270, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonHelp] = CreateWindowW(L"button", L"Управление", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 470, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonRules] = CreateWindowW(L"button", L"Правила игры", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 320, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    //buttons[buttonAbout] = CreateWindowW(L"button", L"О программе", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 320, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonStartGameVsReal] = CreateWindowW(
+        L"button",
+        L"Играть против человека",
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        540,
+        20,
+        200,
+        40,
+        mainWindow,
+        (HMENU)10000,
+        instance,
+        NULL
+    );
+
+    buttons[buttonStartGameVsComp] = CreateWindowW(
+        L"button",
+        L"Играть против компьютера",
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        540,
+        70,
+        200,
+        40,
+        mainWindow,
+        (HMENU)10000,
+        instance,
+        NULL
+    );
+
+    buttons[buttonLoadGame] = CreateWindowW(
+        L"button",
+        L"Загрузить игру",
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        540,
+        370,
+        200,
+        40,
+        mainWindow,
+        (HMENU)10000,
+        instance,
+        NULL
+    );
+
+    buttons[buttonSaveGame] = CreateWindowW(
+        L"button",
+        L"Сохранить игру",
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        540,
+        420,
+        200,
+        40,
+        mainWindow,
+        (HMENU)10000,
+        instance,
+        NULL
+    );
+
+    buttons[buttonAbout] = CreateWindowW(
+        L"button",
+        L"О программе",
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        540,
+        520,
+        200,
+        40,
+        mainWindow,
+        (HMENU)10000,
+        instance,
+        NULL
+    );
+
+    buttons[buttonGiveUp] = CreateWindowW(
+        L"button",
+        L"Сдаться",
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        540,
+        220,
+        200,
+        40,
+        mainWindow,
+        (HMENU)10000,
+        instance,
+        NULL
+    );
+
+    buttons[buttonGameDraw] = CreateWindowW(
+        L"button",
+        L"Предложить ничью",
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        540,
+        270,
+        200,
+        40,
+        mainWindow,
+        (HMENU)10000,
+        instance,
+        NULL
+    );
+
+    buttons[buttonHelp] = CreateWindowW(
+        L"button",
+        L"Управление",
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        540,
+        470,
+        200,
+        40,
+        mainWindow,
+        (HMENU)10000,
+        instance,
+        NULL
+    );
+
+    buttons[buttonRules] = CreateWindowW(
+        L"button",
+        L"Правила игры",
+        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        540,
+        320,
+        200,
+        40,
+        mainWindow,
+        (HMENU)10000,
+        instance,
+        NULL
+    );
 
     difficultySelect = CreateWindowW(
         L"combobox",
@@ -87,10 +195,6 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
         nullptr
     );
 
-    //LPCSTR fuck = "Dumbass\0";
-    //SendMessage(difficultySelect, CB_ADDSTRING, 0,  (LPARAM) fuck);
-    //howWindow(difficultySelect, 60000);
-    //SendMessage(difficultySelect, CB_ADDSTRING, (WPARAM) 0,  (LPARAM) "Easy");
     SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Придурок");
     SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Легко");
     SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Нормально");
@@ -99,20 +203,79 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Экстремально");
     SendMessageW(difficultySelect, CB_SETCURSEL, 0, 0);
 
-    sideSelectorCaption = CreateWindowW(L"static", L"Уровень сложности", WS_CHILD | WS_VISIBLE, 540, 120, 200, 20, mainWindow, (HMENU) 10000, instance, nullptr);
-    sideSelectorCaption = CreateWindowW(L"static", L"Ваша сторона", WS_CHILD | WS_VISIBLE, 540, 170, 200, 20, mainWindow, (HMENU) 10000, instance, nullptr);
-    sideSelectorBlack = CreateWindowW(L"button", L"Чёрные", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON, 540, 190, 80, 20, mainWindow, (HMENU) 12345, instance, NULL);
-    sideSelectorWhite = CreateWindowW(L"button", L"Белые", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON, 620, 190, 100, 20, mainWindow, (HMENU)10000, instance, NULL);
-    whoMovesCaption = CreateWindowW(L"static", L"Никто не ходит", WS_CHILD | WS_VISIBLE, 20, 540, 400, 20, mainWindow, (HMENU)10000, instance, NULL);
-    //SendMessageW(whoMovesCaption, WM_SETTEXT, 0, (LPARAM) (LPCWSTR) L"P E N I S");
-    /*for (int i = 0; i < 6; i++) {
-        SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) difficultyNames[i]);
-    }*/
-    //SendMessage(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCSTR) difficultyNames[1]);
-    //SendMessage(difficultySelect, CB_ADDSTRING, 0,(LPARAM) (LPCSTR) "FUCK YOU");
+    sideSelectorCaption = CreateWindowW(
+        L"static",
+        L"Уровень сложности",
+        WS_CHILD | WS_VISIBLE,
+        540,
+        120,
+        200,
+        20,
+        mainWindow,
+        (HMENU) 10000,
+        instance,
+        nullptr
+    );
+
+    sideSelectorCaption = CreateWindowW(
+        L"static",
+        L"Ваша сторона",
+        WS_CHILD | WS_VISIBLE,
+        540,
+        170,
+        200,
+        20,
+        mainWindow,
+        (HMENU) 10000,
+        instance,
+        nullptr
+    );
+
+    sideSelectorBlack = CreateWindowW(
+        L"button",
+        L"Чёрные",
+        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON,
+        540,
+        190,
+        80,
+        20,
+        mainWindow,
+        (HMENU) 12345,
+        instance,
+        NULL
+    );
+
+    sideSelectorWhite = CreateWindowW(
+        L"button",
+        L"Белые",
+        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON,
+        620,
+        190,
+        100,
+        20,
+        mainWindow,
+        (HMENU)10000,
+        instance,
+        NULL
+    );
+
+    whoMovesCaption = CreateWindowW(
+        L"static",
+        L"Никто не ходит",
+        WS_CHILD | WS_VISIBLE,
+        20,
+        540,
+        400,
+        20,
+        mainWindow,
+        (HMENU)10000,
+        instance,
+        NULL
+    );
+
     ShowWindow(mainWindow, SW_SHOWNORMAL);
     UpdateWindow(mainWindow);
-    //SendMessageW(fuck, WM_CTLCOLORBTN, (WPARAM) fuck2, 0);
+
     while (GetMessage(&applicationMSG, NULL, NULL, NULL)) {
         TranslateMessage(&applicationMSG);
         DispatchMessageA(&applicationMSG);
@@ -130,18 +293,12 @@ WNDCLASSEX newWindowClass(HBRUSH backgroundColor, HCURSOR cursor, HINSTANCE inst
     return newClass;
 }
 
-
 LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, LPARAM lParam) {
     PAINTSTRUCT  paintStructure;
     HDC handler;
     handler = GetDC(window);
-    switch (message) {
-        case WM_INITDIALOG: {
-            //TCHAR strToAdd[40]=_T("ABC");
-            //SendMessage(difficultySelect, CB_ADDSTRING, 0,(LPARAM) (LPCSTR) "FUCK YOU");
 
-            break;
-        }
+    switch (message) {
         case WM_CREATE: {
             loadBoardTextures();
             boardBorder = loadImage("resources\\border.bmp");
@@ -159,15 +316,11 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     if (blackChosen) player = Black;
                     else if (whiteChosen) player = White;
-                    //else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", 0);
-                    if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
+
+                    if (blackChosen || whiteChosen) {
                         if (rsc < 0.5) firstMove = Black; else firstMove = White;
-                        //(TCHAR) SendMessageW(difficultySelect, CB_GETLBTEXT, (WPARAM) selected, (LPARAM) buffer);
-                        //MessageBoxW(window, (LPCWSTR) buffer , L"govnuk", 0);
                         computerDifficulty = getDifficultyByNumber(selected);
-                        //printf("%d", difficulty);
                         game = createANewGame(player, firstMove, RvsC);
-                        //for (int i = 0; i < 10; i++) removeChecker(&game.situation.board, 0, negateColor(player));
 
                         isGameBegun = true;
                         sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
@@ -213,7 +366,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 break;
                             }
                         }
-                        //MessageBoxA(nullptr, "S O S I   B L A C K   D I C K", buffer, 0);//SendMessageW(window, WM_COMMAND, 0, 100);
+
                         UPDATE_RENDER;
                         setWhoMovesCaption(whoMovesCaption, firstMove);
                         if (firstMove != player) {
@@ -231,16 +384,11 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                                                  moveMakingDelay, handler);
                                     break;
                                 }
-                                    /*case 3: {
-                                        makeAMixedSequenceWithDelay(&game.situation, bestMove.mixedSequence,
-                                                                    moveMakingDelay, handler);
-                                        break;
-                                    }*/
                             }
                             removeMarkedForDeath(&game.situation, player);
                             updateBoardRender(&game.situation.board);
                             flushSequenceLists(&game.situation);
-                            flushBuffers();
+                            //flushBuffers();
                             UPDATE_RENDER;
                             setWhoMovesCaption(whoMovesCaption, player);
                         }
@@ -255,19 +403,13 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 if (!isGameBegun) {
                     TCHAR buffer[256];
                     Color firstMove;
-                    //int selected = (int) SendMessageW(difficultySelect, CB_GETCURSEL, 0, 0);
                     float rsc = (float) rand() / (float) RAND_MAX;
                     bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
                         whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     if (blackChosen) player = Black;
                     else if (whiteChosen) player = White;
-                    //else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", 0);
                     if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
                         if (rsc < 0.5) firstMove = Black; else firstMove = White;
-                        //(TCHAR) SendMessageW(difficultySelect, CB_GETLBTEXT, (WPARAM) selected, (LPARAM) buffer);
-                        //MessageBoxW(window, (LPCWSTR) buffer , L"govnuk", 0);
-                        //computerDifficulty = getDifficultyByNumber(selected);
-                        //printf("%d", difficulty);
                         game = createANewGame(player, firstMove, RvsR);
 
                         isGameBegun = true;
@@ -277,10 +419,6 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         setWhoMovesCaption(whoMovesCaption, firstMove);
                     }
                     else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
-                    //game = createANewGame(Black, Black, RvsR);
-                    //isGameBegun = true;
-                    //SendMessageW(window, WM_COMMAND, 0, 100);
-                    //UPDATE_RENDER;
                 }
                 else {
                     MessageBoxW(nullptr, L"Вы не можете начать новую игру, пока не закончите текущую!", L"Saatana vittu perkele", MB_ICONERROR);
@@ -288,7 +426,6 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
 
             }
             else if (lParam == (LPARAM) buttons[buttonLoadGame]) {
-                //OPENFILENAME test;
                 if (!isGameBegun) {
                     BOOL success = GetOpenFileNameW(&openFile);
                     if (success) {
@@ -321,7 +458,6 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                     }
                 }
                 else MessageBoxW(nullptr, L"Как ты сохранишь игру, которой нет, а?!", L"Saatana vittu perkele", MB_ICONERROR);
-                //MessageBox(window, "SUCK A DICK!", "OOOOO MA GAD", 0);
             }
             else if (lParam == (LPARAM) buttons[buttonAbout]) {
                 MessageBoxW(window, L"CLCheckers ver. 1.0.\nCLCheckers - Made in CLion\nАвтор: Егор \"TheSwagVader\" Зверев (github.com/TheSwagVader)\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\nПроект лицензирован Apache 2.0, License", L"О программе", MB_ICONINFORMATION);
@@ -393,12 +529,11 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
         case WM_PAINT: {
             handler = BeginPaint(window, &paintStructure);
             renderBoardBorder(boardPasteX, boardPasteY, handler);
-            renderEmptyBoard(handler, boardPasteX, boardPasteY);//renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX, boardPasteY);
+            renderEmptyBoard(handler, boardPasteX, boardPasteY);
             EndPaint(window, &paintStructure);
             break;
         }
         case WM_KEYDOWN : {
-            //if (isGameBegun) {
                 switch (wParam) {
                     case VK_UP: {
                         if (boardCursor.y > 0 && isGameBegun) {
@@ -440,12 +575,6 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 copyLevelOneMovesToBuffers(&game.situation);
                                 movesHaveBeenFound = true;
                             }
-                            /*if (lostByMoves(&game.situation)) {
-                                MessageBoxW(window, L"YOU SUCK", L"Лошара ёбаный", MB_ICONINFORMATION);
-                            }
-                            else {
-
-                            }*/
                             if (marker == Destination) {
                                 selectedDestination = converted;
                                 if (game.situation.tmBufferLen != 0) {
@@ -557,7 +686,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                         removeMarkedForDeath(&game.situation, player);
                                         updateBoardRender(&game.situation.board);
                                         flushSequenceLists(&game.situation);
-                                        flushBuffers();
+                                        //flushBuffers();
                                         moveHasBeenMade = false;
                                         renderBoard(&game.situation.board, player, handler, boardCursor, boardPasteX,
                                                     boardPasteY);
@@ -636,7 +765,6 @@ void defineOpenFile(HWND ofWindow) {
     openFile.lpstrFile = fileName;
     openFile.lpstrDefExt = L"sav";
     openFile.lpstrFilter = L"Файлы сохранений (.sav)\0*.sav\0";
-    //openFile.nFilterIndex = 1;
 }
 void setWhoMovesCaption(HWND caption, Color color) {
     if (color == Black) {

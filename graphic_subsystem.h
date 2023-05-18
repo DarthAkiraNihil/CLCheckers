@@ -21,15 +21,6 @@ Coordinates getPasteWindowCoordinates() {
     return {(screen.right - WINDOW_SIZE_LENGTH) / 2, (screen.bottom - WINDOW_SIZE_HEIGHT) / 2};
 }
 
-inline Coordinates transformXYToBoardXY(int x, int y, Color relativeSide) {
-    if (relativeSide == Black) {
-        return {7 - (x - 33 - boardPasteX) / 56, (y - 33 - boardPasteY) / 56};
-    }
-    else {
-        return { (x - 33 - boardPasteX) / 56, 7 - (y - 33 - boardPasteY) / 56};
-    }
-}
-
 inline Coordinates getPasteCoords(int x, int y, Color playerSide) {
     if (playerSide == Black) {
         return {33 + boardPasteX + 56 * (7 - x), 33 + boardPasteY + 56 * y};
@@ -37,10 +28,6 @@ inline Coordinates getPasteCoords(int x, int y, Color playerSide) {
     else {
         return {33 + boardPasteX + 56 * x, 33 + boardPasteY + 56 * (7 - y)};
     }
-}
-
-inline Coordinates getNearestCorner(int x, int y) {
-    return {((x - 33 - boardPasteX) / 56) * 56 + 33 + boardPasteX, ((y - 33 - boardPasteY) / 56) * 56 + 33 + boardPasteY};
 }
 
 void loadBoardTextures() {
@@ -110,23 +97,6 @@ void renderEmptyBoard(HDC handler, int x, int y) {
     }
 }
 
-void renderRegularMoveSequence(RegMoveSequence sequence, int moveNumber, HDC handler) {
-    Coordinates renderPlace = getPasteCoords(sequence.regularMoves[moveNumber].destination.x, sequence.regularMoves[moveNumber].destination.y, player);
-    renderBoardTexture(renderPlace.x, renderPlace.y, 6, handler);
-}
-
-void renderTakingSequence(TakingSequence sequence, int moveNumber, HDC handler) {
-    Coordinates renderPlaceDest = getPasteCoords(sequence.takingMoves[moveNumber].destination.x, sequence.takingMoves[moveNumber].destination.y, player);
-    Coordinates renderPlaceVictim = getPasteCoords(sequence.takingMoves[moveNumber].victim.x, sequence.takingMoves[moveNumber].victim.y, player);
-    renderBoardTexture(renderPlaceDest.x, renderPlaceDest.y, 6, handler);
-    renderBoardTexture(renderPlaceVictim.x, renderPlaceVictim.y, 7 + 2*sequence.takingMoves[moveNumber].victimType +  sequence.takingMoves[moveNumber].takingSide, handler);
-}
-
-void renderKBMove(Move kingBecomingMove, HDC handler) {
-    Coordinates renderPlace = getPasteCoords(kingBecomingMove.destination.x, kingBecomingMove.destination.y, player);
-    renderBoardTexture(renderPlace.x, renderPlace.y, 6, handler);
-}
-//6
 void renderPathMapMarkers(Board* board, Color playerSide, HDC handler, Coordinates cursor, int x = 0, int y = 0) {
     for (int i = 0; i < 8; i++) {
         for (int j = 0; j < 8; j++) {
@@ -152,14 +122,6 @@ void makeARegMoveSequenceWithDelay(GameSituation* situation, RegMoveSequence reg
         Sleep(mSecDelay);
     }
 }
-
-/*
- * removeMarkedForDeath(&game.situation, player);
-
-                    flushSequenceLists(&game.situation);
-                    moveHasBeenMade = false;
-
- */
 
 void makeATakingSequenceWithDelay(GameSituation* situation, TakingSequence takingSequence, int mSecDelay, HDC handler) {
     for (int i = 0; i < takingSequence.tmsCount; i++) {
