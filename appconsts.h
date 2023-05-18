@@ -3,8 +3,8 @@
 #ifndef CHECKERS_APPCONSTS_H
 #define CHECKERS_APPCONSTS_H
 
-const int WINDOW_SIZE_LENGTH = 755;
-const int WINDOW_SIZE_HEIGHT = 700;
+const int WINDOW_SIZE_LENGTH = 765;
+const int WINDOW_SIZE_HEIGHT = 610;
 
 const int buttonStartGameVsReal = 0;
 const int buttonStartGameVsComp = 1;

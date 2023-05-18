@@ -64,13 +64,13 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
 
     buttons[buttonStartGameVsReal] = CreateWindowW(L"button", L"Играть против человека", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 20, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
     buttons[buttonStartGameVsComp] = CreateWindowW(L"button", L"Играть против компьютера", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 70, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonLoadGame] = CreateWindowW(L"button", L"Загрузить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 220, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonSaveGame] = CreateWindowW(L"button", L"Сохранить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 270, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonAbout] = CreateWindowW(L"button", L"О программе", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 320, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonGiveUp] = CreateWindowW(L"button", L"Сдаться", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 370, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonGameDraw] = CreateWindowW(L"button", L"Предложить ничью", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 420, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonHelp] = CreateWindowW(L"button", L"Как ходить?", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 470, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
-    buttons[buttonRules] = CreateWindowW(L"button", L"Правила игры", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 520, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonLoadGame] = CreateWindowW(L"button", L"Загрузить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 370, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonSaveGame] = CreateWindowW(L"button", L"Сохранить игру", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 420, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonAbout] = CreateWindowW(L"button", L"О программе", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 520, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonGiveUp] = CreateWindowW(L"button", L"Сдаться", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 220, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonGameDraw] = CreateWindowW(L"button", L"Предложить ничью", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 270, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonHelp] = CreateWindowW(L"button", L"Управление", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 470, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
+    buttons[buttonRules] = CreateWindowW(L"button", L"Правила игры", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 320, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
     //buttons[buttonAbout] = CreateWindowW(L"button", L"О программе", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 540, 320, 200, 40, mainWindow, (HMENU)10000, instance, NULL);
 
     difficultySelect = CreateWindowW(
@@ -366,7 +366,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             else if (lParam == (LPARAM) buttons[buttonHelp]) {
                 MessageBoxW(window, L"Выбор шашки производится с помощью курсора, указанным на доске. Его перемещение осуществляется нажатием \"стрелочек\" на клавиатуре.\n\n"
                                     "Выбор шашки происходит через нажатие клавиши Enter. Если выбранной шашки есть доступные поля, к которым можно переместиться, они будут подсвечены зелёным цветом.\n\n"
-                                    "Если одно из таких полей будет выбрано, также через нажатие Enter, будет сделал ход той шашкой, которую вы выбрали до этого. ", L"Как ходить", MB_ICONINFORMATION);
+                                    "Если одно из таких полей будет выбрано, также через нажатие Enter, будет сделал ход той шашкой, которую вы выбрали до этого. ", L"Управление", MB_ICONINFORMATION);
             }
             else if (lParam == (LPARAM) buttons[buttonRules]) {
                 MessageBoxW(window, L"Правила:\n"
