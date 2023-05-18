@@ -19,7 +19,7 @@ Game game;// Color player;
 HWND buttons[10], difficultySelect, sideSelectorBlack, sideSelectorWhite, sideSelectorCaption, difficultySelectCaption, whoMovesCaption;
 bool isGameBegun = false; Difficulty computerDifficulty;
 HBRUSH brushBG = NULL;
-bool movesHaveBeenFound = false, moveHasBeenMade = false;
+bool movesHaveBeenFound = false, moveHasBeenMade = false, drawHasBeenOffered = false;
 Coordinates boardCursor = {0, 0}, selectedSource, selectedDestination;
 
 std::random_device randomDevice;
@@ -504,16 +504,40 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
             }
             else if (lParam == (LPARAM) buttons[buttonGameDraw]) {
                 if (isGameBegun) {
-                    if (MessageBoxW(nullptr, L"Вы предлагаете ничью. Ваш оппонент согласен на неё?", L"Предложение ничьи", MB_ICONQUESTION | MB_YESNO) == IDYES) {
-                        MessageBoxW(nullptr, L"Партия закончилась ничьей! Победила дружба.", L"Ничьи", MB_ICONINFORMATION);
-                        renderEmptyBoard(handler, boardPasteX, boardPasteY);
-                        isGameBegun = false;
-                        moveHasBeenMade = false;
-                        movesHaveBeenFound = false;
+                    if (!drawHasBeenOffered) {
+                        if (game.type == RvsC) {
+                            std::uniform_int_distribution<> drawDist(1, 1000);
+                            int prob = drawDist(gen);
+                            if (prob < probsOfDrawOfCPU[getNumberByDifficulty(computerDifficulty)]) {
+                                MessageBoxW(nullptr, L"Хм, оппонент принял предложение ничьи. Победила дружба.", L"Ничьи", MB_ICONINFORMATION);
+                                renderEmptyBoard(handler, boardPasteX, boardPasteY);
+                                isGameBegun = false;
+                                moveHasBeenMade = false;
+                                movesHaveBeenFound = false;
+                            }
+                            else {
+                                MessageBoxW(nullptr, L"Ваш оппонент не принял предложение ничьи :(", L"Предложение ничьи", MB_ICONWARNING);
+                            }
+
+                        }
+                        else if (game.type == RvsR) {
+                            if (MessageBoxW(nullptr, L"Вы предлагаете ничью. Ваш оппонент согласен на неё?", L"Предложение ничьи", MB_ICONQUESTION | MB_YESNO) == IDYES) {
+                                MessageBoxW(nullptr, L"Партия закончилась ничьей! Победила дружба.", L"Ничья", MB_ICONINFORMATION);
+                                renderEmptyBoard(handler, boardPasteX, boardPasteY);
+                                isGameBegun = false;
+                                moveHasBeenMade = false;
+                                movesHaveBeenFound = false;
+                            }
+                            else {
+                                MessageBoxW(nullptr, L"Ваш оппонент не принял предложение ничьи :(", L"Предложение ничьи", MB_ICONWARNING);
+                            }
+                        }
+                        drawHasBeenOffered = true;
                     }
                     else {
-                        MessageBoxW(nullptr, L"Ваш оппонент не принял предложение ничьи :(", L"Предложение ничьи", MB_ICONWARNING);
+                        MessageBoxW(nullptr, L"Ай-яй! Вы не можете предложить ничью, ведь вы уже предлагали её на этом ходе! Попробуйте на следующем ходе.", L"Saatana vittu perkele", MB_ICONERROR);
                     }
+
                 }
                 else {
                     MessageBoxW(nullptr, L"Ай-яй! Вы не можете предложить ничью, ведь у вас нет игры!", L"Saatana vittu perkele", MB_ICONERROR);
@@ -645,6 +669,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
 
                             UPDATE_RENDER;
                             if (moveHasBeenMade) {
+                                drawHasBeenOffered = false;
                                 setWhoMovesCaption(whoMovesCaption, negateColor(player));
                                 flushSequenceLists(&game.situation);
                                 findAllMoves(&game.situation, negateColor(player));
@@ -778,6 +803,19 @@ Difficulty getDifficultyByNumber(int number) {
         case 6: return Diabolic;
         case 7: return Invincible;
         default: return Dumbass;
+    }
+}
+
+int getNumberByDifficulty(Difficulty difficulty) {
+    switch (difficulty) {
+        case Dumbass: return 0;
+        case Easy: return 1;
+        case Normal: return 2;
+        case Hard: return 3;
+        case Insane: return 4;
+        case Extreme: return 5;
+        case Diabolic: return 6;
+        case Invincible: return 7;
     }
 }
 
