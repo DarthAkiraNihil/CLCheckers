@@ -62,15 +62,7 @@ void findAllRegularMoveSequences(GameSituation* situation, Color forWhichSide) {
     }
 }
 
-void makeARegMoveSequence(GameSituation* situation, RegMoveSequence regMoveSequence) {
-    for (int i = 0; i < regMoveSequence.rmsCount; i++) makeAMove(situation, regMoveSequence.regularMoves[i]);
-}
 
-
-
-void cancelARegMoveSequence(GameSituation* situation, RegMoveSequence regMoveSequence) {
-    for (int i = regMoveSequence.rmsCount - 1; i > -1; i--) cancelAMove(situation, regMoveSequence.regularMoves[i]);
-}
 
 void findAllTakingSequencesForOne(GameSituation* situation, Color checkerColor, int checkerIndex, TakingSequence* currentPath, bool afterMove = false) {
     if (!afterMove) {

@@ -8,6 +8,16 @@
 #ifndef CHECKERS_CLCENGINE_SEQUENCE_MOVING_H
 #define CHECKERS_CLCENGINE_SEQUENCE_MOVING_H
 
+void makeARegMoveSequence(GameSituation* situation, RegMoveSequence regMoveSequence) {
+    for (int i = 0; i < regMoveSequence.rmsCount; i++) makeAMove(situation, regMoveSequence.regularMoves[i]);
+}
+
+
+
+void cancelARegMoveSequence(GameSituation* situation, RegMoveSequence regMoveSequence) {
+    for (int i = regMoveSequence.rmsCount - 1; i > -1; i--) cancelAMove(situation, regMoveSequence.regularMoves[i]);
+}
+
 void makeATakingMoveSequence(GameSituation* situation, TakingSequence takingSequence) {
     for (int i = 0; i < takingSequence.tmsCount; i++) makeATakingMove(situation, takingSequence.takingMoves[i]);
 }
