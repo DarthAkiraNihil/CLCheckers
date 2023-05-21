@@ -72,7 +72,7 @@ GameSituation makeNullGameSituation(Color playerSide) {
 Game createANewGame(Color playerSide, Color firstMove, GameType type) {
     Game newGame;
     newGame.situation = makeNullGameSituation(playerSide);
-    newGame.state = (playerSide == firstMove) ? PlayerMove : ((type == RvsR) ? EnemyMoveReal : EnemyMoveComputer);
+    //newGame.state = (playerSide == firstMove) ? PlayerMove : ((type == RvsR) ? EnemyMoveReal : EnemyMoveComputer);
     newGame.type = type;
     newGame.situation.playerSide = playerSide;
     return newGame;

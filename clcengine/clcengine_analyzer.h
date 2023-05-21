@@ -17,7 +17,7 @@ std::uniform_int_distribution<> analyzerDistribution(1, 1000);
 SeqContainer analyze(GameSituation* situation, Color side, int currentDepth, Difficulty maxDepth) {
 
     SeqContainer toReturn = getNullContainer(side);
-    float topBorder = getVictoryEvalFor(negateColor(side)), soFuckingDeepEval;//container->eval = getVictoryEvalFor(negateColor(side));
+    float topBorder = getVictoryEvalFor(negateColor(side));//, soFuckingDeepEval;//container->eval = getVictoryEvalFor(negateColor(side));
     findAllMoves(situation, side);
     if (lostByMoves(situation)) {
         toReturn.eval = topBorder;
