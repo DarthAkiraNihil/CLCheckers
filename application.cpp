@@ -16,7 +16,7 @@ Color player;
 #include "graphic_subsystem.h"
 
 Game game;// Color player;
-HWND buttons[10], difficultySelect, sideSelectorBlack, sideSelectorWhite, sideSelectorCaption, difficultySelectCaption, whoMovesCaption, cGameType;
+HWND buttons[10], difficultySelect, /*sideSelectorBlack, sideSelectorWhite*/ sideSelectorCaptionRIP, difficultySelectCaption, whoMovesCaption, cGameType;
 bool isGameBegun = false; Difficulty computerDifficulty;
 HBRUSH brushBG = NULL;
 bool movesHaveBeenFound = false, moveHasBeenMade = false, drawHasBeenOffered = false;
@@ -209,7 +209,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     SendMessageW(difficultySelect, CB_ADDSTRING, 0, (LPARAM) (LPCWSTR) L"Экстремально");
     SendMessageW(difficultySelect, CB_SETCURSEL, 0, 0);
 
-    sideSelectorCaption = CreateWindowW(
+    difficultySelectCaption = CreateWindowW(
         L"static",
         L"Уровень сложности",
         WS_CHILD | WS_VISIBLE,
@@ -223,21 +223,21 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
         nullptr
     );
 
-    sideSelectorCaption = CreateWindowW(
+    sideSelectorCaptionRIP = CreateWindowW(
         L"static",
-        L"Покойся с миром,",
+        L"Покойся с миром,\nвозможность выбора стороны",
         WS_CHILD | WS_VISIBLE,
         540,
-        170,
+        175,
         200,
-        20,
+        40,
         mainWindow,
         (HMENU) 10000,
         instance,
         nullptr
     );
 
-    sideSelectorBlack = CreateWindowW(
+    /*sideSelectorBlack = CreateWindowW(
         L"button",
         L"Чёрные",
         WS_CHILD | WS_TABSTOP | BS_AUTORADIOBUTTON,
@@ -263,9 +263,9 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
         (HMENU)10000,
         instance,
         NULL
-    );
+    );*/
 
-    sideSelectorCaption = CreateWindowW(
+    /*sideSelectorCaption = CreateWindowW(
         L"static",
         L"возможность выбора стороны игрока",
         WS_CHILD | WS_VISIBLE,
@@ -277,7 +277,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
         (HMENU) 10000,
         instance,
         nullptr
-    );
+    );*/
 
     whoMovesCaption = CreateWindowW(
         L"static",
@@ -347,10 +347,10 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                     int selected = (int) SendMessageW(difficultySelect, CB_GETCURSEL, 0, 0);
                     int rsc = distribution(gen);
                     //float rsc = (float) rand() / (float) RAND_MAX;
-                    bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
-                        whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
-                    if (blackChosen) player = Black;
-                    else if (whiteChosen) player = White;
+                    //bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
+                    //    whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                    //if (blackChosen) player = Black;
+                    //else if (whiteChosen) player = White;
                     firstMove = White;
                     //if (blackChosen || whiteChosen) {
                         if (rsc < 500) player = Black; else player = White;
@@ -358,7 +358,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         game = createANewGame(player, firstMove, RvsC);
 
                         isGameBegun = true;
-                        sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
+                        //sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
                         switch (computerDifficulty) {
                             case Dumbass: {
                                 MessageBoxW(nullptr, L"\"Уга-буга? Буга-уга-уга-бука! Абуга!\"\n\n"
@@ -441,10 +441,10 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                     Color firstMove;
                     int rsc = distribution(gen);
                     //float rsc = (float) rand() / (float) RAND_MAX;
-                    bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
-                        whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
-                    if (blackChosen) player = Black;
-                    else if (whiteChosen) player = White;
+                    //bool blackChosen = SendMessage(sideSelectorBlack, BM_GETCHECK, 0, 0) == BST_CHECKED,
+                    //    whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
+                    //if (blackChosen) player = Black;
+                    //else if (whiteChosen) player = White;
                     //if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
                         if (rsc < 500) player = Black; else player = White;
                         firstMove = White;

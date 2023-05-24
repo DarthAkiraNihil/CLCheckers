@@ -11,3 +11,4 @@ cmake-build-debug/
 /interface.h
 /old_appconsts.h
 /old_gamemanager.h
+/release/
