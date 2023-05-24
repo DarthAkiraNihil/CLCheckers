@@ -512,9 +512,9 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                 else MessageBoxW(nullptr, L"Как ты сохранишь игру, которой нет, а?!", L"Saatana vittu perkele", MB_ICONERROR);
             }
             else if (lParam == (LPARAM) buttons[buttonAbout]) {
-                MessageBoxW(window, L"CLCheckers ver. 1.0rc\n\n"
+                MessageBoxW(window, L"CLCheckers ver. 1.0\n\n"
                                     "CLCheckers - Made in CLion\n\n"
-                                    "Автор: Егор \"TheSwagVader\" Зверев (github.com/TheSwagVader), студент группы 1-41 ИВТФ ИГЭУ им. В.И.Ленина\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\n\n"
+                                    "Автор: Зверев Егор Игоревич (aka TheSwagVader) (github.com/TheSwagVader), студент группы 1-41 ИВТФ ИГЭУ им. В.И.Ленина\nРепозиторий проекта: github.com/TheSwagVader/CLCheckers\n\n"
                                     "Курсовой проект для ИГЭУ, который буквально является очередной версией игры в русские шашки\n\n"
                                     "Проект лицензирован на основе лицензии Apache 2.0 License", L"О программе", MB_ICONINFORMATION);
             }
