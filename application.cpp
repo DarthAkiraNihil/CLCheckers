@@ -225,7 +225,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
 
     sideSelectorCaption = CreateWindowW(
         L"static",
-        L"Ваша сторона",
+        L"Покойся с миром,",
         WS_CHILD | WS_VISIBLE,
         540,
         170,
@@ -240,7 +240,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     sideSelectorBlack = CreateWindowW(
         L"button",
         L"Чёрные",
-        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON,
+        WS_CHILD | WS_TABSTOP | BS_AUTORADIOBUTTON,
         540,
         190,
         80,
@@ -254,7 +254,7 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
     sideSelectorWhite = CreateWindowW(
         L"button",
         L"Белые",
-        WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON,
+        WS_CHILD | WS_TABSTOP | BS_AUTORADIOBUTTON,
         620,
         190,
         100,
@@ -263,6 +263,20 @@ int WINAPI WinMain(HINSTANCE instance, HINSTANCE previousInstance, LPSTR args, i
         (HMENU)10000,
         instance,
         NULL
+    );
+
+    sideSelectorCaption = CreateWindowW(
+        L"static",
+        L"возможность выбора стороны игрока",
+        WS_CHILD | WS_VISIBLE,
+        540,
+        190,
+        200,
+        20,
+        mainWindow,
+        (HMENU) 10000,
+        instance,
+        nullptr
     );
 
     whoMovesCaption = CreateWindowW(
@@ -337,9 +351,9 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     if (blackChosen) player = Black;
                     else if (whiteChosen) player = White;
-
-                    if (blackChosen || whiteChosen) {
-                        if (rsc < 500) firstMove = Black; else firstMove = White;
+                    firstMove = White;
+                    //if (blackChosen || whiteChosen) {
+                        if (rsc < 500) player = Black; else player = White;
                         computerDifficulty = getDifficultyByNumber(selected);
                         game = createANewGame(player, firstMove, RvsC);
 
@@ -414,8 +428,8 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                             UPDATE_RENDER;
                             setWhoMovesCaption(whoMovesCaption, player);
                         }
-                    }
-                    else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
+                    //}
+                    //lse MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
                 }
                 else {
                     MessageBoxW(nullptr, L"Вы не можете начать новую игру, пока не закончите текущую!", L"Saatana vittu perkele", MB_ICONERROR);
@@ -431,26 +445,27 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                         whiteChosen = SendMessage(sideSelectorWhite, BM_GETCHECK, 0, 0) == BST_CHECKED;
                     if (blackChosen) player = Black;
                     else if (whiteChosen) player = White;
-                    if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
-                        if (rsc < 500) firstMove = Black; else firstMove = White;
+                    //if (blackChosen || whiteChosen) {//SendMessageW(window, WM_COMMAND, 0, 100);;
+                        if (rsc < 500) player = Black; else player = White;
+                        firstMove = White;
                         game = createANewGame(player, firstMove, RvsR);
 
                         isGameBegun = true;
-                        player = firstMove;
+                        //player = firstMove;
                         //sprintf(buffer, "%d %d %d", computerDifficulty, blackChosen, whiteChosen);
-                        if (firstMove == Black) {
-                            MessageBoxW(nullptr, L"Судьба решила, что чёрные ходят первыми", L"Так кто первый?", MB_ICONINFORMATION);
+                        if (player == Black) {
+                            MessageBoxW(nullptr, L"Судьба решила, что вы играете чёрными", L"Так кто первый?", MB_ICONINFORMATION);
                         }
                         else {
-                            MessageBoxW(nullptr, L"Судьба решила, что белые ходят первыми", L"Так кто первый?", MB_ICONINFORMATION);
+                            MessageBoxW(nullptr, L"Судьба решила, что вы играете белыми", L"Так кто первый?", MB_ICONINFORMATION);
 
                         }
-
+                        player = firstMove;
                         UPDATE_RENDER;
                         setWhoMovesCaption(whoMovesCaption, firstMove);
                         setCGameTypeCaption(cGameType, RvsR);
-                    }
-                    else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
+                    //}
+                    //else MessageBoxW(nullptr, L"Вы не выбрали, за кого играть", L"Saatana vittu perkele", MB_ICONERROR);
                 }
                 else {
                     MessageBoxW(nullptr, L"Вы не можете начать новую игру, пока не закончите текущую!", L"Saatana vittu perkele", MB_ICONERROR);
@@ -672,7 +687,8 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                     "    - если у одного из соперников побиты все шашки;\n"
                                     "    - если один из участников заявил о том, что сдаётся;\n"
                                     "    - если шашки одного из участников заперты и он не может сделать очередной ход.\n"
-                                    "10) Партия считается закончившейся вничью, если один из участников предлагает ничью, а другой её принимает.", L"Правила игры", MB_ICONINFORMATION);
+                                    "10) Партия считается закончившейся вничью, если один из участников предлагает ничью, а другой её принимает.\n"
+                                    "11) Белые всегда ходят первыми", L"Правила игры", MB_ICONINFORMATION);
             }
             break;
         }
@@ -762,6 +778,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 if (game.situation.rmBufferLen + game.situation.tmBufferLen == 0) {
                                     moveHasBeenMade = true;
                                     movesHaveBeenFound = false;
+                                    flushMoveBuffers(&game.situation);
                                     removeMarkedForDeath(&game.situation, negateColor(player));
                                     updateBoardRender(&game.situation.board);
                                     resetPathMap(&game.situation.board);
@@ -776,6 +793,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                             UPDATE_RENDER;
                             if (moveHasBeenMade) {
                                 drawHasBeenOffered = false;
+                                flushMoveBuffers(&game.situation);
                                 setWhoMovesCaption(whoMovesCaption, negateColor(player));
                                 flushSequenceLists(&game.situation);
                                 findAllMoves(&game.situation, negateColor(player));
@@ -821,6 +839,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                 }
                                 else {
                                     if (game.type == RvsC) {
+                                        flushMoveBuffers(&game.situation);
                                         flushSequenceLists(&game.situation);
                                         findAllMoves(&game.situation, negateColor(player));
 
@@ -924,6 +943,7 @@ LRESULT CALLBACK applicationProcessor(HWND window, UINT message, WPARAM wParam, 
                                     } else {
                                         player = negateColor(player);
                                         moveHasBeenMade = false;
+                                        flushMoveBuffers(&game.situation);
                                         flushSequenceLists(&game.situation);
                                         findAllMoves(&game.situation, player);
                                         if (lostByMoves(&game.situation)) {
