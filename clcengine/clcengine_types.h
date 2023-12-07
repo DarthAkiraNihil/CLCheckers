@@ -34,6 +34,7 @@ const float qualityFactor[8][4] = {
 };
 
 const int OLD_VALUE = 54;
+const int OLD_VALUE2 = 54;
 
 const int probsOfDrawOfCPU[8] = {999, 800, 500, 250, 80, 0, 0, 0};
 
